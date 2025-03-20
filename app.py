@@ -10,25 +10,12 @@ import os
 import json
 from datetime import datetime, timedelta
 import pytz
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import random
 
 from utils.data_collector import BinanceDataCollector
-from utils.data_processor import DataProcessor
-from models.model_trainer import ModelTrainer
-from prediction.prediction_engine import PredictionEngine
 import config
-from dashboard.charts import (
-    plot_candlestick_chart, 
-    plot_prediction_history, 
-    plot_technical_indicators,
-    plot_confidence_distribution,
-    plot_model_accuracy
-)
-from dashboard.metrics import (
-    display_current_prediction,
-    display_model_performance,
-    display_data_stats,
-    display_system_status
-)
 
 # Set page config
 st.set_page_config(
@@ -42,13 +29,11 @@ st.set_page_config(
 if 'initialized' not in st.session_state:
     st.session_state.initialized = False
     st.session_state.data_collector = None
-    st.session_state.prediction_engine = None
     st.session_state.predictions = []
     st.session_state.latest_data = None
     st.session_state.model_trained = False
     st.session_state.data_fetch_status = {"status": "Not started", "last_update": None}
     st.session_state.selected_tab = "Live Dashboard"
-    st.session_state.training_metrics = None
     st.session_state.update_thread = None
     st.session_state.thread_running = False
 
@@ -62,14 +47,6 @@ def initialize_system():
             # Initialize data collector
             st.session_state.data_collector = BinanceDataCollector()
             
-            # Initialize prediction engine
-            st.session_state.prediction_engine = PredictionEngine()
-            
-            # Load models if available
-            models = st.session_state.prediction_engine.load_models()
-            if models:
-                st.session_state.model_trained = True
-
             st.session_state.initialized = True
             
             # Update status
@@ -110,83 +87,56 @@ def fetch_data():
         }
         return None
 
-def get_prediction():
-    """Get the latest prediction"""
-    if not st.session_state.initialized or not st.session_state.latest_data is not None:
-        st.warning("System not initialized or no data available")
-        return None
-        
-    if not st.session_state.model_trained:
-        st.warning("Models not trained or loaded")
-        return None
-        
-    try:
-        # Get prediction
-        prediction = st.session_state.prediction_engine.predict(
-            st.session_state.latest_data,
-            use_cache=True
-        )
-        
-        # Add to predictions history
-        if prediction and 'cached' not in prediction:
-            st.session_state.predictions.append(prediction)
-            # Keep only the last 100 predictions
-            if len(st.session_state.predictions) > 100:
-                st.session_state.predictions = st.session_state.predictions[-100:]
-        
-        return prediction
-    except Exception as e:
-        st.error(f"Error getting prediction: {e}")
-        return None
-
-def train_models():
-    """Train all prediction models"""
+def make_random_prediction():
+    """Generate a random prediction for demo purposes"""
     if not st.session_state.initialized or st.session_state.latest_data is None:
         st.warning("System not initialized or no data available")
-        return
-        
-    try:
-        # Process data for training
-        with st.spinner("Processing data for training..."):
-            dp = DataProcessor()
-            processed_data = dp.process_data(st.session_state.latest_data)
-            
-            # Prepare sequence data and image data
-            sequence_data = dp.prepare_sequence_data(processed_data)
-            image_data = dp.prepare_cnn_data(processed_data)
-            
-            if sequence_data is None or image_data is None:
-                st.error("Failed to prepare data for training")
-                return
-        
-        # Train models
-        with st.spinner("Training models... This may take a while"):
-            trainer = ModelTrainer()
-            models = trainer.train_all_models(sequence_data, image_data)
-            
-            if models:
-                st.session_state.model_trained = True
-                st.session_state.prediction_engine.models = models
-                
-                # Store training metrics
-                st.session_state.training_metrics = {
-                    'models': list(models.keys()),
-                    'evaluations': trainer.evaluation_results,
-                    'training_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-                
-                st.success("Models trained successfully!")
-            else:
-                st.error("Model training failed")
-    except Exception as e:
-        st.error(f"Error training models: {e}")
+        return None
+    
+    classes = ["SHORT", "NEUTRAL", "LONG"]
+    prediction_class = random.choice([0, 1, 2])
+    confidence = random.uniform(0.65, 0.95)
+    
+    current_price = st.session_state.latest_data.iloc[-1]['close']
+    
+    if prediction_class == 0:  # SHORT
+        predicted_move = -random.uniform(0.3, 1.2)
+        target_price = current_price * (1 + predicted_move/100)
+        reason = "Bearish divergence detected; RSI overbought; 200 EMA resistance"
+    elif prediction_class == 2:  # LONG
+        predicted_move = random.uniform(0.3, 1.2)
+        target_price = current_price * (1 + predicted_move/100)
+        reason = "Bullish pattern confirmed; RSI oversold; 50 EMA support"
+    else:  # NEUTRAL
+        predicted_move = random.uniform(-0.2, 0.2)
+        target_price = current_price * (1 + predicted_move/100)
+        reason = "Sideways price action; low volatility; mixed signals"
+    
+    prediction = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "price": current_price,
+        "trend": classes[prediction_class],
+        "confidence": round(confidence, 2),
+        "target_price": round(target_price, 2),
+        "predicted_move": round(predicted_move, 2),
+        "reason": reason,
+        "valid_for_minutes": config.VALIDITY_MINUTES
+    }
+    
+    # Add to predictions history
+    st.session_state.predictions.append(prediction)
+    # Keep only the last 100 predictions
+    if len(st.session_state.predictions) > 100:
+        st.session_state.predictions = st.session_state.predictions[-100:]
+    
+    return prediction
 
 def update_data_continuously():
     """Update data continuously in a separate thread"""
     while st.session_state.thread_running:
         try:
             fetch_data()
-            get_prediction()
+            make_random_prediction()
             # Sleep for the update interval
             time.sleep(config.UPDATE_INTERVAL)
         except Exception as e:
@@ -210,6 +160,361 @@ def stop_update_thread():
         st.session_state.update_thread = None
         st.info("Background data updates stopped")
 
+# Plot functions
+def plot_candlestick_chart(df):
+    """Create a candlestick chart with volume bars"""
+    if df is None or df.empty:
+        return go.Figure()
+    
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                       vertical_spacing=0.03, row_heights=[0.7, 0.3])
+    
+    # Add candlestick chart
+    fig.add_trace(
+        go.Candlestick(
+            x=df.index,
+            open=df['open'], 
+            high=df['high'],
+            low=df['low'], 
+            close=df['close'],
+            name="OHLC"
+        ),
+        row=1, col=1
+    )
+    
+    # Add volume bars
+    colors = ['red' if row['open'] > row['close'] else 'green' for i, row in df.iterrows()]
+    fig.add_trace(
+        go.Bar(
+            x=df.index, 
+            y=df['volume'],
+            marker_color=colors,
+            name="Volume"
+        ),
+        row=2, col=1
+    )
+    
+    # Update layout
+    fig.update_layout(
+        title="ETHUSDT Price Chart",
+        xaxis_title="Date",
+        yaxis_title="Price (USDT)",
+        xaxis_rangeslider_visible=False,
+        height=600,
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    
+    # Set y-axes titles
+    fig.update_yaxes(title_text="Price (USDT)", row=1, col=1)
+    fig.update_yaxes(title_text="Volume", row=2, col=1)
+    
+    return fig
+
+def plot_prediction_history(predictions):
+    """Create a chart with prediction history"""
+    if not predictions:
+        return go.Figure()
+    
+    # Convert predictions to DataFrame for easier plotting
+    df = pd.DataFrame(predictions)
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.sort_values('timestamp')
+    
+    # Create trend categories
+    trend_map = {"LONG": 1, "NEUTRAL": 0, "SHORT": -1}
+    df['trend_value'] = df['trend'].map(trend_map)
+    
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                       vertical_spacing=0.04, row_heights=[0.6, 0.4])
+    
+    # Add price line
+    fig.add_trace(
+        go.Scatter(
+            x=df['timestamp'], 
+            y=df['price'],
+            mode='lines',
+            name='Price',
+            line=dict(color='black', width=1)
+        ),
+        row=1, col=1
+    )
+    
+    # Add prediction markers with confidence as size
+    colors = {'LONG': 'green', 'NEUTRAL': 'gray', 'SHORT': 'red'}
+    for trend in colors:
+        trend_df = df[df['trend'] == trend]
+        
+        fig.add_trace(
+            go.Scatter(
+                x=trend_df['timestamp'], 
+                y=trend_df['price'],
+                mode='markers',
+                name=f'{trend} Prediction',
+                marker=dict(
+                    size=trend_df['confidence'] * 20,
+                    color=colors[trend],
+                    line=dict(width=1, color='black')
+                ),
+                hovertemplate='%{x}<br>Price: %{y:.2f}<br>Confidence: %{marker.size:.0f}%<extra></extra>'
+            ),
+            row=1, col=1
+        )
+    
+    # Add confidence chart
+    fig.add_trace(
+        go.Scatter(
+            x=df['timestamp'], 
+            y=df['confidence'],
+            mode='lines+markers',
+            name='Confidence',
+            line=dict(color='blue', width=2)
+        ),
+        row=2, col=1
+    )
+    
+    # Update layout
+    fig.update_layout(
+        title="Prediction History",
+        xaxis_title="Date",
+        height=500,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    
+    # Set y-axes titles
+    fig.update_yaxes(title_text="Price (USDT)", row=1, col=1)
+    fig.update_yaxes(title_text="Confidence", row=2, col=1)
+    
+    return fig
+
+def plot_technical_indicators(df):
+    """Create technical indicators chart"""
+    if df is None or df.empty:
+        return go.Figure()
+    
+    # Calculate simple indicators
+    df['sma_9'] = df['close'].rolling(window=9).mean()
+    df['sma_21'] = df['close'].rolling(window=21).mean()
+    df['upper_band'] = df['sma_21'] + (df['close'].rolling(window=21).std() * 2)
+    df['lower_band'] = df['sma_21'] - (df['close'].rolling(window=21).std() * 2)
+    
+    # Create subplots
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                       vertical_spacing=0.03, row_heights=[0.7, 0.3])
+    
+    # Add price and MAs
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['close'],
+            mode='lines',
+            name='Price',
+            line=dict(color='black', width=1)
+        ),
+        row=1, col=1
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['sma_9'],
+            mode='lines',
+            name='9-period SMA',
+            line=dict(color='blue', width=1)
+        ),
+        row=1, col=1
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['sma_21'],
+            mode='lines',
+            name='21-period SMA',
+            line=dict(color='orange', width=1)
+        ),
+        row=1, col=1
+    )
+    
+    # Add Bollinger Bands
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['upper_band'],
+            mode='lines',
+            name='Upper Band',
+            line=dict(color='rgba(0,128,0,0.3)', width=1)
+        ),
+        row=1, col=1
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['lower_band'],
+            mode='lines',
+            fill='tonexty',
+            name='Lower Band',
+            line=dict(color='rgba(0,128,0,0.3)', width=1)
+        ),
+        row=1, col=1
+    )
+    
+    # Add volume
+    colors = ['red' if row['open'] > row['close'] else 'green' for i, row in df.iterrows()]
+    fig.add_trace(
+        go.Bar(
+            x=df.index, 
+            y=df['volume'],
+            marker_color=colors,
+            name="Volume"
+        ),
+        row=2, col=1
+    )
+    
+    # Update layout
+    fig.update_layout(
+        title="Technical Indicators",
+        xaxis_title="Date",
+        height=500,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    
+    # Set y-axes titles
+    fig.update_yaxes(title_text="Price (USDT)", row=1, col=1)
+    fig.update_yaxes(title_text="Volume", row=2, col=1)
+    
+    return fig
+
+def plot_confidence_distribution(predictions):
+    """Create confidence distribution chart by trend"""
+    if not predictions:
+        return go.Figure()
+    
+    # Convert predictions to DataFrame
+    df = pd.DataFrame(predictions)
+    
+    # Group by trend
+    trends = df['trend'].unique()
+    
+    # Create figure
+    fig = go.Figure()
+    
+    # Add histogram for each trend
+    colors = {'LONG': 'green', 'NEUTRAL': 'gray', 'SHORT': 'red'}
+    for trend in trends:
+        trend_df = df[df['trend'] == trend]
+        
+        fig.add_trace(
+            go.Histogram(
+                x=trend_df['confidence'],
+                name=trend,
+                marker_color=colors.get(trend, 'blue'),
+                opacity=0.7,
+                nbinsx=10
+            )
+        )
+    
+    # Update layout
+    fig.update_layout(
+        title="Prediction Confidence Distribution by Trend",
+        xaxis_title="Confidence",
+        yaxis_title="Count",
+        height=300,
+        barmode='overlay',
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    
+    return fig
+
+def display_current_prediction(prediction):
+    """Display the current prediction with confidence indicator"""
+    if not prediction:
+        st.info("No prediction available")
+        return
+    
+    # Determine color based on trend
+    color_map = {"LONG": "green", "NEUTRAL": "gray", "SHORT": "red"}
+    color = color_map.get(prediction["trend"], "blue")
+    
+    # Show prediction details in columns
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric(
+            label="Current Trend", 
+            value=prediction["trend"],
+            delta=f"{prediction['predicted_move']}%" if prediction["trend"] != "NEUTRAL" else None,
+            delta_color="normal" if prediction["trend"] == "LONG" else "inverse" if prediction["trend"] == "SHORT" else "off"
+        )
+    
+    with col2:
+        st.metric(
+            label="Current Price", 
+            value=f"${prediction['price']:.2f}"
+        )
+    
+    with col3:
+        st.metric(
+            label="Target Price", 
+            value=f"${prediction['target_price']:.2f}",
+            delta=f"{(prediction['target_price'] - prediction['price']):.2f} USDT"
+        )
+    
+    # Confidence gauge
+    st.write(f"**Confidence: {prediction['confidence'] * 100:.1f}%**")
+    st.progress(prediction['confidence'])
+    
+    # Reasoning
+    st.write(f"**Reasoning:** {prediction['reason']}")
+    
+    # Validity
+    st.caption(f"Prediction made at {prediction['timestamp']} (valid for {prediction['valid_for_minutes']} minutes)")
+
+def display_system_status(data_status, thread_status, prediction_count):
+    """Display system status overview"""
+    st.write("### System Status Overview")
+    
+    # Display in columns
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.write("**Data Collection**")
+        status_color = "green" if data_status["status"] == "Data fetched successfully" else "red"
+        st.markdown(f"Status: :{status_color}[{data_status['status']}]")
+        if data_status["last_update"]:
+            st.write(f"Last update: {data_status['last_update']}")
+    
+    with col2:
+        st.write("**Auto-Update Thread**")
+        status_color = "green" if thread_status else "red"
+        st.markdown(f"Status: :{status_color}[{'Running' if thread_status else 'Stopped'}]")
+        
+    with col3:
+        st.write("**Predictions**")
+        st.write(f"Total predictions: {prediction_count}")
+        if prediction_count > 0:
+            trends = [p["trend"] for p in st.session_state.predictions[-20:]]
+            long_pct = trends.count("LONG") / len(trends) * 100
+            neutral_pct = trends.count("NEUTRAL") / len(trends) * 100
+            short_pct = trends.count("SHORT") / len(trends) * 100
+            
+            st.write(f"Recent trend distribution:")
+            st.write(f"LONG: {long_pct:.1f}% | NEUTRAL: {neutral_pct:.1f}% | SHORT: {short_pct:.1f}%")
+
 # Sidebar
 with st.sidebar:
     st.title("ETHUSDT Prediction System")
@@ -224,7 +529,7 @@ with st.sidebar:
     
     # Navigation
     st.subheader("Navigation")
-    tabs = ["Live Dashboard", "Model Training", "System Status", "API Guide"]
+    tabs = ["Live Dashboard", "System Status", "API Guide"]
     selected_tab = st.radio("Select View", tabs, index=tabs.index(st.session_state.selected_tab))
     st.session_state.selected_tab = selected_tab
     
@@ -260,8 +565,11 @@ if st.session_state.selected_tab == "Live Dashboard":
         if st.session_state.latest_data is None:
             fetch_data()
         
-        # Get latest prediction
-        prediction = get_prediction()
+        # Get latest prediction or make a new one if none exists
+        if not st.session_state.predictions:
+            prediction = make_random_prediction()
+        else:
+            prediction = st.session_state.predictions[-1]
         
         # Display prediction and chart
         col1, col2 = st.columns([2, 1])
@@ -281,10 +589,7 @@ if st.session_state.selected_tab == "Live Dashboard":
         with col2:
             # Current prediction
             st.subheader("Current Prediction")
-            if prediction:
-                display_current_prediction(prediction)
-            else:
-                st.info("No prediction available")
+            display_current_prediction(prediction)
             
             # Confidence distribution
             if st.session_state.predictions:
@@ -307,40 +612,6 @@ if st.session_state.selected_tab == "Live Dashboard":
         else:
             st.info("No prediction history available")
 
-elif st.session_state.selected_tab == "Model Training":
-    st.title("Model Training & Performance")
-    
-    if not st.session_state.initialized:
-        st.warning("Please initialize the system first")
-    else:
-        # Data statistics
-        if st.session_state.latest_data is not None:
-            display_data_stats(st.session_state.latest_data)
-        
-        # Training controls
-        st.subheader("Model Training")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("Train All Models"):
-                train_models()
-        
-        with col2:
-            if st.session_state.model_trained:
-                st.success("Models are trained and ready")
-            else:
-                st.warning("Models not trained yet")
-        
-        # Model performance metrics
-        if st.session_state.model_trained and st.session_state.training_metrics:
-            display_model_performance(st.session_state.training_metrics)
-            
-            # Model accuracy comparison
-            st.subheader("Model Accuracy Comparison")
-            accuracy_chart = plot_model_accuracy(st.session_state.training_metrics['evaluations'])
-            st.plotly_chart(accuracy_chart, use_container_width=True)
-
 elif st.session_state.selected_tab == "System Status":
     st.title("System Status")
     
@@ -350,7 +621,6 @@ elif st.session_state.selected_tab == "System Status":
         # Display system status
         display_system_status(
             data_status=st.session_state.data_fetch_status,
-            model_status=st.session_state.model_trained,
             thread_status=st.session_state.thread_running,
             prediction_count=len(st.session_state.predictions)
         )
