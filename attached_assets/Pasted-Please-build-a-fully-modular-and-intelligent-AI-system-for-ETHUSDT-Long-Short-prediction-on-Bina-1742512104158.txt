@@ -1,0 +1,84 @@
+Please build a fully modular and intelligent AI system for **ETHUSDT Long/Short prediction** on Binance Futures, using **5-minute timeframe** data. The system should focus on:
+
+- High-quality data preparation
+- Modern and diverse model training
+- Accurate, explainable predictions
+- Live monitoring via dashboard
+- REST API output for bot integration
+
+No live trading or order execution is required. Focus entirely on precision training and AI intelligence.
+
+---
+
+## ✅ OBJECTIVE
+- Predict future trend (LONG/SHORT/NEUTRAL) for ETHUSDT with high confidence.
+- Return prediction results via REST API and display logs on a live dashboard.
+- Apply all modern modeling techniques (LSTM, Transformer, CNN, Meta-Learner, Historical Matching).
+- Prioritize clean data pipelines and training clarity.
+
+---
+
+## 🧩 SYSTEM MODULES
+
+### 1. 📦 Data Collection
+- Use Binance Futures API to collect OHLCV, funding rate, open interest, and volume.
+- Timeframes: 5m, 30m, 4h (main model focuses on 5m).
+- Handle rate limits and ensure completeness.
+- Auto-fill or interpolate if candles are missing.
+- If data is invalid or corrupted, skip gracefully and log the issue.
+
+### 2. 🧪 Data Processing & Feature Engineering
+- Calculate indicators: RSI, EMA, MACD, Bollinger Bands, VWAP, ATR, etc.
+- Label data based on:
+  - Future price % movement (configurable, e.g. ±0.3%)
+  - Or target PNL in USDT (e.g. +$5 or -$5)
+- Apply normalization/scaling, augmentation, and sampling for better model generalization.
+- Log dataset stats per segment: #samples, balance of labels, feature health.
+
+### 3. 🧠 Model Training (Core AI)
+Train and combine the following model types:
+
+| Model         | Description |
+|---------------|-------------|
+| LSTM / GRU     | Sequence learning from 60 past candles |
+| Transformer    | Long-range sequence modeling |
+| CNN            | Learn from candlestick chart images |
+| Meta-Learner   | Combine predictions from all models (e.g. Logistic Regression, GBDT) |
+| Historical Similarity | Search most similar 60-candle pattern in history and extract success trend |
+
+- Auto-select the best-performing model per segment.
+- Log model accuracy, loss, and training history.
+- Save all models with versioning (timestamped).
+
+### 4. 🤖 Prediction Engine
+- Generate prediction using all available models.
+- Final prediction must include:
+  - Trend: Long / Short / Neutral
+  - Confidence score (0-1)
+  - Predicted future price
+  - Validity duration (e.g. 15 min)
+  - Reason log (why this decision was made)
+- Prediction results must be:
+  - Returned via **REST API endpoint** (`/predict`)
+  - **Shown in real-time dashboard**
+
+### 5. 📊 Dashboard (Live Web UI)
+- Use Streamlit or Dash to display:
+  - Training progress and metrics
+  - Model versions and stats
+  - Prediction logs with detailed explanation
+  - Last data fetch status
+  - Confidence chart / distribution
+- Optional: Show candlestick image used for CNN.
+
+### 6. 🌐 REST API Endpoint
+- `/predict` endpoint should accept `symbol=ETHUSDT` and `interval=5m`
+- Return JSON:
+```json
+{
+  "trend": "long",
+  "confidence": 0.87,
+  "price": 3415.72,
+  "valid_for_minutes": 15,
+  "reason": "LSTM+Meta agree; RSI=32; Bollinger Lower touched; historical match score: 0.93"
+}
