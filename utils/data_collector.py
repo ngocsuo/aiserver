@@ -58,17 +58,19 @@ class MockDataCollector:
         Returns:
             dict: Generated candle data
         """
+        # Define minutes map for timeframes (moved out from nested block)
+        minutes_map = {
+            "1m": 1, "5m": 5, "15m": 15, "30m": 30,
+            "1h": 60, "2h": 120, "4h": 240, "1d": 1440
+        }
+        minutes = minutes_map.get(timeframe, 5)
+        
         # Set timestamp based on timeframe
         if last_candle is None:
             # Start time for first candle
             timestamp = datetime.now() - timedelta(days=5)  # Start 5 days ago
         else:
             # Calculate next timestamp based on timeframe
-            minutes_map = {
-                "1m": 1, "5m": 5, "15m": 15, "30m": 30,
-                "1h": 60, "2h": 120, "4h": 240, "1d": 1440
-            }
-            minutes = minutes_map.get(timeframe, 5)
             timestamp = last_candle["open_time"] + timedelta(minutes=minutes)
         
         # Check if we need to change the trend
@@ -130,7 +132,7 @@ class MockDataCollector:
             "low": low_price,
             "close": close_price,
             "volume": volume,
-            "close_time": timestamp + timedelta(minutes=minutes_map.get(timeframe, 5) - 1, seconds=59),
+            "close_time": timestamp + timedelta(minutes=minutes - 1, seconds=59),
             "quote_asset_volume": volume * close_price,
             "number_of_trades": int(volume / 10),
             "taker_buy_base_asset_volume": volume * random.uniform(0.4, 0.6),
