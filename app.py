@@ -3819,8 +3819,10 @@ def render_main_interface():
                     trend_direction = "Tăng" if latest['supertrend_direction'] == 1 else "Giảm"
                     trend_color = "green" if latest['supertrend_direction'] == 1 else "red"
                 else:
-                    ema9 = latest['close'].rolling(window=9).mean().iloc[-1] if 'close' in latest else 0
-                    ema21 = latest['close'].rolling(window=21).mean().iloc[-1] if 'close' in latest else 0
+                    # Tính EMA từ dữ liệu gần đây
+                    recent_data = st.session_state.latest_data.tail(30)
+                    ema9 = recent_data['close'].rolling(window=9).mean().iloc[-1] if len(recent_data) > 0 else 0
+                    ema21 = recent_data['close'].rolling(window=21).mean().iloc[-1] if len(recent_data) > 0 else 0
                     trend_direction = "Tăng" if ema9 > ema21 else "Giảm"
                     trend_color = "green" if ema9 > ema21 else "red"
                 
