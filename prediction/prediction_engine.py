@@ -270,22 +270,34 @@ class PredictionEngine:
             logger.error(f"Lỗi khi lấy dữ liệu mới nhất: {str(e)}")
             return None
     
-    def predict(self, data, use_cache=True):
+    def predict(self, data, use_cache=True, timeframe=None):
         """
         Generate predictions from all models and combine them.
         
         Args:
             data (pd.DataFrame): Latest price data
             use_cache (bool): Whether to use cached predictions if valid
+            timeframe (str, optional): Khung thời gian dự đoán. Nếu None, sử dụng mặc định
             
         Returns:
             dict: Prediction result with trend, confidence, etc.
         """
         try:
-            # Check if we can use cached prediction
-            if use_cache and self.is_prediction_valid():
-                logger.info("Using cached prediction")
-                return self.last_prediction
+            # Nếu không có timeframe cụ thể, sử dụng giá trị mặc định
+            if timeframe is None:
+                timeframe = config.DEFAULT_TIMEFRAME
+                
+            # Khởi tạo cấu trúc dữ liệu cho đa khung thời gian nếu chưa có
+            if not hasattr(self, 'last_predictions'):
+                self.last_predictions = {}
+                
+            if not hasattr(self, 'last_prediction_times'):
+                self.last_prediction_times = {}
+                
+            # Check if we can use cached prediction cho khung thời gian đã chọn
+            if use_cache and self.is_prediction_valid_for_timeframe(timeframe):
+                logger.info(f"Using cached prediction cho khung {timeframe}")
+                return self.last_predictions[timeframe]
             
             # Load models if not loaded yet
             models = self.load_models()
@@ -297,8 +309,16 @@ class PredictionEngine:
                 # Generate random prediction for demonstration
                 prediction = self._create_random_prediction(current_price)
                 
-                # Store for caching
+                # Thêm thông tin khung thời gian vào dự đoán
+                prediction['timeframe'] = timeframe
+                
+                # Store for caching (hỗ trợ cả phiên bản cũ và mới)
                 self.last_prediction = prediction
+                
+                # Lưu theo khung thời gian
+                if not hasattr(self, 'last_predictions'):
+                    self.last_predictions = {}
+                self.last_predictions[timeframe] = prediction
                 
                 # Lấy thời gian từ Binance nếu có thể
                 try:
@@ -392,8 +412,16 @@ class PredictionEngine:
             # Enhance prediction with detailed technical analysis
             enhanced_prediction = self._enhance_technical_reasoning(prediction, data)
             
-            # Store for caching
+            # Thêm thông tin khung thời gian vào dự đoán
+            enhanced_prediction['timeframe'] = timeframe
+            
+            # Store for caching (hỗ trợ cả phiên bản cũ và mới)
             self.last_prediction = enhanced_prediction
+            
+            # Lưu theo khung thời gian
+            if not hasattr(self, 'last_predictions'):
+                self.last_predictions = {}
+            self.last_predictions[timeframe] = enhanced_prediction
             
             # Lấy thời gian từ Binance nếu có thể
             try:
@@ -406,11 +434,24 @@ class PredictionEngine:
                 server_time_ms = server_time['serverTime']
                 now = datetime.fromtimestamp(server_time_ms / 1000)
                 logger.info(f"Using Binance server time for timestamp: {now}")
+                
+                # Lưu theo cả cách cũ và mới
                 self.last_prediction_time = now
+                
+                if not hasattr(self, 'last_prediction_times'):
+                    self.last_prediction_times = {}
+                self.last_prediction_times[timeframe] = now
+                
             except Exception as e:
                 # Nếu không lấy được thời gian từ Binance, sử dụng thời gian local
-                self.last_prediction_time = datetime.now()
-                logger.warning(f"Unable to get Binance server time, using local time: {self.last_prediction_time}. Error: {e}")
+                now = datetime.now()
+                self.last_prediction_time = now
+                
+                if not hasattr(self, 'last_prediction_times'):
+                    self.last_prediction_times = {}
+                self.last_prediction_times[timeframe] = now
+                
+                logger.warning(f"Unable to get Binance server time, using local time: {now}. Error: {e}")
             
             self.prediction_count += 1
             
@@ -638,7 +679,9 @@ class PredictionEngine:
             "predicted_move": round(predicted_move, 2),
             "reason": reason,
             "valid_for_minutes": config.VALIDITY_MINUTES,
-            "technical_indicators": technical_indicators
+            "technical_indicators": technical_indicators,
+            # Mặc định không có timeframe, sẽ được thêm sau khi gọi hàm
+            "timeframe": None
         }
         
         return prediction
