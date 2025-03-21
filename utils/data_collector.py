@@ -187,7 +187,7 @@ class MockDataCollector:
         return df
         
     def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.PRIMARY_TIMEFRAME, 
-                              limit=config.LOOKBACK_PERIODS):
+                              limit=config.LOOKBACK_PERIODS, start_date=None, end_date=None):
         """
         Generate historical OHLCV data.
         
@@ -195,6 +195,8 @@ class MockDataCollector:
             symbol (str): Trading pair symbol (ignored in mock)
             timeframe (str): Candle timeframe
             limit (int): Number of candles to generate
+            start_date (str, optional): Start date for historical data in format "YYYY-MM-DD" (ignored in mock)
+            end_date (str, optional): End date for historical data in format "YYYY-MM-DD" (ignored in mock)
             
         Returns:
             pd.DataFrame: DataFrame with simulated OHLCV data
