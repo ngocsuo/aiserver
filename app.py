@@ -3708,8 +3708,18 @@ def render_main_interface():
             candles = timeframe_options[selected_tf]
             
             # Vẽ biểu đồ nến với Plotly
-            chart = plot_candlestick_chart(st.session_state.latest_data.iloc[-candles:])
-            st.plotly_chart(chart, use_container_width=True)
+            try:
+                chart_data = st.session_state.latest_data.iloc[-candles:].copy()
+                # Đảm bảo dữ liệu đầu vào hợp lệ
+                if not chart_data.empty:
+                    chart = plot_candlestick_chart(chart_data)
+                    st.plotly_chart(chart, use_container_width=True, key="main_candlestick_chart")
+                else:
+                    st.warning("Không đủ dữ liệu để hiển thị biểu đồ")
+            except Exception as e:
+                st.error(f"Lỗi khi hiển thị biểu đồ: {str(e)}")
+                # Ghi lại lỗi vào logs
+                print(f"Error plotting candlestick chart: {str(e)}")
         
         # Row 3: Lịch sử dự đoán và hiệu suất mô hình
         st.markdown("### Phân tích hiệu suất")
@@ -3741,8 +3751,14 @@ def render_main_interface():
             
             if st.session_state.predictions and len(st.session_state.predictions) > 0:
                 # Vẽ biểu đồ lịch sử dự đoán
-                hist_chart = plot_prediction_history(st.session_state.predictions)
-                st.plotly_chart(hist_chart, use_container_width=True, key="prediction_history_chart")
+                try:
+                    # Sao chép dữ liệu để tránh lỗi khi xử lý
+                    prediction_data = st.session_state.predictions.copy()
+                    hist_chart = plot_prediction_history(prediction_data)
+                    st.plotly_chart(hist_chart, use_container_width=True, key="prediction_history_chart")
+                except Exception as e:
+                    st.error(f"Lỗi khi hiển thị lịch sử dự đoán: {str(e)}")
+                    print(f"Error plotting prediction history: {str(e)}")
             else:
                 st.info("Chưa có dữ liệu lịch sử dự đoán")
     
