@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import pytz
+import config  # Thêm import config để sử dụng cấu hình proxy
 
 # Import các hàm hỗ trợ từ module trading_manager_functions
 from utils.trading_manager_functions import get_current_date_tz7, get_daily_pnl_summary
