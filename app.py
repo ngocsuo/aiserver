@@ -1091,7 +1091,7 @@ if st.session_state.selected_tab == "Live Dashboard":
             st.markdown(f"**Auto Updates:** :{update_color}[{update_status}]")
         
         # Display prediction and chart in tabs - Default to chart first
-        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History"])
+        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History", "📋 Training Logs"])
         
         # Quick action buttons - moved below tabs to prioritize chart display
         action_container = st.container()

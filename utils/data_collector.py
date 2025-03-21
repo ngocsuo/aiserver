@@ -610,8 +610,9 @@ class BinanceDataCollector:
                     # Move to next chunk
                     chunk_start = chunk_end
                     
-                    # Respect API rate limits with a small delay
-                    time.sleep(0.5)
+                    # Respect API rate limits with a longer delay to avoid rate limiting
+                    # Binance limit is 1200 requests per minute, so we'll be very conservative
+                    time.sleep(2.0)  # 2 seconds between requests
                 
                 # Use the combined klines
                 klines = all_klines
