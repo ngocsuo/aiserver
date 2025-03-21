@@ -291,21 +291,40 @@ def fetch_realtime_data():
         start_date = end_date - timedelta(days=config.DATA_RANGE_OPTIONS["realtime"])
         start_date_str = start_date.strftime("%Y-%m-%d")
         
-        # Gọi hàm lấy dữ liệu với tham số ngày bắt đầu
-        latest_data = st.session_state.data_collector.collect_historical_data(
-            start_date=start_date_str,
-            end_date=None
-        )
+        # Khởi tạo dictionary lưu dữ liệu
+        data = {}
         
-        st.session_state.latest_data = latest_data
+        # Fetch song song dữ liệu cho cả khung 1m và 5m
+        for timeframe in ["1m", "5m"]:
+            log_message = f"{timestamp} - 📡 Đang lấy dữ liệu khung {timeframe}..."
+            st.session_state.log_messages.append(log_message)
+            
+            # Gọi hàm lấy dữ liệu với tham số ngày bắt đầu và khung thời gian
+            timeframe_data = st.session_state.data_collector.collect_historical_data(
+                symbol=config.SYMBOL,
+                timeframe=timeframe,
+                start_date=start_date_str,
+                end_date=None
+            )
+            
+            # Lưu vào dictionary
+            data[timeframe] = timeframe_data
+            
+            log_message = f"{timestamp} - ✅ Đã tải {len(timeframe_data)} nến {timeframe}"
+            st.session_state.log_messages.append(log_message)
+        
+        # Lưu dữ liệu 1m vào session state (để tương thích với code hiện tại)
+        st.session_state.latest_data = data["1m"]
+        
+        # Lưu cả dữ liệu 1m và 5m vào session state
+        if 'timeframe_data' not in st.session_state:
+            st.session_state.timeframe_data = {}
+        st.session_state.timeframe_data = data
         
         # Ghi vào log thông tin khoảng thời gian
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_message = f"{timestamp} - ℹ️ Dải thời gian: {start_date_str} đến {end_date.strftime('%Y-%m-%d')}"
         st.session_state.log_messages.append(log_message)
-        
-        # Tạo dict chứa dữ liệu để tương thích với code cũ
-        data = {config.TIMEFRAMES["primary"]: latest_data}
         
         # Add success log
         timestamp = datetime.now().strftime("%H:%M:%S")
