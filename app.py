@@ -309,7 +309,7 @@ def make_prediction():
     
     # Add log message
     timestamp = datetime.now().strftime("%H:%M:%S")
-    log_message = f"{timestamp} - Starting prediction generation process..."
+    log_message = f"{timestamp} - 🧠 Bắt đầu quá trình tạo dự đoán..."
     st.session_state.log_messages.append(log_message)
     
     try:
@@ -320,7 +320,7 @@ def make_prediction():
         if fetch_result is None or st.session_state.latest_data is None:
             # Add error log
             timestamp = datetime.now().strftime("%H:%M:%S")
-            log_message = f"{timestamp} - ❌ Failed to fetch data for prediction"
+            log_message = f"{timestamp} - ❌ Không thể lấy dữ liệu cho dự đoán"
             st.session_state.log_messages.append(log_message)
             
             st.warning("Failed to fetch the latest data")
@@ -334,14 +334,14 @@ def make_prediction():
             # Get the latest data
             latest_data = st.session_state.latest_data
             
-            log_message = f"{timestamp} - Using trained AI models for prediction..."
+            log_message = f"{timestamp} - 🤖 Đang sử dụng mô hình AI đã huấn luyện để dự đoán..."
             st.session_state.log_messages.append(log_message)
             
             st.info("Using trained AI models to generate prediction...")
             # Use the prediction engine to generate prediction
             prediction = st.session_state.prediction_engine.predict(latest_data)
         else:
-            log_message = f"{timestamp} - No trained models available, using simulated prediction..."
+            log_message = f"{timestamp} - ⚠️ Chưa có mô hình AI được huấn luyện, sử dụng dự đoán mô phỏng..."
             st.session_state.log_messages.append(log_message)
             
             # Fallback to mock prediction for demonstration
@@ -363,7 +363,7 @@ def make_prediction():
     except Exception as e:
         # Add error log
         timestamp = datetime.now().strftime("%H:%M:%S")
-        log_message = f"{timestamp} - ❌ ERROR generating prediction: {str(e)}"
+        log_message = f"{timestamp} - ❌ LỖI khi tạo dự đoán: {str(e)}"
         st.session_state.log_messages.append(log_message)
         
         st.error(f"Error making prediction: {e}")
