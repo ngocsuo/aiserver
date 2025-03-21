@@ -873,8 +873,28 @@ def create_data_collector():
     if config.USE_REAL_API and config.BINANCE_API_KEY and config.BINANCE_API_SECRET:
         logger.info("Attempting to use Binance API data collector")
         try:
-            # Try to create a real data collector
-            collector = BinanceDataCollector()
+            # Tạo proxy settings nếu được cấu hình
+            proxy_settings = None
+            if config.USE_PROXY:
+                host = config.PROXY_HOST
+                port = config.PROXY_PORT
+                username = config.PROXY_USERNAME
+                password = config.PROXY_PASSWORD
+                
+                if username and password:
+                    proxy_auth = f"{username}:{password}@{host}:{port}"
+                    proxy_settings = {
+                        'http': f'http://{proxy_auth}',
+                        'https': f'https://{proxy_auth}'
+                    }
+                else:
+                    proxy_settings = {
+                        'http': f'http://{host}:{port}',
+                        'https': f'https://{host}:{port}'
+                    }
+            
+            # Try to create a real data collector with proxy settings if available
+            collector = BinanceDataCollector(proxy=proxy_settings)
             
             # Check if connection was successful
             if collector.connection_status["connected"]:
