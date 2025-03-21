@@ -423,7 +423,7 @@ def fetch_data():
     return fetch_realtime_data()
 
 def train_models():
-    """Train all prediction models"""
+    """Train all prediction models in a background thread"""
     if not st.session_state.initialized or st.session_state.latest_data is None:
         st.warning("Hệ thống chưa được khởi tạo hoặc không có dữ liệu")
         show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
@@ -569,9 +569,12 @@ def make_prediction():
     log_message = f"{timestamp} - 🧠 Bắt đầu quá trình tạo dự đoán..."
     st.session_state.log_messages.append(log_message)
     
+    # Thông báo tiến trình
+    prediction_progress = st.empty()
+    prediction_progress.info("Đang tải dữ liệu ETHUSDT mới nhất...")
+    
     try:
         # Always fetch the latest data first
-        st.info("Đang tải dữ liệu ETHUSDT mới nhất...")
         fetch_result = fetch_data()
         
         if fetch_result is None or st.session_state.latest_data is None:
@@ -580,7 +583,8 @@ def make_prediction():
             log_message = f"{timestamp} - ❌ Không thể lấy dữ liệu cho dự đoán"
             st.session_state.log_messages.append(log_message)
             
-            st.warning("Failed to fetch the latest data")
+            prediction_progress.warning("Không thể lấy dữ liệu mới nhất")
+            show_toast("Không thể lấy dữ liệu cho dự đoán", "error")
             return None
         
         # Add log message
@@ -594,13 +598,14 @@ def make_prediction():
             log_message = f"{timestamp} - 🤖 Đang sử dụng mô hình AI đã huấn luyện để dự đoán..."
             st.session_state.log_messages.append(log_message)
             
-            st.info("Đang sử dụng mô hình AI đã huấn luyện để tạo dự đoán...")
+            prediction_progress.info("Đang sử dụng mô hình AI đã huấn luyện để tạo dự đoán...")
             # Use the prediction engine to generate prediction
             prediction = st.session_state.prediction_engine.predict(latest_data)
         else:
             log_message = f"{timestamp} - ⚠️ Chưa có mô hình AI được huấn luyện, sử dụng dự đoán mô phỏng..."
             st.session_state.log_messages.append(log_message)
             
+            prediction_progress.warning("Chưa có mô hình AI được huấn luyện, sử dụng dự đoán mô phỏng...")
             # Fallback to mock prediction for demonstration
             prediction = make_random_prediction()
         
@@ -616,6 +621,14 @@ def make_prediction():
         log_message = f"{timestamp} - ✅ Dự đoán đã tạo: {prediction['trend']} với độ tin cậy {prediction['confidence']:.2f}"
         st.session_state.log_messages.append(log_message)
         
+        # Thông báo thành công và xóa đi tiến trình
+        prediction_progress.success(f"Dự đoán mới: {prediction['trend']} (độ tin cậy {prediction['confidence']*100:.1f}%)")
+        show_toast(f"Dự đoán mới: {prediction['trend']}", "success")
+        
+        # Buộc cập nhật trang
+        st.session_state.last_prediction_time = datetime.now()
+        st.rerun()
+        
         return prediction
     except Exception as e:
         # Add error log
@@ -623,7 +636,8 @@ def make_prediction():
         log_message = f"{timestamp} - ❌ LỖI khi tạo dự đoán: {str(e)}"
         st.session_state.log_messages.append(log_message)
         
-        st.error(f"Error making prediction: {e}")
+        prediction_progress.error(f"Lỗi khi tạo dự đoán: {e}")
+        show_toast(f"Lỗi khi tạo dự đoán: {str(e)}", "error")
         return None
 
 def make_random_prediction():
@@ -1315,22 +1329,23 @@ with st.sidebar:
                     st.progress(status['progress'])
                     st.caption(status.get('status', 'Đang tải...'))
         
-        # Khung hành động
+        # Điều khiển trực tiếp vào các nút điều hướng
         st.markdown("---")
-        st.markdown("### 🛠️ Hành động nhanh")
         
-        # Các nút hành động chính
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🔄 Cập nhật", use_container_width=True):
-                fetch_realtime_data()
-        with col2:
-            if st.button("🧠 Huấn luyện", use_container_width=True):
+        # Hiển thị các nút điều khiển trong tab hiện tại
+        if st.session_state.selected_tab == "Live Dashboard":
+            st.markdown("### 🛠️ Điều khiển Dashboard")
+            if st.button("🔮 Tạo Dự đoán Mới", type="primary", use_container_width=True):
+                make_prediction()
+                
+        elif st.session_state.selected_tab == "Models & Training":
+            st.markdown("### 🧠 Điều khiển Huấn luyện")
+            if st.button("🧠 Huấn luyện Mô hình", type="primary", use_container_width=True):
                 train_models()
-        
-        # Nút dự đoán nổi bật
-        if st.button("🔮 Tạo Dự đoán", type="primary", use_container_width=True):
-            make_prediction()
+                
+        # Nút Cập nhật luôn hiển thị ở cuối sidebar cho mọi tab
+        if st.button("🔄 Cập nhật Dữ liệu", use_container_width=True):
+            fetch_realtime_data()
     
     # Navigation đơn giản hơn
     st.markdown("---")
