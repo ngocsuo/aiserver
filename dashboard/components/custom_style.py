@@ -283,27 +283,33 @@ def create_price_card(price, change, change_percent, last_update=None):
         change_percent (float): Phần trăm thay đổi
         last_update (str): Thời gian cập nhật cuối
     """
-    color = "green" if change >= 0 else "red"
-    icon = "📈" if change >= 0 else "📉"
+    try:
+        # Sử dụng các thành phần tiêu chuẩn của Streamlit
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            st.markdown("### ETHUSDT")
+            st.markdown(f"<span style='font-size: 32px; font-weight: bold;'>${price:.2f}</span>", unsafe_allow_html=True)
+            
+            # Hiển thị sự thay đổi với màu sắc phù hợp
+            color = '#2ecc71' if change >= 0 else '#e74c3c'
+            st.markdown(
+                f"<span style='color: {color}; font-size: 16px;'>${change:.2f} ({change_percent:.2f}%)</span>", 
+                unsafe_allow_html=True
+            )
+            
+            if last_update:
+                st.caption(f"Cập nhật: {last_update}")
+                
+        with col2:
+            # Biểu tượng xu hướng
+            icon = "📈" if change >= 0 else "📉"
+            st.markdown(f"<div style='font-size: 48px; text-align: center;'>{icon}</div>", unsafe_allow_html=True)
     
-    price_html = f"""
-    <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="color: #7f8c8d; font-size: 16px;">ETHUSDT</div>
-                <div style="font-size: 32px; font-weight: bold;">${price:.2f}</div>
-                <div style="color: {'#2ecc71' if change >= 0 else '#e74c3c'}; font-size: 14px; display: flex; align-items: center;">
-                    <span>${change:.2f} ({change_percent:.2f}%)</span>
-                </div>
-                {f'<div style="color: #95a5a6; font-size: 12px; margin-top: 5px;">Cập nhật: {last_update}</div>' if last_update else ''}
-            </div>
-            <div>
-                <span style="font-size: 48px;">{icon}</span>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(price_html, unsafe_allow_html=True)
+    except Exception as e:
+        # Phiên bản dự phòng nếu có lỗi
+        st.info(f"ETHUSDT: ${price:.2f} ({change_percent:.2f}%)")
+        print(f"Error in create_price_card: {str(e)}")
 
 def create_prediction_card(prediction):
     """
@@ -318,8 +324,8 @@ def create_prediction_card(prediction):
     
     try:
         # Xác định màu sắc và biểu tượng dựa trên xu hướng
-        colors = {"LONG": "#2ecc71", "SHORT": "#e74c3c", "NEUTRAL": "#95a5a6"}
-        icons = {"LONG": "📈", "SHORT": "📉", "NEUTRAL": "📊"}
+        trend_colors = {"LONG": "#2ecc71", "SHORT": "#e74c3c", "NEUTRAL": "#95a5a6"}
+        trend_icons = {"LONG": "📈", "SHORT": "📉", "NEUTRAL": "📊"}
         
         # Đảm bảo prediction là một dict hợp lệ và trend có giá trị hợp lệ
         if not isinstance(prediction, dict):
@@ -330,8 +336,8 @@ def create_prediction_card(prediction):
         if not isinstance(trend, str):
             trend = "NEUTRAL"
             
-        color = colors.get(trend, "#95a5a6")
-        icon = icons.get(trend, "📊")
+        color = trend_colors.get(trend, "#95a5a6")
+        icon = trend_icons.get(trend, "📊")
         
         # Tính toán hiển thị thời gian
         timestamp = prediction.get("timestamp", "")
@@ -381,53 +387,28 @@ def create_prediction_card(prediction):
         else:
             percent_time_left = 0
         
-        # Tạo card HTML đã được làm sạch và an toàn
-        card_html = f"""
-        <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {color}; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div style="flex-grow: 1;">
-                    <div style="font-size: 24px; font-weight: bold; color: {color};">
-                        {trend}
-                        <span style="font-size: 14px; color: #7f8c8d; font-weight: normal; margin-left: 10px;">
-                            {time_diff}
-                        </span>
-                    </div>
-                    
-                    <div style="display: flex; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <div style="color: #7f8c8d; font-size: 14px;">Giá hiện tại</div>
-                            <div style="font-size: 18px; font-weight: bold;">${price:.2f}</div>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="color: #7f8c8d; font-size: 14px;">Giá mục tiêu</div>
-                            <div style="font-size: 18px; font-weight: bold;">${target_price:.2f}</div>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="color: #7f8c8d; font-size: 14px;">Độ tin cậy</div>
-                            <div style="font-size: 18px; font-weight: bold;">{confidence*100:.1f}%</div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 15px;">
-                        <div style="color: #7f8c8d; font-size: 14px;">Thời gian dự đoán</div>
-                        <div style="margin-top: 5px;">
-                            <div style="background-color: #f0f2f6; height: 8px; border-radius: 4px; position: relative;">
-                                <div style="position: absolute; height: 8px; border-radius: 4px; width: {percent_time_left}%; background-color: {color};"></div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #7f8c8d;">
-                                <span>0 phút</span>
-                                <span>{int(valid_for_minutes)} phút</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div style="font-size: 36px; margin-left: 15px; color: {color};">
-                    {icon}
-                </div>
-            </div>
-        </div>
-        """
-        st.markdown(card_html, unsafe_allow_html=True)
+        # Sử dụng các thành phần tiêu chuẩn của Streamlit
+        st.markdown(f"<h3 style='color: {color}; margin-bottom: 0;'>{icon} {trend} <small style='color: #7f8c8d; font-size: 14px;'>{time_diff}</small></h3>", unsafe_allow_html=True)
+        
+        # Phần thông tin giá
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("**Giá hiện tại**")
+            st.markdown(f"<p style='font-size: 18px; font-weight: bold;'>${price:.2f}</p>", unsafe_allow_html=True)
+            
+        with col2:
+            st.markdown("**Giá mục tiêu**")
+            st.markdown(f"<p style='font-size: 18px; font-weight: bold;'>${target_price:.2f}</p>", unsafe_allow_html=True)
+            
+        with col3:
+            st.markdown("**Độ tin cậy**")
+            st.markdown(f"<p style='font-size: 18px; font-weight: bold;'>{confidence*100:.1f}%</p>", unsafe_allow_html=True)
+        
+        # Phần tiến trình thời gian
+        st.markdown("**Thời gian dự đoán**")
+        progress_bar = st.progress(float(percent_time_left / 100))
+        st.markdown(f"<div style='display: flex; justify-content: space-between;'><span>0 phút</span><span>{int(valid_for_minutes)} phút</span></div>", unsafe_allow_html=True)
+        
     except Exception as e:
         st.error(f"Lỗi khi tạo card dự đoán: {str(e)}")
         print(f"Error creating prediction card: {str(e)}")
