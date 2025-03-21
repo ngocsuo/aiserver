@@ -566,6 +566,12 @@ class TradingManager:
             self.add_log("Chưa kết nối đến Binance API", "error")
             return False
         
+        # Kiểm tra xem khung thời gian có hợp lệ không
+        import config as app_config
+        if 'timeframe' not in config or config['timeframe'] not in app_config.TRADING_SETTINGS['available_timeframes']:
+            self.add_log(f"Khung thời gian không hợp lệ. Sử dụng khung mặc định {app_config.TRADING_SETTINGS['default_timeframe']}", "warning")
+            config['timeframe'] = app_config.TRADING_SETTINGS['default_timeframe']
+        
         # Thiết lập cấu hình
         self.running = True
         self.status = "Đang chạy"
@@ -578,7 +584,7 @@ class TradingManager:
         )
         self.trading_thread.start()
         
-        self.add_log("Đã bắt đầu bot giao dịch tự động")
+        self.add_log(f"Đã bắt đầu bot giao dịch tự động trên khung {config['timeframe']}")
         return True
     
     def stop_trading_bot(self):
@@ -611,13 +617,19 @@ class TradingManager:
             config (dict): Cấu hình giao dịch
             prediction_engine: Engine dự đoán
         """
+        import config as app_config
+        timeframe = config.get('timeframe', app_config.TRADING_SETTINGS['default_timeframe'])
+        update_interval = app_config.TRADING_SETTINGS['update_interval'].get(timeframe, 60)
+        
         self.add_log("Vòng lặp giao dịch bắt đầu với cấu hình:")
         self.add_log(f"- Symbol: {config['symbol']}")
+        self.add_log(f"- Khung thời gian: {timeframe}")
         self.add_log(f"- Take Profit: {config['take_profit_type']} {config['take_profit_value']}")
         self.add_log(f"- Stop Loss: {config['stop_loss_type']} {config['stop_loss_value']}")
         self.add_log(f"- Tài khoản: {config['account_percent']}%")
         self.add_log(f"- Đòn bẩy: {config['leverage']}x")
         self.add_log(f"- Confidence tối thiểu: {config['min_confidence']}%")
+        self.add_log(f"- Cập nhật dự đoán mỗi: {update_interval} giây")
         
         # Thiết lập đòn bẩy
         leverage_result = self.set_leverage(config['symbol'], config['leverage'])
@@ -626,6 +638,9 @@ class TradingManager:
             self.running = False
             self.status = "Lỗi đòn bẩy"
             return
+        
+        # Thiết lập thời gian cho lần cập nhật dự đoán tiếp theo
+        last_prediction_time = 0
         
         # Vòng lặp chính
         while self.running:
@@ -636,18 +651,29 @@ class TradingManager:
                     time.sleep(0.5)  # Đợi 0.5s để giảm số lượng request
                     continue
                 
-                # Không có vị thế, lấy dự đoán mới và kiểm tra điều kiện mở
-                # Force predicting để cập nhật dự đoán liên tục
-                try:
-                    current_data = prediction_engine._get_latest_data()
-                    prediction_engine.predict(current_data, use_cache=False)
-                    self.add_log("Đã cập nhật dự đoán mới.", "info")
-                except Exception as e:
-                    self.add_log(f"Lỗi khi cập nhật dự đoán: {e}", "warning")
+                # Kiểm tra xem đã đến lúc cập nhật dự đoán chưa
+                current_time = time.time()
+                if current_time - last_prediction_time >= update_interval:
+                    # Không có vị thế, lấy dự đoán mới và kiểm tra điều kiện mở
+                    # Force predicting để cập nhật dự đoán liên tục
+                    try:
+                        # Lấy dữ liệu mới nhất cho khung thời gian đã chọn
+                        current_data = prediction_engine._get_latest_data(timeframe=timeframe)
+                        
+                        # Dự đoán trên khung thời gian đã chọn
+                        prediction_engine.predict(current_data, use_cache=False, timeframe=timeframe)
+                        self.add_log(f"Đã cập nhật dự đoán mới trên khung {timeframe}.", "info")
+                        
+                        # Cập nhật thời gian dự đoán cuối cùng
+                        last_prediction_time = current_time
+                        
+                        # Kiểm tra điều kiện mở vị thế
+                        self._check_entry_conditions(config, prediction_engine, timeframe)
+                    except Exception as e:
+                        self.add_log(f"Lỗi khi cập nhật dự đoán: {e}", "warning")
                 
-                # Kiểm tra điều kiện mở vị thế
-                self._check_entry_conditions(config, prediction_engine)
-                time.sleep(1)  # Đợi 1s trước khi kiểm tra lại
+                # Ngủ ngắn hơn để không bỏ lỡ thời điểm cập nhật dự đoán
+                time.sleep(1)
             
             except BinanceAPIException as e:
                 self.add_log(f"Lỗi API trong vòng lặp giao dịch: {e}", "error")
@@ -791,36 +817,49 @@ class TradingManager:
             'trades': self.daily_pnl['trades']
         }
     
-    def _check_entry_conditions(self, config, prediction_engine):
+    def _check_entry_conditions(self, config, prediction_engine, timeframe=None):
         """
         Kiểm tra điều kiện mở vị thế.
         
         Args:
             config (dict): Cấu hình giao dịch
             prediction_engine: Engine dự đoán
+            timeframe (str, optional): Khung thời gian dự đoán. Nếu None, lấy từ config
         """
         symbol = config['symbol']
         min_confidence = config['min_confidence'] / 100.0  # Chuyển % thành phân số
         
-        # Lấy dự đoán mới nhất
-        prediction = prediction_engine.get_cached_prediction()
+        # Xác định khung thời gian
+        if timeframe is None:
+            import config as app_config
+            timeframe = config.get('timeframe', app_config.TRADING_SETTINGS['default_timeframe'])
+        
+        # Lấy dự đoán mới nhất cho khung thời gian cụ thể
+        prediction = prediction_engine.get_cached_prediction(timeframe)
         
         # Kiểm tra dự đoán có hợp lệ không
         if not prediction or 'trend' not in prediction or 'confidence' not in prediction:
+            self.add_log(f"Không có dự đoán hợp lệ cho khung {timeframe}", "info")
             return
         
         # Kiểm tra độ tin cậy có đáp ứng yêu cầu tối thiểu
         confidence = prediction['confidence']
         if confidence < min_confidence:
+            self.add_log(f"Độ tin cậy {confidence*100:.1f}% thấp hơn ngưỡng {min_confidence*100:.1f}%", "info")
             return
         
         # Kiểm tra xu hướng
         trend = prediction['trend']
         if trend == 'NEUTRAL':
+            self.add_log(f"Xu hướng NEUTRAL, không mở vị thế", "info")
             return
         
         # Dự đoán hợp lệ và đáp ứng yêu cầu độ tin cậy
-        self.add_log(f"Dự đoán hợp lệ: {trend} với độ tin cậy {confidence*100:.1f}%")
+        self.add_log(f"Dự đoán hợp lệ trên khung {timeframe}: {trend} với độ tin cậy {confidence*100:.1f}%")
+        
+        # Chi tiết dự đoán kỹ thuật
+        if 'technical_reason' in prediction:
+            self.add_log(f"Lý do kỹ thuật: {prediction['technical_reason']}")
         
         # Tính toán số lượng giao dịch
         account_percent = config['account_percent']
@@ -833,10 +872,15 @@ class TradingManager:
         
         # Mở vị thế
         side = 'BUY' if trend == 'LONG' else 'SELL'
-        self.add_log(f"Mở vị thế {side} {quantity} {symbol}")
+        self.add_log(f"Mở vị thế {side} {quantity} {symbol} dựa trên khung {timeframe}")
         result = self.open_position(symbol, side, quantity)
         
         if result:
             self.add_log(f"Đã mở vị thế thành công: {side} {quantity} {symbol}")
+            
+            # Thêm thông tin khung thời gian vào position_info
+            if self.position_info:
+                self.position_info['timeframe'] = timeframe
+                self.position_info['prediction'] = prediction
         else:
             self.add_log("Không thể mở vị thế", "error")

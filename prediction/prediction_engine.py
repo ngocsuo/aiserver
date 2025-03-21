@@ -153,25 +153,93 @@ class PredictionEngine:
             
         return is_valid
     
-    def get_cached_prediction(self):
+    def get_cached_prediction(self, timeframe=None):
         """
         Get the cached prediction if valid.
         
+        Args:
+            timeframe (str, optional): Khung thời gian dự đoán. Nếu None, sử dụng mặc định
+            
         Returns:
             dict: Cached prediction or None
         """
-        if self.is_prediction_valid():
+        # Nếu không có timeframe cụ thể, sử dụng giá trị mặc định
+        if timeframe is None:
+            timeframe = config.DEFAULT_TIMEFRAME
+            
+        # Kiểm tra nếu có dự đoán cho khung thời gian cụ thể
+        if hasattr(self, 'last_predictions') and isinstance(self.last_predictions, dict):
+            if timeframe in self.last_predictions and self.last_predictions[timeframe]:
+                # Kiểm tra tính hợp lệ theo khung thời gian
+                if self.is_prediction_valid_for_timeframe(timeframe):
+                    return self.last_predictions[timeframe]
+        elif self.is_prediction_valid():
+            # Hỗ trợ ngược cho phiên bản cũ
             return self.last_prediction
+            
         return None
         
-    def _get_latest_data(self):
+    def is_prediction_valid_for_timeframe(self, timeframe):
+        """
+        Kiểm tra xem dự đoán cho khung thời gian cụ thể còn hợp lệ không.
+        
+        Args:
+            timeframe (str): Khung thời gian dự đoán
+            
+        Returns:
+            bool: True nếu dự đoán còn hợp lệ, False nếu không
+        """
+        # Nếu không có dữ liệu cho khung thời gian này
+        if not hasattr(self, 'last_prediction_times') or not isinstance(self.last_prediction_times, dict):
+            return False
+            
+        if timeframe not in self.last_prediction_times or self.last_prediction_times[timeframe] is None:
+            return False
+            
+        try:
+            # Lấy thời gian từ Binance nếu có thể
+            from utils.data_collector import create_data_collector
+            collector = create_data_collector()
+            server_time = collector.client.get_server_time()
+            server_time_ms = server_time['serverTime']
+            now = datetime.fromtimestamp(server_time_ms / 1000)
+            logger.info(f"Using Binance server time for prediction validity check ({timeframe}): {now}")
+        except Exception as e:
+            now = datetime.now()
+            logger.warning(f"Unable to get Binance server time, using local time: {now}. Error: {e}")
+            
+        # Kiểm tra tính hợp lệ dựa trên khung thời gian
+        validity_minutes = config.VALIDITY_MINUTES
+        if timeframe == '1m':
+            validity_minutes = 3  # Giảm thời gian hợp lệ cho khung 1m
+        
+        valid_until = self.last_prediction_times[timeframe] + timedelta(minutes=validity_minutes)
+        is_valid = now < valid_until
+        
+        if is_valid:
+            remaining_minutes = (valid_until - now).total_seconds() / 60
+            logger.info(f"Prediction for {timeframe} still valid for {remaining_minutes:.1f} more minutes")
+        else:
+            elapsed_minutes = (now - self.last_prediction_times[timeframe]).total_seconds() / 60
+            logger.info(f"Prediction for {timeframe} expired. Made {elapsed_minutes:.1f} minutes ago")
+            
+        return is_valid
+        
+    def _get_latest_data(self, timeframe=None):
         """
         Lấy dữ liệu mới nhất từ Binance cho dự đoán.
         Sử dụng bởi TradingManager để cập nhật dự đoán liên tục.
         
+        Args:
+            timeframe (str, optional): Khung thời gian dữ liệu. Nếu None, sử dụng mặc định
+            
         Returns:
             pd.DataFrame: Dữ liệu giá mới nhất
         """
+        # Nếu không có timeframe cụ thể, sử dụng giá trị mặc định
+        if timeframe is None:
+            timeframe = config.DEFAULT_TIMEFRAME
+            
         try:
             from utils.data_collector import create_data_collector
             

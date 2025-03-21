@@ -43,6 +43,16 @@ PREDICTION_SETTINGS = {
     }
 }
 
+# Cấu hình giao dịch tự động
+TRADING_SETTINGS = {
+    "available_timeframes": ["1m", "5m"],  # Các khung thời gian có thể sử dụng cho bot
+    "default_timeframe": "5m",             # Khung thời gian giao dịch mặc định
+    "update_interval": {
+        "1m": 30,                          # Cập nhật dự đoán mỗi 30 giây cho khung 1m
+        "5m": 60                           # Cập nhật dự đoán mỗi 60 giây cho khung 5m
+    }
+}
+
 # Timeframe mặc định và horizon dự đoán mặc định
 DEFAULT_TIMEFRAME = "1m"
 DEFAULT_PREDICTION_HORIZON = "10m"
