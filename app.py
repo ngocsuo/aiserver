@@ -146,8 +146,15 @@ def initialize_system():
     if st.session_state.initialized:
         return
 
-    # Đảm bảo biến thread_running được khởi tạo trước khi sử dụng
+    # Đảm bảo biến trạng thái được khởi tạo trước khi sử dụng
     if 'thread_running' not in st.session_state:
+        st.session_state.thread_running = False
+        
+    if 'model_trained' not in st.session_state:
+        st.session_state.model_trained = False
+        
+    if 'historical_data_ready' not in st.session_state:
+        st.session_state.historical_data_ready = False
         st.session_state.thread_running = False
         
     with st.spinner("Đang khởi tạo hệ thống dự đoán ETHUSDT..."):
@@ -1600,11 +1607,16 @@ def fetch_historical_data_thread():
         st.warning("Vui lòng khởi tạo hệ thống trước")
         return
         
+    # Khởi tạo trạng thái dữ liệu lịch sử
     if 'historical_data_status' not in st.session_state:
         st.session_state.historical_data_status = {
             "status": "Đang lấy dữ liệu lịch sử...",
             "progress": 0
         }
+        
+    # Mặc định trạng thái dữ liệu lịch sử sẵn sàng là False
+    if 'historical_data_ready' not in st.session_state:
+        st.session_state.historical_data_ready = False
     
     def update_status():
         # This function will update the status in the session state
