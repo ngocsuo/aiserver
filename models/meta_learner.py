@@ -1,5 +1,6 @@
 """
-Meta-learner model that combines predictions from multiple base models.
+Meta-learner model that combines predictions from multiple base models 
+with dynamic weighting based on model performance.
 """
 import os
 import logging
@@ -7,6 +8,7 @@ import numpy as np
 import pickle
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
+from datetime import datetime, timedelta
 import config
 
 # Set up logging
@@ -32,6 +34,28 @@ class MetaLearner:
             'accuracy': 0.81,
             'loss': 0.35
         }
+        
+        # Performance history for dynamic weighting
+        self.performance_history = {
+            'lstm': {'correct': 0, 'total': 0, 'recent_correct': [], 'recent_total': []},
+            'transformer': {'correct': 0, 'total': 0, 'recent_correct': [], 'recent_total': []},
+            'cnn': {'correct': 0, 'total': 0, 'recent_correct': [], 'recent_total': []},
+            'historical_similarity': {'correct': 0, 'total': 0, 'recent_correct': [], 'recent_total': []}
+        }
+        
+        # Model weights for dynamic weighting (initialized equally)
+        self.model_weights = {
+            'lstm': 1.0,
+            'transformer': 1.0, 
+            'cnn': 1.0,
+            'historical_similarity': 1.0
+        }
+        
+        # Time window for recent performance (number of predictions to consider)
+        self.recent_window_size = 20
+        
+        # Last update time for weights
+        self.last_weights_update = datetime.now()
         
         # Try to load the model if path is provided
         if model_path is not None and os.path.exists(model_path):
@@ -140,10 +164,10 @@ class MetaLearner:
             tuple: (predictions, probabilities)
         """
         try:
-            logger.info("Making predictions with meta-learner model (placeholder)")
+            logger.info("Making predictions with dynamic meta-learner model")
             
-            # For demonstration, generate random predictions
-            # In a real implementation, this would use the actual meta-learner model
+            # Update weights if enough time has passed or it's the first update
+            self._update_model_weights()
             
             # Prepare meta-features
             meta_features = self.prepare_meta_features(base_model_probs)
@@ -180,6 +204,58 @@ class MetaLearner:
                 num_samples = base_model_probs[0].shape[0]
                 
             return np.ones(num_samples, dtype=int), np.array([[0.2, 0.6, 0.2]] * num_samples)
+    
+    def _update_model_weights(self):
+        """
+        Update the model weights based on recent performance.
+        Weights are dynamically adjusted to favor models with better
+        recent prediction accuracy.
+        """
+        try:
+            # Check if enough time has passed since last update
+            time_since_update = (datetime.now() - self.last_weights_update).total_seconds()
+            
+            # Only update weights every hour or if it's the first time
+            if time_since_update < 3600 and self.last_weights_update != datetime.min:
+                return
+                
+            logger.info("Updating dynamic model weights based on performance")
+            
+            # Calculate accuracy for each model
+            for model_name, stats in self.performance_history.items():
+                if stats['total'] > 0:
+                    # Calculate overall accuracy
+                    overall_accuracy = stats['correct'] / stats['total'] if stats['total'] > 0 else 0.5
+                    
+                    # Calculate recent accuracy (with more weight)
+                    recent_correct = sum(stats['recent_correct'])
+                    recent_total = sum(stats['recent_total'])
+                    recent_accuracy = recent_correct / recent_total if recent_total > 0 else 0.5
+                    
+                    # Combine both with more weight on recent performance
+                    combined_accuracy = (0.3 * overall_accuracy) + (0.7 * recent_accuracy)
+                    
+                    # Scale for weight calculation (add 0.5 to ensure minimum weight of 0.5)
+                    self.model_weights[model_name] = 0.5 + combined_accuracy
+                    
+                    logger.info(f"Model {model_name}: Recent accuracy {recent_accuracy:.2f}, " + 
+                              f"Overall {overall_accuracy:.2f}, New weight {self.model_weights[model_name]:.2f}")
+            
+            # Normalize weights to sum to total models (preserves scale)
+            sum_weights = sum(self.model_weights.values())
+            if sum_weights > 0:
+                model_count = len(self.model_weights)
+                scale_factor = model_count / sum_weights
+                for model_name in self.model_weights:
+                    self.model_weights[model_name] *= scale_factor
+            
+            self.last_weights_update = datetime.now()
+            
+        except Exception as e:
+            logger.error(f"Error updating model weights: {e}")
+            # Reset to default equal weights in case of error
+            for model_name in self.model_weights:
+                self.model_weights[model_name] = 1.0
     
     def evaluate(self, base_model_probs, y_test):
         """
@@ -224,11 +300,19 @@ class MetaLearner:
             path (str): Path to save the model
         """
         try:
-            # Save model
+            # Save model along with performance history and weights
+            save_data = {
+                'model': self.model,
+                'performance_history': self.performance_history,
+                'model_weights': self.model_weights,
+                'last_weights_update': self.last_weights_update,
+                'recent_window_size': self.recent_window_size
+            }
+            
             with open(path, 'wb') as f:
-                pickle.dump(self.model, f)
+                pickle.dump(save_data, f)
                 
-            logger.info(f"Meta-learner model saved to {path}")
+            logger.info(f"Meta-learner model and performance data saved to {path}")
             
         except Exception as e:
             logger.error(f"Error saving meta-learner model: {e}")
@@ -242,7 +326,22 @@ class MetaLearner:
         """
         try:
             with open(path, 'rb') as f:
-                self.model = pickle.load(f)
+                saved_data = pickle.load(f)
+                
+                # Check if the saved data is a dictionary containing model and performance data
+                if isinstance(saved_data, dict) and 'model' in saved_data:
+                    self.model = saved_data['model']
+                    
+                    # Load performance history if available
+                    if 'performance_history' in saved_data:
+                        self.performance_history = saved_data['performance_history']
+                    
+                    # Load model weights if available
+                    if 'model_weights' in saved_data:
+                        self.model_weights = saved_data['model_weights']
+                else:
+                    # Legacy format: just the model
+                    self.model = saved_data
                 
             logger.info(f"Meta-learner model loaded from {path}")
             
