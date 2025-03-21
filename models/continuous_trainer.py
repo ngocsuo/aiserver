@@ -48,6 +48,9 @@ class ContinuousTrainer:
         self.total_chunks = 0
         self.current_chunk = 0
         
+        # Danh sách các khung thời gian cần huấn luyện
+        self.timeframes_to_train = [config.PRIMARY_TIMEFRAME, config.SECONDARY_TIMEFRAME]
+        
         # Historical start date for training (can be updated at runtime)
         self.historical_start_date = config.HISTORICAL_START_DATE
         # Monthly chunks for training
@@ -55,7 +58,8 @@ class ContinuousTrainer:
         
         # Lưu danh sách các ngày bắt đầu chunks để dùng sau này
         self.chunk_start_dates = self.monthly_chunks.copy()
-        self._add_log("Continuous trainer initialized with schedule: " + config.TRAINING_SCHEDULE['frequency'])
+        self._add_log("Continuous trainer initialized with schedule: " + config.TRAINING_SCHEDULE['frequency'] + 
+                     f" for timeframes: {', '.join(self.timeframes_to_train)}")
         
     def _generate_monthly_chunks(self):
         """
