@@ -2717,6 +2717,93 @@ elif st.session_state.selected_tab == "Cài đặt":
             # Cập nhật thiết lập UPDATE_INTERVAL
             config.UPDATE_INTERVAL = update_interval
             
+            # Thêm expander cho tính năng nâng cao
+            with st.expander("🧹 Xóa dữ liệu và khởi động lại hệ thống", expanded=False):
+                st.warning("⚠️ Chức năng này sẽ xóa tất cả dữ liệu đã tải và đã huấn luyện. Sử dụng khi muốn làm mới hoàn toàn hệ thống hoặc khi có lỗi dữ liệu xáo trộn.")
+                
+                # Tạo hai cột để bố trí nút
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    if st.button("🧹 Xóa dữ liệu đã tải", use_container_width=True, key="clear_loaded_data"):
+                        try:
+                            # Xóa dữ liệu đã tải trong session_state
+                            if hasattr(st.session_state, 'latest_data'):
+                                st.session_state.latest_data = None
+                            
+                            if hasattr(st.session_state, 'historical_data'):
+                                st.session_state.historical_data = None
+                                
+                            if hasattr(st.session_state, 'data_collector'):
+                                st.session_state.data_collector.data = {tf: None for tf in config.ALL_TIMEFRAMES}
+                                
+                            st.success("✅ Đã xóa dữ liệu đã tải thành công!")
+                        except Exception as e:
+                            st.error(f"❌ Lỗi khi xóa dữ liệu đã tải: {str(e)}")
+                
+                with col2:
+                    if st.button("🧹 Xóa mô hình đã huấn luyện", use_container_width=True, key="clear_trained_models"):
+                        try:
+                            # Đánh dấu là chưa huấn luyện
+                            st.session_state.model_trained = False
+                            
+                            # Xóa dữ liệu huấn luyện và mô hình
+                            if hasattr(st.session_state, 'prediction_engine'):
+                                st.session_state.prediction_engine.models = {}
+                                
+                            if hasattr(st.session_state, 'continuous_trainer'):
+                                # Xóa dữ liệu đã lưu trong continuous_trainer
+                                cached_data_dir = os.path.join("saved_models", "cached_data")
+                                if os.path.exists(cached_data_dir):
+                                    import shutil
+                                    try:
+                                        shutil.rmtree(cached_data_dir)
+                                        os.makedirs(cached_data_dir, exist_ok=True)
+                                    except Exception as e:
+                                        st.error(f"Không thể xóa thư mục cached_data: {str(e)}")
+                            
+                            st.success("✅ Đã xóa mô hình đã huấn luyện thành công!")
+                        except Exception as e:
+                            st.error(f"❌ Lỗi khi xóa mô hình đã huấn luyện: {str(e)}")
+                
+                # Nút khởi động lại toàn bộ hệ thống - xóa tất cả dữ liệu và khởi động lại
+                if st.button("🔄 Xóa tất cả dữ liệu và khởi động lại hệ thống", use_container_width=True, type="primary"):
+                    try:
+                        # Xóa dữ liệu đã tải
+                        if hasattr(st.session_state, 'latest_data'):
+                            st.session_state.latest_data = None
+                        
+                        if hasattr(st.session_state, 'historical_data'):
+                            st.session_state.historical_data = None
+                            
+                        if hasattr(st.session_state, 'data_collector'):
+                            st.session_state.data_collector.data = {tf: None for tf in config.ALL_TIMEFRAMES}
+                        
+                        # Xóa mô hình đã huấn luyện
+                        st.session_state.model_trained = False
+                        
+                        if hasattr(st.session_state, 'prediction_engine'):
+                            st.session_state.prediction_engine.models = {}
+                            
+                        # Xóa dữ liệu đã lưu trong continuous_trainer
+                        cached_data_dir = os.path.join("saved_models", "cached_data")
+                        if os.path.exists(cached_data_dir):
+                            import shutil
+                            try:
+                                shutil.rmtree(cached_data_dir)
+                                os.makedirs(cached_data_dir, exist_ok=True)
+                            except Exception as e:
+                                st.error(f"Không thể xóa thư mục cached_data: {str(e)}")
+                        
+                        # Khởi động lại hệ thống
+                        st.session_state.initialized = False
+                        st.success("✅ Đã xóa tất cả dữ liệu và đang khởi động lại hệ thống...")
+                        time.sleep(1)  # Chờ 1 giây để hiển thị thông báo
+                        initialize_system()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Lỗi khi xóa dữ liệu và khởi động lại: {str(e)}")
+            
             # Button để lưu thiết lập hệ thống
             if st.button("💾 Lưu thiết lập hệ thống", use_container_width=True):
                 st.success(f"Đã lưu thiết lập hệ thống: Nguồn dữ liệu = {data_source}, cập nhật mỗi {update_interval} giây")

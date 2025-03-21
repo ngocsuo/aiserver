@@ -9,7 +9,7 @@ BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
 # Proxy Configuration
-USE_PROXY = os.environ.get("USE_PROXY", "False").lower() in ("true", "1", "yes")
+USE_PROXY = os.environ.get("USE_PROXY", "True").lower() in ("true", "1", "yes")  # Mặc định sử dụng proxy
 PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
 PROXY_PORT = os.environ.get("PROXY_PORT", "15989")
 PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "S6lnXxjtieCIA38a")
