@@ -2852,9 +2852,15 @@ elif st.session_state.selected_tab == "Backtest":
                     "Thời gian dự đoán": result['config']['prediction_horizon']
                 }
                 
-                # Chuyển thành DataFrame để hiển thị
-                stats_df = pd.DataFrame(list(stats.items()), columns=["Chỉ số", "Giá trị"])
-                st.dataframe(stats_df, use_container_width=True)
+                # Chuyển thành DataFrame để hiển thị nhưng xử lý riêng các giá trị phần trăm
+                # Để tránh lỗi Arrow khi chuyển đổi dữ liệu phần trăm
+                stats_list = list(stats.items())
+                
+                # Hiển thị dữ liệu bằng cách sử dụng bảng thay vì DataFrame để tránh lỗi chuyển đổi kiểu
+                st.table([
+                    {"Chỉ số": key, "Giá trị": value}
+                    for key, value in stats_list
+                ])
 
 elif st.session_state.selected_tab == "System Status":
     st.title("System Status")
