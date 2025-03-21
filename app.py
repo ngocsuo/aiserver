@@ -50,7 +50,7 @@ def initialize_system():
     if st.session_state.initialized:
         return
 
-    with st.spinner("Initializing ETHUSDT Prediction System..."):
+    with st.spinner("Đang khởi tạo hệ thống dự đoán ETHUSDT..."):
         try:
             # Initialize data collector with factory function
             from utils.data_collector import create_data_collector, MockDataCollector
@@ -60,20 +60,20 @@ def initialize_system():
             
             # Store data source type for display
             if isinstance(st.session_state.data_collector, MockDataCollector):
-                st.session_state.data_source = "Simulated Data (Mock)"
+                st.session_state.data_source = "Dữ liệu mô phỏng (Mock)"
                 st.session_state.data_source_color = "orange"
                 
                 # Store API connection status if available
                 if hasattr(st.session_state.data_collector, "connection_status"):
                     st.session_state.api_status = st.session_state.data_collector.connection_status
             else:
-                st.session_state.data_source = "Binance API (Real Data)"
+                st.session_state.data_source = "Binance API (Dữ liệu thực)"
                 st.session_state.data_source_color = "green"
                 
                 # Store successful connection status
                 st.session_state.api_status = {
                     "connected": True,
-                    "message": "Connected to Binance API successfully"
+                    "message": "Kết nối Binance API thành công"
                 }
                 
             # Log data source
@@ -81,7 +81,7 @@ def initialize_system():
                 st.session_state.log_messages = []
                 
             timestamp = datetime.now().strftime("%H:%M:%S")
-            log_message = f"{timestamp} - System initialized with data source: {st.session_state.data_source}"
+            log_message = f"{timestamp} - Hệ thống đã khởi tạo với nguồn dữ liệu: {st.session_state.data_source}"
             st.session_state.log_messages.append(log_message)
             
             # Initialize data processor
@@ -97,39 +97,69 @@ def initialize_system():
             continuous_trainer = get_continuous_trainer()
             st.session_state.continuous_trainer = continuous_trainer
             
-            # Start continuous training if enabled
-            if config.CONTINUOUS_TRAINING:
-                continuous_trainer.start()
-                log_message = f"{timestamp} - 🚀 Huấn luyện liên tục đã bắt đầu với lịch trình: {config.TRAINING_SCHEDULE['frequency']}"
-                st.session_state.log_messages.append(log_message)
-            
+            # Initialize status tracking
             st.session_state.initialized = True
             
             # Update status
             st.session_state.data_fetch_status = {
-                "status": "Initialized", 
+                "status": "Đã khởi tạo", 
                 "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             
-            # Initialize continuous training status
+            # Initialize historical data thread status
+            st.session_state.historical_data_status = {
+                "status": "Chưa bắt đầu",
+                "progress": 0
+            }
+            
+            # Initialize model status
+            st.session_state.model_trained = False
+            
+            # Initialize prediction history
+            st.session_state.predictions = []
+            
+            # Initialize update thread status
+            st.session_state.thread_running = False
+            st.session_state.update_thread = None
+            
+            # LUỒNG 1: Bắt đầu tải dữ liệu thời gian thực cho dashboard
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            log_message = f"{timestamp} - 🔄 Bắt đầu tải dữ liệu thời gian thực cho dashboard..."
+            st.session_state.log_messages.append(log_message)
+            
+            # Fetch real-time data immediately for the dashboard
+            fetch_realtime_data()
+            
+            # LUỒNG 2: Bắt đầu quá trình tải dữ liệu lịch sử từ 2022 trong luồng riêng biệt
             if config.CONTINUOUS_TRAINING:
+                continuous_trainer.start()
+                log_message = f"{timestamp} - 🚀 Bắt đầu luồng lấy dữ liệu lịch sử từ 2022 và huấn luyện liên tục ({config.TRAINING_SCHEDULE['frequency']})"
+                st.session_state.log_messages.append(log_message)
+                
+                # Initialize continuous training status
                 st.session_state.continuous_training_status = {
                     "enabled": True,
                     "schedule": config.TRAINING_SCHEDULE,
                     "last_training": None
                 }
+                
+                # Start the monitoring thread for historical data
+                fetch_historical_data_thread()
             else:
                 st.session_state.continuous_training_status = {
                     "enabled": False
                 }
-                
+            
+            # Confirm initialization
+            st.success("Hệ thống đã khởi tạo thành công")
+            
         except Exception as e:
-            st.error(f"Error initializing system: {e}")
+            st.error(f"Lỗi khi khởi tạo hệ thống: {e}")
 
-def fetch_data():
-    """Fetch the latest data from Binance"""
+def fetch_realtime_data():
+    """Fetch the latest real-time data from Binance for the dashboard"""
     if not st.session_state.initialized:
-        st.warning("System not initialized yet")
+        st.warning("Hệ thống chưa được khởi tạo")
         return None
     
     # Create log container if not exists
@@ -138,13 +168,13 @@ def fetch_data():
     
     # Add log message
     timestamp = datetime.now().strftime("%H:%M:%S")
-    log_message = f"{timestamp} - 🔄 Đang thu thập dữ liệu ETHUSDT..."
+    log_message = f"{timestamp} - 🔄 Đang tải dữ liệu thời gian thực ETHUSDT..."
     st.session_state.log_messages.append(log_message)
     
     try:
         # Update data for all timeframes
         st.session_state.data_fetch_status = {
-            "status": "Fetching data...",
+            "status": "Đang tải dữ liệu thời gian thực...",
             "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
@@ -153,9 +183,10 @@ def fetch_data():
         
         # Add log message
         timestamp = datetime.now().strftime("%H:%M:%S")
-        log_message = f"{timestamp} - 📡 Gửi yêu cầu đến {data_source_type}..."
+        log_message = f"{timestamp} - 📡 Gửi yêu cầu đến {data_source_type} cho dữ liệu thời gian thực..."
         st.session_state.log_messages.append(log_message)
         
+        # Chỉ lấy dữ liệu gần đây nhất, không phải toàn bộ lịch sử
         data = st.session_state.data_collector.update_data()
         
         st.session_state.latest_data = data.get(config.TIMEFRAMES["primary"])
@@ -163,11 +194,11 @@ def fetch_data():
         # Add success log
         timestamp = datetime.now().strftime("%H:%M:%S")
         candle_count = len(st.session_state.latest_data) if st.session_state.latest_data is not None else 0
-        log_message = f"{timestamp} - ✅ Đã cập nhật thành công {candle_count} nến ETHUSDT"
+        log_message = f"{timestamp} - ✅ Đã cập nhật thành công {candle_count} nến ETHUSDT thời gian thực"
         st.session_state.log_messages.append(log_message)
         
         st.session_state.data_fetch_status = {
-            "status": "Data fetched successfully",
+            "status": "Dữ liệu thời gian thực đã tải thành công",
             "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
@@ -175,14 +206,73 @@ def fetch_data():
     except Exception as e:
         # Add error log
         timestamp = datetime.now().strftime("%H:%M:%S")
-        log_message = f"{timestamp} - ❌ ERROR: {str(e)}"
+        log_message = f"{timestamp} - ❌ LỖI: Không thể lấy dữ liệu thời gian thực: {str(e)}"
         st.session_state.log_messages.append(log_message)
         
         st.session_state.data_fetch_status = {
-            "status": f"Error: {e}",
+            "status": f"Lỗi: {e}",
             "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         return None
+
+def fetch_historical_data_thread():
+    """Fetch historical data from Binance for training in a separate thread"""
+    if not st.session_state.initialized:
+        return
+    
+    # Báo hiệu đang tải dữ liệu lịch sử
+    if 'historical_data_status' not in st.session_state:
+        st.session_state.historical_data_status = {
+            "status": "Bắt đầu tải dữ liệu lịch sử",
+            "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "progress": 0
+        }
+    
+    # Log để thông báo
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    log_message = f"{timestamp} - 📚 Bắt đầu luồng tải dữ liệu lịch sử từ 2022..."
+    st.session_state.log_messages.append(log_message)
+    
+    # Quá trình này dựa vào ContinuousTrainer đã bắt đầu trong initialize_system
+    # và đang chạy trong một luồng riêng
+    
+    # Cập nhật trạng thái để hiển thị trên giao diện
+    def update_status():
+        while True:
+            try:
+                if not hasattr(st.session_state, 'continuous_trainer'):
+                    time.sleep(10)
+                    continue
+                
+                trainer = st.session_state.continuous_trainer
+                if trainer is None:
+                    time.sleep(10)
+                    continue
+                
+                status = trainer.get_training_status()
+                
+                if 'current_chunk' in status and 'total_chunks' in status:
+                    progress = int((status['current_chunk'] / status['total_chunks']) * 100)
+                    
+                    st.session_state.historical_data_status = {
+                        "status": f"Đang tải chunk {status['current_chunk']}/{status['total_chunks']}",
+                        "progress": progress,
+                        "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                
+                time.sleep(10)  # Kiểm tra mỗi 10 giây
+            except Exception as e:
+                print(f"Error updating historical data status: {e}")
+                time.sleep(30)  # Nếu lỗi, đợi lâu hơn
+    
+    # Bắt đầu luồng theo dõi tiến độ
+    status_thread = threading.Thread(target=update_status)
+    status_thread.daemon = True
+    status_thread.start()
+
+def fetch_data():
+    """Fetch the latest data from Binance (compatibility function)"""
+    return fetch_realtime_data()
 
 def train_models():
     """Train all prediction models"""
