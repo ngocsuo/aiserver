@@ -98,27 +98,16 @@ class TradingManager:
                 self.status = "Lỗi: Thiếu API keys"
                 return False
             
-            # Thiết lập proxy sử dụng cấu hình từ config.py
-            if config.USE_PROXY:
-                host = config.PROXY_HOST
-                port = config.PROXY_PORT
-                username = config.PROXY_USERNAME
-                password = config.PROXY_PASSWORD
-                
-                # Loại bỏ toàn bộ cài đặt proxy
-                proxy_settings = None
-                logger.info("TradingManager kết nối trực tiếp, không sử dụng proxy")
-                
-                # Tạo kết nối với proxy
-                self.client = Client(
-                    self.api_key, 
-                    self.api_secret,
-                    {"proxies": proxy_settings, "timeout": 120}  # Tăng timeout lên 120 giây
-                )
-            else:
-                # Kết nối trực tiếp khi không sử dụng proxy
-                logger.warning("Không sử dụng proxy, TradingManager kết nối trực tiếp")
-                self.client = Client(self.api_key, self.api_secret)
+            # Kết nối trực tiếp không sử dụng proxy
+            proxy_settings = None
+            logger.info("TradingManager kết nối trực tiếp, không sử dụng proxy")
+            
+            # Tạo kết nối trực tiếp
+            self.client = Client(
+                self.api_key, 
+                self.api_secret,
+                {"timeout": 120}  # Tăng timeout lên 120 giây
+            )
             
             # Kiểm tra kết nối
             server_time = self.client.get_server_time()

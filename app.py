@@ -2642,11 +2642,11 @@ elif st.session_state.selected_tab == "Cài đặt":
                                                      help="Tên đăng nhập cho proxy (nếu yêu cầu xác thực)")
                     with col2:
                         proxy_port = st.text_input("Cổng Proxy",
-                                                 value=st.session_state.system_settings.get("proxy_port", config.PROXY_PORT),
+                                                 value=st.session_state.system_settings.get("proxy_port", ""),
                                                  help="Cổng proxy (ví dụ: 8080)")
                         
                         proxy_password = st.text_input("Mật khẩu Proxy", 
-                                                     value=st.session_state.system_settings.get("proxy_password", config.PROXY_PASSWORD),
+                                                     value=st.session_state.system_settings.get("proxy_password", ""),
                                                      type="password",
                                                      help="Mật khẩu cho proxy (nếu yêu cầu xác thực)")
                 else:
