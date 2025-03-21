@@ -472,11 +472,8 @@ class BinanceDataCollector:
                     self.connection_status["error"] = "Geographic restriction"
                     self.connection_status["message"] = "Binance access restricted in your region. Consider using VPN."
                     
-                    # Nếu đang sử dụng proxy thì thử trực tiếp, nếu đang kết nối trực tiếp thì đề xuất sử dụng proxy
-                    if config.USE_PROXY:
-                        logger.warning("Geographic restriction detected while using proxy - might need a different proxy")
-                    else:
-                        logger.warning("Consider enabling proxy option in settings to bypass geographic restrictions")
+                    # Thông báo cho người dùng - sẽ hoạt động tốt khi triển khai trên server riêng
+                    logger.warning("Geographic restriction detected. This will work on your private server with direct connection.")
                         
                 elif 'APIError(code=-2015)' in str(e):
                     # Invalid API key
@@ -489,11 +486,8 @@ class BinanceDataCollector:
                     self.connection_status["error"] = "Geographic restriction"
                     self.connection_status["message"] = "Binance service unavailable from your region. This is a geographic restriction by Binance."
                     
-                    # Nếu đang sử dụng proxy thì thử trực tiếp, nếu đang kết nối trực tiếp thì đề xuất sử dụng proxy
-                    if config.USE_PROXY:
-                        logger.warning("Geographic restriction detected while using proxy - might need a different proxy")
-                    else:
-                        logger.warning("Consider enabling proxy option in settings to bypass geographic restrictions")
+                    # Thông báo cho người dùng - sẽ hoạt động tốt khi triển khai trên server riêng
+                    logger.warning("Geographic restriction detected. This will work on your private server with direct connection.")
                 else:
                     logger.error(f"Binance API error: {e}")
                     self.connection_status["error"] = str(e)
@@ -503,51 +497,15 @@ class BinanceDataCollector:
                 self.connection_status["error"] = "Proxy connection error"
                 self.connection_status["message"] = f"Proxy connection failed: {str(e)}"
                 
-                # Nếu đang dùng proxy thì thử kết nối trực tiếp
-                if config.USE_PROXY:
-                    try:
-                        logger.warning("Attempting direct connection after proxy failure...")
-                        # Tạo client mới với kết nối trực tiếp
-                        self.client = Client(
-                            config.BINANCE_API_KEY, 
-                            config.BINANCE_API_SECRET,
-                            {"timeout": 15}
-                        )
-                        # Thử ping
-                        self.client.ping()
-                        logger.info("Direct connection successful after proxy failure")
-                        self.connection_status["connected"] = True
-                        self.connection_status["message"] = "Connected directly (proxy was disabled due to error)"
-                        # Cập nhật cài đặt
-                        config.USE_PROXY = False
-                        logger.info("Proxy setting has been turned off automatically due to connection issues")
-                    except Exception as e2:
-                        logger.error(f"Direct connection also failed: {str(e2)}")
+                # Không cần xử lý proxy nữa, đã loại bỏ hoàn toàn
+                logger.warning("Proxy handling has been removed. Using direct connection only.")
             except requests.exceptions.Timeout as e:
                 logger.error(f"Connection timeout: {str(e)}")
                 self.connection_status["error"] = "Connection timeout"
                 self.connection_status["message"] = f"Connection to Binance API timed out: {str(e)}"
                 
-                # Nếu timeout xảy ra khi dùng proxy, thử kết nối trực tiếp
-                if config.USE_PROXY:
-                    try:
-                        logger.warning("Attempting direct connection after proxy timeout...")
-                        # Tạo client mới với kết nối trực tiếp và timeout dài hơn
-                        self.client = Client(
-                            config.BINANCE_API_KEY, 
-                            config.BINANCE_API_SECRET,
-                            {"timeout": 20}
-                        )
-                        # Thử ping
-                        self.client.ping()
-                        logger.info("Direct connection successful after proxy timeout")
-                        self.connection_status["connected"] = True
-                        self.connection_status["message"] = "Connected directly (proxy was disabled due to timeout)"
-                        # Cập nhật cài đặt
-                        config.USE_PROXY = False
-                        logger.info("Proxy setting has been turned off automatically due to timeout issues")
-                    except Exception as e2:
-                        logger.error(f"Direct connection also failed: {str(e2)}")
+                # Không cần xử lý proxy nữa, đã loại bỏ hoàn toàn
+                logger.warning("Proxy handling has been removed. Using direct connection only.")
             except socket.timeout:
                 logger.error("Binance API connection timeout via socket")
                 self.connection_status["error"] = "Connection timeout"
