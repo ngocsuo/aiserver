@@ -432,23 +432,26 @@ class BinanceDataCollector:
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
-                # Thiết lập proxy thông qua biến môi trường - cách tiếp cận mới
+                # Thiết lập proxy giống curl command style
                 if username and password:
+                    # Định dạng proxy giống với curl command:
+                    # curl -x http://username:password@host:port https://api.binance.com/api/v3/ping
                     proxy_url = f"http://{username}:{password}@{host}:{port}"
+                    
+                    # Sử dụng định dạng proxy đúng cho HTTPS
+                    proxy_settings = {
+                        'http': proxy_url,
+                        'https': proxy_url
+                    }
+                    
+                    logger.info(f"Connecting via authenticated proxy ({host}:{port}) in curl-style format")
                 else:
                     proxy_url = f"http://{host}:{port}"
-                
-                # Thiết lập biến môi trường proxy
-                os.environ["HTTP_PROXY"] = proxy_url
-                os.environ["HTTPS_PROXY"] = proxy_url
-                
-                # Chỉ dùng proxy URL cho HTTP, không dùng cho HTTPS vì lỗi SSL
-                proxy_settings = {
-                    'http': proxy_url,
-                    # Không đặt cho https để tránh lỗi SSL
-                }
-                
-                logger.info(f"Set system-wide proxy environment variables for connection via proxy ({host}:{port})")
+                    proxy_settings = {
+                        'http': proxy_url,
+                        'https': proxy_url
+                    }
+                    logger.info(f"Connecting via proxy ({host}:{port}) in curl-style format")
             
             # Khởi tạo client với hoặc không có proxy
             if proxy_settings:

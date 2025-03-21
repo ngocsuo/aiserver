@@ -9,13 +9,13 @@ BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
 # Proxy Configuration
-USE_PROXY = os.environ.get("USE_PROXY", "False").lower() in ("true", "1", "yes")  # Tắt proxy để thử kết nối trực tiếp
+USE_PROXY = os.environ.get("USE_PROXY", "True").lower() in ("true", "1", "yes")  # Bật lại proxy vì địa chỉ IP hiện tại bị Binance chặn
 PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
 PROXY_PORT = os.environ.get("PROXY_PORT", "15989")
 PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "hvnteam")
 PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "matkhau123")
 # Cấu hình proxy URL loại (http, socks5, https)
-PROXY_TYPE = "http"  # Chuyển về http vì socks5 không hoạt động
+PROXY_TYPE = "http"  # Sử dụng HTTP như đã chỉ định
 
 # Feature flags
 USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data
