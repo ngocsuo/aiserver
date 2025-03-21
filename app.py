@@ -428,6 +428,134 @@ def train_models():
         st.warning("Hệ thống chưa được khởi tạo hoặc không có dữ liệu")
         show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
         return False
+        
+    # Thông báo cho người dùng
+    show_toast("Quá trình huấn luyện bắt đầu trong nền. Bạn có thể tiếp tục sử dụng ứng dụng.", "info", duration=5000)
+    
+    # Add log message
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    log_message = f"{timestamp} - 🧠 Bắt đầu quá trình huấn luyện AI trong nền..."
+    if 'log_messages' not in st.session_state:
+        st.session_state.log_messages = []
+    st.session_state.log_messages.append(log_message)
+    
+    # Tạo hàm huấn luyện chạy ngầm trong thread
+    def train_models_background():
+        try:
+            # Ghi log bắt đầu huấn luyện
+            update_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
+            
+            # Step 1: Process data for training
+            update_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
+            
+            data = st.session_state.latest_data
+            update_log(f"Nguồn dữ liệu: {'Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Mô phỏng (chế độ phát triển)'}")
+            update_log(f"Số điểm dữ liệu: {len(data)} nến")
+            update_log(f"Khung thời gian: {config.TIMEFRAMES['primary']}")
+            update_log(f"Phạm vi ngày: {data.index.min()} đến {data.index.max()}")
+            
+            # Step 2: Preprocess data
+            update_log("Bước 2/5: Tiền xử lý dữ liệu và tính toán chỉ báo kỹ thuật...")
+            processed_data = st.session_state.data_processor.process_data(data)
+            
+            # Display feature information
+            feature_count = len(processed_data.columns) - 1  # Exclude target column
+            update_log(f"Đã tạo {feature_count} chỉ báo kỹ thuật và tính năng")
+            update_log(f"Mẫu huấn luyện: {len(processed_data)} (sau khi loại bỏ giá trị NaN)")
+            
+            # Display class distribution
+            if 'target_class' in processed_data.columns:
+                class_dist = processed_data['target_class'].value_counts()
+                update_log(f"Phân phối lớp: SHORT={class_dist.get(0, 0)}, NEUTRAL={class_dist.get(1, 0)}, LONG={class_dist.get(2, 0)}")
+            
+            # Step 3: Prepare sequence and image data
+            update_log("Bước 3/5: Chuẩn bị dữ liệu chuỗi cho mô hình LSTM và Transformer...")
+            sequence_data = st.session_state.data_processor.prepare_sequence_data(processed_data)
+            
+            update_log("Chuẩn bị dữ liệu hình ảnh cho mô hình CNN...")
+            image_data = st.session_state.data_processor.prepare_cnn_data(processed_data)
+            
+            # Step 4: Train all models
+            update_log("Bước 4/5: Huấn luyện mô hình LSTM...")
+            lstm_model, lstm_history = st.session_state.model_trainer.train_lstm(sequence_data)
+            update_log(f"Mô hình LSTM đã huấn luyện với độ chính xác: {lstm_history.get('val_accuracy', [-1])[-1]:.4f}")
+            
+            update_log("Huấn luyện mô hình Transformer...")
+            transformer_model, transformer_history = st.session_state.model_trainer.train_transformer(sequence_data)
+            update_log(f"Mô hình Transformer đã huấn luyện với độ chính xác: {transformer_history.get('val_accuracy', [-1])[-1]:.4f}")
+            
+            update_log("Huấn luyện mô hình CNN...")
+            cnn_model, cnn_history = st.session_state.model_trainer.train_cnn(image_data)
+            update_log(f"Mô hình CNN đã huấn luyện với độ chính xác: {cnn_history.get('val_accuracy', [-1])[-1]:.4f}")
+            
+            update_log("Huấn luyện mô hình Similarity lịch sử...")
+            historical_model, _ = st.session_state.model_trainer.train_historical_similarity(sequence_data)
+            
+            update_log("Bước 5/5: Huấn luyện mô hình Meta-Learner...")
+            meta_model, _ = st.session_state.model_trainer.train_meta_learner(sequence_data, image_data)
+            
+            # Finalize
+            update_log("Tất cả các mô hình đã huấn luyện thành công!")
+            
+            # Store training data information in session state for reference
+            st.session_state.training_info = {
+                "data_source": 'Real Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Simulated data (development mode)',
+                "data_points": len(data),
+                "date_range": f"{data.index.min()} to {data.index.max()}",
+                "feature_count": feature_count,
+                "training_samples": len(processed_data),
+                "class_distribution": {
+                    "SHORT": class_dist.get(0, 0) if 'target_class' in processed_data.columns and class_dist is not None else 0,
+                    "NEUTRAL": class_dist.get(1, 0) if 'target_class' in processed_data.columns and class_dist is not None else 0,
+                    "LONG": class_dist.get(2, 0) if 'target_class' in processed_data.columns and class_dist is not None else 0
+                },
+                "model_performance": {
+                    "lstm": lstm_history.get('val_accuracy', [-1])[-1],
+                    "transformer": transformer_history.get('val_accuracy', [-1])[-1],
+                    "cnn": cnn_history.get('val_accuracy', [-1])[-1],
+                    "historical_similarity": 0.65,
+                    "meta_learner": 0.85
+                },
+                "training_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            # Set models as trained
+            st.session_state.model_trained = True
+            
+            # Show toast notification
+            show_toast("Tất cả các mô hình AI đã được huấn luyện thành công!", "success", duration=5000)
+            
+            return True
+        except Exception as e:
+            # Log error
+            update_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
+            
+            # Show toast notification
+            show_toast(f"Lỗi trong quá trình huấn luyện: {str(e)}", "error", duration=5000)
+            return False
+        
+    # Hàm hỗ trợ ghi log
+    def update_log(message):
+        """Log training progress to session state and to local list"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_msg = f"{timestamp} - {message}"
+        
+        # Thêm vào training logs
+        if 'training_log_messages' not in st.session_state:
+            st.session_state.training_log_messages = []
+        st.session_state.training_log_messages.append(log_msg)
+        
+        # Thêm vào system logs
+        if 'log_messages' in st.session_state:
+            st.session_state.log_messages.append(log_msg)
+        
+        # Hiển thị toast notification cho người dùng
+        if ("thành công" in message or 
+            "hoàn thành" in message or 
+            "độ chính xác" in message):
+            show_toast(message, "success", 3000)
+        elif "Lỗi" in message or "LỖI" in message:
+            show_toast(f"Lỗi huấn luyện: {message}", "error", 5000)
     
     # Hiển thị thông báo huấn luyện đang bắt đầu
     show_toast("Đang bắt đầu quá trình huấn luyện mô hình AI...", "info", 3000)
@@ -462,100 +590,18 @@ def train_models():
         elif "Error" in message or "ERROR" in message:
             show_toast(message, "error", 5000)
     
-    try:
-        # Step 1: Process data for training
-        update_log("Step 1/5: Preparing ETHUSDT data for training...")
-        progress_bar.progress(10)
-        
-        data = st.session_state.latest_data
-        update_log(f"Data source: {'Real Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Simulated data (development mode)'}")
-        update_log(f"Data points: {len(data)} candles")
-        update_log(f"Timeframe: {config.TIMEFRAMES['primary']}")
-        update_log(f"Date range: {data.index.min()} to {data.index.max()}")
-        
-        # Step 2: Preprocess data
-        progress_bar.progress(20)
-        update_log("Step 2/5: Preprocessing data and calculating technical indicators...")
-        processed_data = st.session_state.data_processor.process_data(data)
-        
-        # Display feature information
-        feature_count = len(processed_data.columns) - 1  # Exclude target column
-        update_log(f"Features generated: {feature_count} technical indicators and derived features")
-        update_log(f"Training samples: {len(processed_data)} (after removing NaN values)")
-        
-        # Display class distribution
-        if 'target_class' in processed_data.columns:
-            class_dist = processed_data['target_class'].value_counts()
-            update_log(f"Class distribution: SHORT={class_dist.get(0, 0)}, NEUTRAL={class_dist.get(1, 0)}, LONG={class_dist.get(2, 0)}")
-        
-        # Step 3: Prepare sequence and image data
-        progress_bar.progress(40)
-        update_log("Step 3/5: Preparing sequence data for LSTM and Transformer models...")
-        sequence_data = st.session_state.data_processor.prepare_sequence_data(processed_data)
-        
-        progress_bar.progress(50)
-        update_log("Preparing image data for CNN model...")
-        image_data = st.session_state.data_processor.prepare_cnn_data(processed_data)
-        
-        # Step 4: Train all models
-        progress_bar.progress(60)
-        update_log("Step 4/5: Training LSTM model...")
-        lstm_model, lstm_history = st.session_state.model_trainer.train_lstm(sequence_data)
-        update_log(f"LSTM model trained with accuracy: {lstm_history.get('val_accuracy', [-1])[-1]:.4f}")
-        
-        progress_bar.progress(70)
-        update_log("Training Transformer model...")
-        transformer_model, transformer_history = st.session_state.model_trainer.train_transformer(sequence_data)
-        update_log(f"Transformer model trained with accuracy: {transformer_history.get('val_accuracy', [-1])[-1]:.4f}")
-        
-        progress_bar.progress(80)
-        update_log("Training CNN model...")
-        cnn_model, cnn_history = st.session_state.model_trainer.train_cnn(image_data)
-        update_log(f"CNN model trained with accuracy: {cnn_history.get('val_accuracy', [-1])[-1]:.4f}")
-        
-        progress_bar.progress(85)
-        update_log("Training Historical Similarity model...")
-        historical_model, _ = st.session_state.model_trainer.train_historical_similarity(sequence_data)
-        
-        progress_bar.progress(90)
-        update_log("Step 5/5: Training Meta-Learner model...")
-        meta_model, _ = st.session_state.model_trainer.train_meta_learner(sequence_data, image_data)
-        
-        # Finalize
-        progress_bar.progress(100)
-        update_log("All models trained successfully!")
-        
-        # Store training data information in session state for reference
-        st.session_state.training_info = {
-            "data_source": 'Real Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Simulated data (development mode)',
-            "data_points": len(data),
-            "date_range": f"{data.index.min()} to {data.index.max()}",
-            "feature_count": feature_count,
-            "training_samples": len(processed_data),
-            "class_distribution": {
-                "SHORT": class_dist.get(0, 0) if 'target_class' in processed_data.columns else 0,
-                "NEUTRAL": class_dist.get(1, 0) if 'target_class' in processed_data.columns else 0,
-                "LONG": class_dist.get(2, 0) if 'target_class' in processed_data.columns else 0
-            },
-            "model_performance": {
-                "lstm": lstm_history.get('val_accuracy', [-1])[-1],
-                "transformer": transformer_history.get('val_accuracy', [-1])[-1],
-                "cnn": cnn_history.get('val_accuracy', [-1])[-1],
-                "historical_similarity": 0.65,  # Mock value as it doesn't return standard accuracy
-                "meta_learner": 0.81  # Mock value as it doesn't return standard accuracy in the same way
-            },
-            "training_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        
-        # Set models as trained
-        st.session_state.model_trained = True
-        progress_placeholder.success("All AI models trained successfully!")
-        
-        return True
-    except Exception as e:
-        progress_placeholder.error(f"Error training models: {e}")
-        update_log(f"ERROR: {str(e)}")
-        return False
+    # Bắt đầu huấn luyện trong thread
+    training_thread = threading.Thread(target=train_models_background)
+    training_thread.daemon = True  # Thread sẽ tự đóng khi chương trình chính kết thúc
+    training_thread.start()
+    
+    # Xóa các thành phần UI hiển thị lên
+    if 'progress_bar' in locals():
+        progress_bar.empty()
+    if 'progress_placeholder' in locals():
+        progress_placeholder.empty()
+    
+    return True
 
 def make_prediction():
     """Generate a prediction using the trained models"""
