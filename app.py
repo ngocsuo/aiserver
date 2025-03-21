@@ -2623,6 +2623,56 @@ elif st.session_state.selected_tab == "Cài đặt":
             # Cập nhật thiết lập USE_REAL_API
             config.USE_REAL_API = (data_source == "Binance API (thực)")
             
+            # Thêm cài đặt proxy
+            with st.expander("🌐 Cài đặt Proxy", expanded=True):
+                use_proxy = st.checkbox("Sử dụng Proxy để kết nối Binance API", 
+                                     value=st.session_state.system_settings.get("use_proxy", config.USE_PROXY),
+                                     help="Bật tùy chọn này nếu bạn cần dùng proxy để truy cập Binance API")
+                
+                # Hiển thị các trường cài đặt proxy nếu được chọn
+                if use_proxy:
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        proxy_host = st.text_input("Địa chỉ Proxy", 
+                                                 value=st.session_state.system_settings.get("proxy_host", config.PROXY_HOST),
+                                                 help="Địa chỉ máy chủ proxy (ví dụ: 123.45.67.89)")
+                        
+                        proxy_username = st.text_input("Tên đăng nhập Proxy",
+                                                     value=st.session_state.system_settings.get("proxy_username", config.PROXY_USERNAME),
+                                                     help="Tên đăng nhập cho proxy (nếu yêu cầu xác thực)")
+                    with col2:
+                        proxy_port = st.text_input("Cổng Proxy",
+                                                 value=st.session_state.system_settings.get("proxy_port", config.PROXY_PORT),
+                                                 help="Cổng proxy (ví dụ: 8080)")
+                        
+                        proxy_password = st.text_input("Mật khẩu Proxy", 
+                                                     value=st.session_state.system_settings.get("proxy_password", config.PROXY_PASSWORD),
+                                                     type="password",
+                                                     help="Mật khẩu cho proxy (nếu yêu cầu xác thực)")
+            
+                    # Cập nhật cài đặt proxy ngay khi thay đổi
+                    st.session_state.system_settings["use_proxy"] = use_proxy
+                    st.session_state.system_settings["proxy_host"] = proxy_host
+                    st.session_state.system_settings["proxy_port"] = proxy_port
+                    st.session_state.system_settings["proxy_username"] = proxy_username
+                    st.session_state.system_settings["proxy_password"] = proxy_password
+                    
+                    # Cập nhật config trong bộ nhớ
+                    config.USE_PROXY = use_proxy
+                    config.PROXY_HOST = proxy_host
+                    config.PROXY_PORT = proxy_port
+                    config.PROXY_USERNAME = proxy_username
+                    config.PROXY_PASSWORD = proxy_password
+                    
+                    # Thông báo cho người dùng
+                    st.info("Cài đặt proxy đã được lưu. Vui lòng khởi động lại hệ thống để áp dụng thay đổi.")
+                
+                elif "use_proxy" in st.session_state.system_settings and st.session_state.system_settings["use_proxy"] != use_proxy:
+                    # Nếu người dùng vừa tắt proxy
+                    st.session_state.system_settings["use_proxy"] = use_proxy
+                    config.USE_PROXY = use_proxy
+                    st.info("Đã tắt sử dụng proxy. Vui lòng khởi động lại hệ thống để áp dụng thay đổi.")
+            
             # Thiết lập thời gian cập nhật dữ liệu
             update_interval = st.slider(
                 "Thời gian cập nhật dữ liệu (giây)",
