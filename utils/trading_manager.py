@@ -10,6 +10,9 @@ from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import pytz
 
+# Import các hàm hỗ trợ từ module trading_manager_functions
+from utils.trading_manager_functions import get_current_date_tz7, get_daily_pnl_summary
+
 # Thiết lập logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('trading_manager')
@@ -38,7 +41,7 @@ class TradingManager:
         
         # Khởi tạo thống kê PNL theo ngày (múi giờ +7)
         self.daily_pnl = {
-            'date': self._get_current_date_tz7(),
+            'date': get_current_date_tz7(),
             'trades': [],
             'total_pnl': 0.0,
             'win_count': 0,
@@ -289,16 +292,27 @@ class TradingManager:
                 quantity=quantity
             )
             
-            # Tính toán lợi nhuận
+            # Tính toán lợi nhuận và cập nhật thống kê theo ngày
+            profit_pct = 0
+            profit_usdt = 0
+            
             if self.position_info and 'entry_price' in self.position_info:
                 current_price = self._get_current_price(symbol)
                 if current_price:
-                    if self.position_info['side'] == 'BUY':
-                        profit_pct = (current_price - self.position_info['entry_price']) / self.position_info['entry_price'] * 100
-                    else:
-                        profit_pct = (self.position_info['entry_price'] - current_price) / self.position_info['entry_price'] * 100
+                    entry_price = self.position_info['entry_price']
+                    quantity = self.position_info['quantity']
                     
-                    self.add_log(f"Đã đóng vị thế {symbol} với lợi nhuận {profit_pct:.2f}%")
+                    if self.position_info['side'] == 'BUY':
+                        profit_pct = (current_price - entry_price) / entry_price * 100
+                        profit_usdt = (current_price - entry_price) * quantity
+                    else:
+                        profit_pct = (entry_price - current_price) / entry_price * 100
+                        profit_usdt = (entry_price - current_price) * quantity
+                    
+                    self.add_log(f"Đã đóng vị thế {symbol} với lợi nhuận {profit_pct:.2f}% ({profit_usdt:.2f} USDT)")
+                    
+                    # Cập nhật PNL theo ngày
+                    self._update_daily_pnl(profit_usdt, profit_pct, symbol, self.position_info['side'])
                 else:
                     self.add_log(f"Đã đóng vị thế {symbol}")
             else:
@@ -565,7 +579,16 @@ class TradingManager:
                     time.sleep(0.5)  # Đợi 0.5s để giảm số lượng request
                     continue
                 
-                # Không có vị thế, kiểm tra dự đoán để mở vị thế mới
+                # Không có vị thế, lấy dự đoán mới và kiểm tra điều kiện mở
+                # Force predicting để cập nhật dự đoán liên tục
+                try:
+                    current_data = prediction_engine._get_latest_data()
+                    prediction_engine.predict(current_data, use_cache=False)
+                    self.add_log("Đã cập nhật dự đoán mới.", "info")
+                except Exception as e:
+                    self.add_log(f"Lỗi khi cập nhật dự đoán: {e}", "warning")
+                
+                # Kiểm tra điều kiện mở vị thế
                 self._check_entry_conditions(config, prediction_engine)
                 time.sleep(1)  # Đợi 1s trước khi kiểm tra lại
             
@@ -631,6 +654,85 @@ class TradingManager:
         elif stop_loss_triggered:
             self.add_log(f"Stop Loss kích hoạt: {pnl_info['pnl']:.2f} USDT ({pnl_info['pnl_percent']:.2f}%)")
             self.close_position()
+    
+    def _update_daily_pnl(self, profit_usdt, profit_pct, symbol, side):
+        """
+        Cập nhật thống kê PNL theo ngày.
+        
+        Args:
+            profit_usdt (float): Lợi nhuận tính bằng USDT
+            profit_pct (float): Lợi nhuận tính bằng phần trăm
+            symbol (str): Symbol giao dịch
+            side (str): Hướng giao dịch (BUY/SELL)
+        """
+        # Kiểm tra ngày hiện tại, nếu khác với ngày trong daily_pnl thì reset
+        current_date = get_current_date_tz7()
+        if current_date != self.daily_pnl['date']:
+            # Lưu thống kê ngày cũ vào lịch sử nếu cần
+            self.add_log(f"Đã chuyển sang ngày mới {current_date}, reset thống kê PNL")
+            
+            # Khởi tạo thống kê mới
+            self.daily_pnl = {
+                'date': current_date,
+                'trades': [],
+                'total_pnl': 0.0,
+                'win_count': 0,
+                'loss_count': 0
+            }
+        
+        # Thêm giao dịch mới vào danh sách
+        trade_info = {
+            'time': datetime.now().strftime("%H:%M:%S"),
+            'symbol': symbol,
+            'side': side,
+            'pnl': profit_usdt,
+            'pnl_percent': profit_pct
+        }
+        
+        self.daily_pnl['trades'].append(trade_info)
+        self.daily_pnl['total_pnl'] += profit_usdt
+        
+        if profit_usdt > 0:
+            self.daily_pnl['win_count'] += 1
+        else:
+            self.daily_pnl['loss_count'] += 1
+            
+        # Tính tỷ lệ thắng
+        total_trades = self.daily_pnl['win_count'] + self.daily_pnl['loss_count']
+        win_rate = (self.daily_pnl['win_count'] / total_trades * 100) if total_trades > 0 else 0
+        
+        self.add_log(f"PNL ngày {current_date}: {self.daily_pnl['total_pnl']:.2f} USDT, "
+                    f"Win rate: {win_rate:.1f}% ({self.daily_pnl['win_count']}/{total_trades})")
+        
+    def get_daily_pnl_summary(self):
+        """
+        Lấy tóm tắt PNL theo ngày.
+        
+        Returns:
+            dict: Thông tin tóm tắt PNL theo ngày
+        """
+        current_date = get_current_date_tz7()
+        
+        # Kiểm tra ngày trong daily_pnl có phải là ngày hiện tại không
+        if current_date != self.daily_pnl['date']:
+            self.daily_pnl['date'] = current_date
+            self.daily_pnl['trades'] = []
+            self.daily_pnl['total_pnl'] = 0.0
+            self.daily_pnl['win_count'] = 0
+            self.daily_pnl['loss_count'] = 0
+            
+        # Tính tỷ lệ thắng
+        total_trades = self.daily_pnl['win_count'] + self.daily_pnl['loss_count']
+        win_rate = (self.daily_pnl['win_count'] / total_trades * 100) if total_trades > 0 else 0
+        
+        return {
+            'date': self.daily_pnl['date'],
+            'total_pnl': self.daily_pnl['total_pnl'],
+            'win_count': self.daily_pnl['win_count'],
+            'loss_count': self.daily_pnl['loss_count'],
+            'win_rate': win_rate,
+            'trades': self.daily_pnl['trades']
+        }
     
     def _check_entry_conditions(self, config, prediction_engine):
         """
