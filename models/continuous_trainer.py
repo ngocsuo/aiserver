@@ -176,6 +176,7 @@ class ContinuousTrainer:
         if self.training_in_progress and self.total_chunks > 0:
             progress = min(100, int((self.current_chunk / self.total_chunks) * 100))
             
+        # Thêm thông tin về current_chunk và total_chunks cho update_status
         return {
             "enabled": config.CONTINUOUS_TRAINING,
             "in_progress": self.training_in_progress,
@@ -185,6 +186,8 @@ class ContinuousTrainer:
             "schedule": config.TRAINING_SCHEDULE,
             "is_training": self.training_in_progress,
             "progress": progress,
+            "current_chunk": self.current_chunk,
+            "total_chunks": self.total_chunks,
             "status": "Training in progress" if self.training_in_progress else "Idle"
         }
         

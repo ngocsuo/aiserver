@@ -133,6 +133,13 @@ if 'initialized' not in st.session_state:
     st.session_state.last_update_time = None
     st.session_state.chart_auto_refresh = True
     st.session_state.auto_initialize_triggered = False
+    st.session_state.pending_toast = None # Cho phép hiển thị toast từ thread riêng
+
+# Kiểm tra và hiển thị toast từ thread riêng
+if hasattr(st.session_state, 'pending_toast') and st.session_state.pending_toast is not None:
+    toast_data = st.session_state.pending_toast
+    show_toast(toast_data['message'], toast_data['type'], toast_data['duration'])
+    st.session_state.pending_toast = None
 
 def initialize_system():
     """Initialize the prediction system"""
@@ -337,12 +344,15 @@ def fetch_historical_data_thread():
     timestamp = datetime.now().strftime("%H:%M:%S")
     log_message = f"{timestamp} - 📚 Bắt đầu luồng tải dữ liệu lịch sử từ 2022..."
     st.session_state.log_messages.append(log_message)
+    show_toast("Bắt đầu tải dữ liệu lịch sử từ 2022...", "info", 5000)
     
     # Quá trình này dựa vào ContinuousTrainer đã bắt đầu trong initialize_system
     # và đang chạy trong một luồng riêng
     
     # Cập nhật trạng thái để hiển thị trên giao diện mà không sử dụng Streamlit API trực tiếp trong thread
     def update_status():
+        last_progress = -1  # Theo dõi tiến trình cuối cùng để tránh hiển thị thông báo quá nhiều lần
+        
         while True:
             try:
                 if not hasattr(st.session_state, 'continuous_trainer'):
@@ -356,8 +366,18 @@ def fetch_historical_data_thread():
                 
                 status = trainer.get_training_status()
                 
-                if 'current_chunk' in status and 'total_chunks' in status:
+                if 'current_chunk' in status and 'total_chunks' in status and status['total_chunks'] > 0:
                     progress = int((status['current_chunk'] / status['total_chunks']) * 100)
+                    
+                    # Chỉ hiển thị toast khi tiến trình thay đổi đáng kể
+                    if progress != last_progress and (progress % 25 == 0 or progress == 100):
+                        last_progress = progress
+                        # Đảm bảo không hiển thị toast trong luồng riêng
+                        st.session_state.pending_toast = {
+                            "message": f"Tải dữ liệu lịch sử: {progress}% hoàn thành",
+                            "type": "info" if progress < 100 else "success",
+                            "duration": 3000
+                        }
                     
                     # Cập nhật vào session_state thay vì gọi trực tiếp Streamlit API
                     # Điều này tránh được warning "missing ScriptRunContext"
