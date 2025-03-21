@@ -1353,41 +1353,76 @@ def display_system_status(data_status, thread_status, prediction_count):
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.write("**Data Collection**")
-        status_color = "green" if data_status["status"] == "Data fetched successfully" else "red"
-        st.markdown(f"Status: :{status_color}[{data_status['status']}]")
+        st.write("**Nguồn dữ liệu**")
+        # Xác định nguồn dữ liệu
+        data_source = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Mô phỏng (Dev)"
+        data_source_color = "green" if not isinstance(st.session_state.data_collector, MockDataCollector) else "orange"
+        st.markdown(f":{data_source_color}[{data_source}]")
         
-        # Display data source information
-        if 'data_source' in st.session_state and 'data_source_color' in st.session_state:
-            st.markdown(f"Source: :{st.session_state.data_source_color}[{st.session_state.data_source}]")
+        # Hiển thị trạng thái dữ liệu trực tuyến
+        st.write("**Dữ liệu trực tuyến**")
+        realtime_status = "✅ Có sẵn" if 'latest_data' in st.session_state and st.session_state.latest_data is not None else "❌ Không có sẵn"
+        st.markdown(realtime_status)
         
+        # Hiển thị thời gian cập nhật gần nhất
         if data_status["last_update"]:
-            st.write(f"Last update: {data_status['last_update']}")
+            st.write(f"Cập nhật lúc: {data_status['last_update']}")
         
-        # Display Binance server time if available
+        # Hiển thị thời gian máy chủ Binance nếu có
         if 'binance_server_time' in st.session_state:
             binance_time = st.session_state.binance_server_time.get('time', 'N/A')
-            st.write(f"Binance server time: {binance_time}")
-            st.write(f"Time sync: {st.session_state.binance_server_time.get('update_time', 'N/A')}")
+            st.write(f"Thời gian Binance: {binance_time}")
     
     with col2:
-        # AI Models Status
-        st.write("**AI Models**")
-        model_status_color = "green" if st.session_state.model_trained else "red"
-        st.markdown(f"Status: :{model_status_color}[{'Trained' if st.session_state.model_trained else 'Not Trained'}]")
+        # Trạng thái dữ liệu lịch sử
+        st.write("**Dữ liệu lịch sử**")
         
-        # Continuous Training Status
+        # Kiểm tra và hiển thị tiến trình tải dữ liệu lịch sử
+        historical_progress = "0%"
+        if 'historical_data_status' in st.session_state:
+            historical_progress = f"{st.session_state.historical_data_status.get('progress', 0)}%"
+        
+        # Xác định nếu dữ liệu lịch sử đã sẵn sàng
+        historical_ready = False
+        if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
+            training_status = st.session_state.continuous_trainer.get_training_status()
+            if 'last_training_time' in training_status and training_status['last_training_time']:
+                historical_ready = True
+                historical_progress = "100%"
+        
+        historical_status = f"✅ {historical_progress}" if historical_ready else f"⏳ {historical_progress}"
+        st.markdown(historical_status)
+        
+        # Trạng thái mô hình AI
+        st.write("**Mô hình AI**")
+        
+        # Kiểm tra xem mô hình đã được huấn luyện chưa
+        models_trained = False
+        if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
+            training_status = st.session_state.continuous_trainer.get_training_status()
+            if 'models_trained' in training_status and training_status['models_trained']:
+                models_trained = True
+            elif 'last_training_time' in training_status and training_status['last_training_time']:
+                models_trained = True
+                
+        # Cập nhật biến trong session state để các thành phần khác có thể sử dụng
+        st.session_state.model_trained = models_trained
+        
+        model_status = "✅ Đã huấn luyện" if models_trained else "❌ Chưa huấn luyện"
+        st.markdown(model_status)
+        
+        # Trạng thái huấn luyện liên tục
         if config.CONTINUOUS_TRAINING and 'continuous_trainer' in st.session_state:
-            st.write("**Continuous Training**")
+            st.write("**Huấn luyện liên tục**")
             
-            # Get current training status
+            # Lấy trạng thái huấn luyện hiện tại
             training_status = st.session_state.continuous_trainer.get_training_status()
             
-            # Check if training is in progress
-            if training_status['in_progress']:
-                st.markdown(f"Status: :blue[Training in progress]")
+            # Kiểm tra xem quá trình huấn luyện có đang diễn ra không
+            if training_status.get('in_progress', False):
+                st.markdown(f":blue[Đang huấn luyện...]")
             else:
-                status_color = "green" if training_status['enabled'] else "red"
+                status_color = "green" if training_status.get('enabled', False) else "red"
                 st.markdown(f"Status: :{status_color}[{'Enabled' if training_status['enabled'] else 'Disabled'}]")
             
             # Display schedule info

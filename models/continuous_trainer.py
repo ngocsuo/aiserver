@@ -197,6 +197,7 @@ class ContinuousTrainer:
             "schedule": config.TRAINING_SCHEDULE,
             "is_training": self.training_in_progress,
             "progress": progress,
+            "models_trained": self.last_training_time is not None,
             "current_chunk": self.current_chunk,
             "total_chunks": self.total_chunks,
             "status": "Training in progress" if self.training_in_progress else "Idle"
