@@ -16,9 +16,35 @@ FORCE_MOCK_DATA = False  # Set to False to use real data with configured proxy
 # Trading Symbol and Timeframes
 SYMBOL = "ETHUSDT"
 TIMEFRAMES = {
-    "primary": "5m",   # Sử dụng timeframe 5m
-    "secondary": ["15m", "1h", "4h"]
+    "primary": "1m",   # Khung thời gian chính là 1m
+    "secondary": ["5m", "15m", "1h", "4h"]
 }
+# Định nghĩa khung thời gian cho các mô hình
+MODEL_TIMEFRAMES = {
+    "1m": "1m",   # Khung thời gian 1m
+    "5m": "5m",   # Khung thời gian 5m
+}
+PRIMARY_TIMEFRAME = "1m"  # Timeframe chính mặc định
+
+# Cấu hình dự đoán cho mỗi khung thời gian
+PREDICTION_SETTINGS = {
+    "1m": {
+        "horizons": {
+            "10m": 10,  # 10 phút = 10 candles của khung 1m
+            "15m": 15,  # 15 phút = 15 candles của khung 1m
+        }
+    },
+    "5m": {
+        "horizons": {
+            "30m": 6,   # 30 phút = 6 candles của khung 5m
+            "1h": 12,   # 1 giờ = 12 candles của khung 5m
+        }
+    }
+}
+
+# Timeframe mặc định và horizon dự đoán mặc định
+DEFAULT_TIMEFRAME = "1m"
+DEFAULT_PREDICTION_HORIZON = "10m"
 
 # Data Collection Configuration
 LOOKBACK_PERIODS = 5000  # Number of candles to collect initially
@@ -70,12 +96,13 @@ EARLY_STOPPING_PATIENCE = 5
 # Continuous Training Configuration
 CONTINUOUS_TRAINING = True  # Enable continuous model retraining
 TRAINING_SCHEDULE = {
-    "frequency": "daily",  # Options: 'hourly', 'daily', 'weekly'
+    "frequency": "custom",  # Options: 'hourly', 'daily', 'weekly', 'custom'
+    "interval_minutes": 30,  # Train every 30 minutes
     "hour": 2,            # For daily/weekly: hour of day (0-23) to train
     "minute": 30,         # Minute of hour to train
     "day_of_week": 1      # For weekly: day of week (0=Monday, 6=Sunday)
 }
-MINIMUM_NEW_DATA_POINTS = 288   # Số nến 5-phút tối thiểu cần có để huấn luyện lại (= 24h)
+MINIMUM_NEW_DATA_POINTS = 30   # Số nến 1-phút tối thiểu cần có để huấn luyện lại (30 phút)
 
 # Chunked Training Configuration
 CHUNK_BY_MONTHS = True  # Enable chunked training by months

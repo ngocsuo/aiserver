@@ -186,7 +186,7 @@ class MockDataCollector:
         
         return df
         
-    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.TIMEFRAMES["primary"], 
+    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.PRIMARY_TIMEFRAME, 
                               limit=config.LOOKBACK_PERIODS):
         """
         Generate historical OHLCV data.
@@ -539,7 +539,7 @@ class BinanceDataCollector:
         
         return df
             
-    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.TIMEFRAMES["primary"], 
+    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.PRIMARY_TIMEFRAME, 
                               limit=config.LOOKBACK_PERIODS, start_date=None, end_date=None):
         """
         Collect historical OHLCV data from Binance.

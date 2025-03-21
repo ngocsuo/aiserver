@@ -1176,8 +1176,8 @@ with st.sidebar:
     
     # Navigation với thiết kế hiện đại
     st.markdown("### 📊 Điều hướng")
-    tabs = ["Live Dashboard", "Models & Training", "System Status", "API Guide"]
-    selected_tab = st.radio("Chọn chế độ xem", tabs, index=tabs.index(st.session_state.selected_tab))
+    tabs = ["Live Dashboard", "Models & Training", "Cài đặt", "System Status", "API Guide", "Backtest"]
+    selected_tab = st.radio("Chọn chế độ xem", tabs, index=tabs.index(st.session_state.selected_tab) if st.session_state.selected_tab in tabs else 0)
     st.session_state.selected_tab = selected_tab
     
     # Data controls với thiết kế hiện đại
