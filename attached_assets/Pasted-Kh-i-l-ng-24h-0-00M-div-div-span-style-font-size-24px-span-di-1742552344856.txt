@@ -1,0 +1,66 @@
+Khối lượng 24h
+0.00M
+</div>
+    <div>
+        <span style='font-size: 24px;'>📊</span>
+    </div>
+</div>
+
+Biến động
+0.03%
+</div>
+    <div>
+        <span style='font-size: 24px;'>📉</span>
+    </div>
+</div>
+
+Cập nhật
+10:17:04
+</div>
+    <div>
+        <span style='font-size: 24px;'>⏱️</span>
+    </div>
+</div>
+
+Dự đoán và biểu đồ giá
+NEUTRAL 0 phút trước
+<div style="display: flex; margin-top: 10px;">
+            <div style="flex: 1;">
+                <div style="color: #7f8c8d; font-size: 14px;">Giá hiện tại</div>
+                <div style="font-size: 18px; font-weight: bold;">$1971.22</div>
+            </div>
+            <div style="flex: 1;">
+                <div style="color: #7f8c8d; font-size: 14px;">Giá mục tiêu</div>
+                <div style="font-size: 18px; font-weight: bold;">$1971.04</div>
+            </div>
+            <div style="flex: 1;">
+                <div style="color: #7f8c8d; font-size: 14px;">Độ tin cậy</div>
+                <div style="font-size: 18px; font-weight: bold;">84.0%</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <div style="color: #7f8c8d; font-size: 14px;">Thời gian dự đoán</div>
+            <div style="margin-top: 5px;">
+                <div style="background-color: #f0f2f6; height: 8px; border-radius: 4px; position: relative;">
+                    <div style="position: absolute; height: 8px; border-radius: 4px; width: 99.18425177777777%; background-color: #95a5a6;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #7f8c8d;">
+                    <span>0 phút</span>
+                    <span>15 phút</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="font-size: 36px; margin-left: 15px; color: #95a5a6;">
+        📊
+    </div>
+</div>
+
+
+Hiển thị
+
+100 nến gần nhất
+Phân tích hiệu suất
+Hiệu suất các mô hình
+Lịch sử dự đoán

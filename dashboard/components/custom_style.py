@@ -498,22 +498,27 @@ def create_header():
     """
     Tạo header đẹp mắt cho ứng dụng
     """
-    st.markdown(
-        """
-        <div style="background: linear-gradient(90deg, #4f8bf9, #485ec4); padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 style="color: white; margin: 0;">AI CRYPTO PREDICTION</h1>
-                    <p style="color: rgba(255,255,255,0.8); margin: 5px 0 0 0;">Dự đoán tự động ETH/USDT với AI nâng cao</p>
-                </div>
-                <div style="background: rgba(255,255,255,0.15); border-radius: 50px; padding: 5px 15px; color: white; font-size: 14px;">
-                    Phiên bản 2.0
-                </div>
+    # Tạo header theo cách tiêu chuẩn của Streamlit, không sử dụng HTML trực tiếp
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        st.title("AI CRYPTO PREDICTION")
+        st.caption("Dự đoán tự động ETH/USDT với AI nâng cao")
+    
+    with col2:
+        st.write("")
+        st.write("")
+        st.markdown("""
+            <div style="background: rgba(73, 96, 201, 0.2); 
+                border-radius: 5px; 
+                padding: 5px 10px; 
+                text-align: center; 
+                color: rgb(73, 96, 201); 
+                font-weight: bold;
+                display: inline-block;">
+                Phiên bản 2.0
             </div>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
+        """, unsafe_allow_html=True)
 
 def create_section_header(title, subtitle=None, icon=None):
     """
@@ -524,20 +529,14 @@ def create_section_header(title, subtitle=None, icon=None):
         subtitle (str): Tiêu đề phụ (có thể là None)
         icon (str): Biểu tượng (ví dụ: "📈")
     """
-    icon_html = f'<span style="font-size: 24px; margin-right: 10px;">{icon}</span>' if icon else ''
-    subtitle_html = f'<p style="color: #7f8c8d; margin: 5px 0 15px 0;">{subtitle}</p>' if subtitle else ''
+    # Sử dụng cách tiếp cận tiêu chuẩn của Streamlit
+    if icon:
+        title = f"{icon} {title}"
     
-    st.markdown(
-        f"""
-        <div style="margin-bottom: 20px;">
-            <h2 style="color: #2c3e50; margin: 0; display: flex; align-items: center;">
-                {icon_html}{title}
-            </h2>
-            {subtitle_html}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.subheader(title)
+    
+    if subtitle:
+        st.markdown(f"<p style='color: #7f8c8d; margin-top: -5px;'>{subtitle}</p>", unsafe_allow_html=True)
 
 def create_stats_row(stats):
     """
