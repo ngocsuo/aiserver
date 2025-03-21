@@ -143,6 +143,7 @@ if 'initialized' not in st.session_state:
     st.session_state.thread_running = False
     st.session_state.last_update_time = None
     st.session_state.chart_auto_refresh = True
+    st.session_state.chart_last_update_time = datetime.now()
     st.session_state.auto_initialize_triggered = False
     st.session_state.pending_toast = None # Cho phép hiển thị toast từ thread riêng
     
@@ -1956,6 +1957,12 @@ if st.session_state.selected_tab == "Live Dashboard":
                         st.session_state.chart_last_update_time = datetime.now()
                     
                     # Thêm tự động cập nhật biểu đồ mỗi 10 giây
+                    if "chart_auto_refresh" not in st.session_state:
+                        st.session_state.chart_auto_refresh = True
+                    
+                    if "chart_last_update_time" not in st.session_state:
+                        st.session_state.chart_last_update_time = datetime.now()
+                    
                     if st.session_state.chart_auto_refresh:
                         current_time = datetime.now()
                         time_diff = (current_time - st.session_state.chart_last_update_time).total_seconds()
