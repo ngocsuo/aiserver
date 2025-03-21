@@ -405,12 +405,13 @@ def fetch_data():
 def train_models():
     """Train all prediction models"""
     if not st.session_state.initialized or st.session_state.latest_data is None:
-        st.warning("System not initialized or no data available")
+        st.warning("Hệ thống chưa được khởi tạo hoặc không có dữ liệu")
+        show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
         return False
     
     # Create a placeholder for progress updates
     progress_placeholder = st.empty()
-    progress_placeholder.info("Starting the AI model training process...")
+    progress_placeholder.info("Đang bắt đầu quá trình huấn luyện mô hình AI...")
     
     # Create a progress bar
     progress_bar = st.progress(0)
@@ -423,6 +424,12 @@ def train_models():
         timestamp = datetime.now().strftime("%H:%M:%S")
         training_logs.append(f"{timestamp} - {message}")
         logs_placeholder.code("\n".join(training_logs))
+        
+        # Hiển thị toast notification cho các thông báo quan trọng
+        if "Step" in message or "model trained" in message:
+            show_toast(message, "info", 3000)
+        elif "Error" in message or "ERROR" in message:
+            show_toast(message, "error", 5000)
     
     try:
         # Step 1: Process data for training
@@ -522,7 +529,8 @@ def train_models():
 def make_prediction():
     """Generate a prediction using the trained models"""
     if not st.session_state.initialized:
-        st.warning("System not initialized yet")
+        st.warning("Hệ thống chưa được khởi tạo")
+        show_toast("Hệ thống chưa được khởi tạo", "warning")
         return None
     
     # Add log message
@@ -590,7 +598,8 @@ def make_prediction():
 def make_random_prediction():
     """Generate a random prediction for demo purposes"""
     if not st.session_state.initialized or st.session_state.latest_data is None:
-        st.warning("System not initialized or no data available")
+        st.warning("Hệ thống chưa được khởi tạo hoặc không có dữ liệu")
+        show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
         return None
     
     classes = ["SHORT", "NEUTRAL", "LONG"]
