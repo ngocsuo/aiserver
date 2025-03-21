@@ -496,23 +496,47 @@ class FeatureEngineer:
             logger.error(f"Error creating sequences: {e}")
             return None, None
 
-    def create_image_data(self, df, seq_length=config.SEQUENCE_LENGTH):
+    def create_image_data(self, df, seq_length=config.SEQUENCE_LENGTH, target_col='target_class'):
         """
         Create image-like data for CNN models based on OHLCV data.
         
         Args:
             df (pd.DataFrame): DataFrame with OHLCV data
             seq_length (int): Number of candles per image
+            target_col (str): Target column name, can be None for prediction
             
         Returns:
             tuple: (X_images, y_targets) for CNN model training
         """
         try:
-            # Create sequences first
-            feature_sequences, targets = self.create_sequences(df, seq_length=seq_length)
-            
-            if feature_sequences is None or targets is None:
-                return None, None
+            # Check if target column exists, for prediction we may not have targets
+            if target_col in df.columns:
+                # Create sequences with targets for training
+                feature_sequences, targets = self.create_sequences(df, target_col=target_col, seq_length=seq_length)
+                
+                if feature_sequences is None:
+                    return None, None
+            else:
+                # For prediction, create sequences without expecting target column
+                # Get feature columns (excluding any target columns if they exist)
+                feature_cols = [col for col in df.columns if not col.startswith('target_')]
+                
+                # Initialize lists to store sequences
+                X_sequences = []
+                
+                # Create sequences
+                for i in range(len(df) - seq_length):
+                    X_sequences.append(df[feature_cols].iloc[i:i+seq_length].values)
+                
+                # Convert to numpy arrays
+                feature_sequences = np.array(X_sequences)
+                targets = np.zeros(len(feature_sequences))  # Dummy targets
+                
+                if len(feature_sequences) == 0:
+                    logger.error("No sequences could be created - not enough data")
+                    return None, None
+                
+                logger.info(f"Created {len(feature_sequences)} sequences for prediction")
                 
             # Extract only OHLCV data for the candlestick visualization
             # This is a simplified version - actual candlestick images would be more complex
