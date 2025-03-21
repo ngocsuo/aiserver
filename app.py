@@ -20,6 +20,7 @@ import traceback
 import base64
 
 from utils.data_collector import BinanceDataCollector, MockDataCollector
+import config
 from utils.data_processor import DataProcessor
 from dashboard.components.custom_style import (
     load_custom_css, create_metric_card, create_price_card, 
@@ -184,7 +185,12 @@ if 'initialized' not in st.session_state:
         "use_real_api": config.USE_REAL_API,
         "update_interval": config.UPDATE_INTERVAL,
         "auto_training": config.CONTINUOUS_TRAINING,
-        "lookback_periods": config.LOOKBACK_PERIODS
+        "lookback_periods": config.LOOKBACK_PERIODS,
+        "use_proxy": config.USE_PROXY,
+        "proxy_host": config.PROXY_HOST,
+        "proxy_port": config.PROXY_PORT,
+        "proxy_username": config.PROXY_USERNAME,
+        "proxy_password": config.PROXY_PASSWORD
     }
 
 # Hàm lưu trạng thái giao dịch vào tập tin

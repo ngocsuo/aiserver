@@ -429,8 +429,8 @@ class BinanceDataCollector:
                     {"proxies": proxy_settings, "timeout": 60}
                 )
             else:
-                # Fallback to direct connection if proxy format is invalid
-                logger.warning("Invalid proxy format, attempting direct connection")
+                # Sử dụng kết nối trực tiếp khi không cấu hình proxy
+                logger.info("Using direct connection (proxy disabled)")
                 self.client = Client(
                     config.BINANCE_API_KEY, 
                     config.BINANCE_API_SECRET,
