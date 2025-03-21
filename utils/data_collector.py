@@ -580,7 +580,7 @@ class BinanceDataCollector:
                     "1h": 60 * 60 * 1000,
                     "4h": 4 * 60 * 60 * 1000,
                     "1d": 24 * 60 * 60 * 1000,
-                }.get(timeframe, 5 * 60 * 1000)  # Default to 5m if timeframe not found
+                }.get(timeframe, 60 * 1000)  # Default to 1m if timeframe not found
                 
                 # Time increment for each chunk (chunk_size candles)
                 time_increment = ms_per_candle * chunk_size
@@ -611,8 +611,12 @@ class BinanceDataCollector:
                     chunk_start = chunk_end
                     
                     # Respect API rate limits with a longer delay to avoid rate limiting
-                    # Binance limit is 1200 requests per minute, so we'll be very conservative
-                    time.sleep(2.0)  # 2 seconds between requests
+                    # Binance limit is 1200 requests per minute, but we'll be more conservative
+                    # Especially for 1m data which has more candles
+                    if timeframe == "1m":
+                        time.sleep(3.0)  # 3 seconds between requests for 1m data
+                    else:
+                        time.sleep(2.0)  # 2 seconds for other timeframes
                 
                 # Use the combined klines
                 klines = all_klines
