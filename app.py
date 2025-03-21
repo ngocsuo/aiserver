@@ -2917,11 +2917,36 @@ elif st.session_state.selected_tab == "Backtest":
                 ])
 
 elif st.session_state.selected_tab == "System Status":
-    st.title("System Status")
+    st.title("Trạng thái Hệ thống")
+    
+    # Force kiểm tra trạng thái huấn luyện từ continuous_trainer
+    if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
+        training_status = st.session_state.continuous_trainer.get_training_status()
+        
+        # Cập nhật biến trong session state dựa trên trạng thái thực tế
+        if 'last_training_time' in training_status and training_status['last_training_time']:
+            st.session_state.historical_data_ready = True
+            st.session_state.model_trained = True
+        else:
+            st.session_state.historical_data_ready = False
+            st.session_state.model_trained = False
     
     if not st.session_state.initialized:
-        st.warning("Please initialize the system first")
+        st.warning("Vui lòng khởi tạo hệ thống trước")
     else:
+        # Thêm nút làm mới (refresh) trạng thái
+        if st.button("🔄 Làm mới trạng thái", key="refresh_status_button"):
+            # Force cập nhật trạng thái trước khi hiển thị
+            if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
+                training_status = st.session_state.continuous_trainer.get_training_status()
+                if 'last_training_time' in training_status and training_status['last_training_time']:
+                    st.session_state.historical_data_ready = True
+                    st.session_state.model_trained = True
+                else:
+                    st.session_state.historical_data_ready = False
+                    st.session_state.model_trained = False
+            st.rerun()
+            
         # Use columns for better layout
         col1, col2 = st.columns([2, 1])
         
@@ -2929,7 +2954,7 @@ elif st.session_state.selected_tab == "System Status":
             # Display system status
             display_system_status(
                 data_status=st.session_state.data_fetch_status,
-                thread_status=st.session_state.thread_running,
+                thread_status=st.session_state.thread_running, 
                 prediction_count=len(st.session_state.predictions)
             )
             
