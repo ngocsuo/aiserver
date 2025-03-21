@@ -871,8 +871,11 @@ def create_data_collector():
                 error_msg = collector.connection_status["message"]
                 logger.warning(f"Could not connect to Binance API: {error_msg}")
                 
-                if "Geographic restriction" in collector.connection_status.get("error", ""):
+                # Kiểm tra lỗi hạn chế địa lý
+                error_str = str(collector.connection_status.get("error", ""))
+                if "restricted location" in error_str or "Eligibility" in error_str or "Geographic restriction" in error_str:
                     logger.error("Geographic restriction detected. This will work when deployed on your server.")
+                    logger.error("Error message: " + error_str)
                     raise Exception("Hạn chế địa lý phát hiện. Hệ thống sẽ hoạt động bình thường khi triển khai trên server riêng của bạn.")
                 
                 # Không dùng mock data nữa, yêu cầu API keys
