@@ -650,7 +650,50 @@ class BinanceDataCollector:
             logger.error(f"Error fetching open interest: {e}")
             raise
 
-# In production mode, we would use the real Binance API collector
-# However, due to API restrictions on Replit, we'll use Mock data for now
-# When deploying to a server without these restrictions, comment this line:
-BinanceDataCollector = MockDataCollector
+# This function creates the appropriate data collector based on config settings
+def create_data_collector():
+    """
+    Factory function to create the appropriate data collector.
+    Check config.USE_REAL_API and availability of API keys.
+    Also checks for geographic restrictions.
+    
+    Returns:
+        Either BinanceDataCollector or MockDataCollector instance
+    """
+    if config.FORCE_MOCK_DATA:
+        logger.warning("FORCE_MOCK_DATA is enabled, using mock data collector")
+        return MockDataCollector()
+        
+    if config.USE_REAL_API and config.BINANCE_API_KEY and config.BINANCE_API_SECRET:
+        logger.info("Attempting to use Binance API data collector")
+        try:
+            # Try to create a real data collector
+            collector = BinanceDataCollector()
+            
+            # Check if connection was successful
+            if collector.connection_status["connected"]:
+                logger.info("Successfully connected to Binance API")
+                return collector
+            else:
+                # If there's a connection error, log it and fall back to mock
+                error_msg = collector.connection_status["message"]
+                logger.warning(f"Could not connect to Binance API: {error_msg}")
+                
+                if "Geographic restriction" in collector.connection_status.get("error", ""):
+                    logger.error("Geographic restriction detected. Consider using VPN.")
+                
+                # Fall back to mock collector
+                logger.warning("Falling back to mock data collector due to API connection issues")
+                return MockDataCollector()
+        except Exception as e:
+            logger.error(f"Error initializing Binance API collector: {e}")
+            logger.warning("Falling back to mock data collector")
+            return MockDataCollector()
+    else:
+        # Either USE_REAL_API is False or API keys are not available
+        if not config.USE_REAL_API:
+            logger.info("Using mock data collector (USE_REAL_API is False)")
+        else:
+            logger.warning("API keys not available, using mock data collector")
+        
+        return MockDataCollector()

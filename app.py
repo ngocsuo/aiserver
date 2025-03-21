@@ -51,16 +51,37 @@ def initialize_system():
 
     with st.spinner("Initializing ETHUSDT Prediction System..."):
         try:
-            # Initialize data collector
-            st.session_state.data_collector = BinanceDataCollector()
+            # Initialize data collector with factory function
+            from utils.data_collector import create_data_collector, MockDataCollector
+            
+            # Create the appropriate data collector based on config
+            st.session_state.data_collector = create_data_collector()
             
             # Store data source type for display
             if isinstance(st.session_state.data_collector, MockDataCollector):
                 st.session_state.data_source = "Simulated Data (Mock)"
                 st.session_state.data_source_color = "orange"
+                
+                # Store API connection status if available
+                if hasattr(st.session_state.data_collector, "connection_status"):
+                    st.session_state.api_status = st.session_state.data_collector.connection_status
             else:
                 st.session_state.data_source = "Binance API (Real Data)"
                 st.session_state.data_source_color = "green"
+                
+                # Store successful connection status
+                st.session_state.api_status = {
+                    "connected": True,
+                    "message": "Connected to Binance API successfully"
+                }
+                
+            # Log data source
+            if 'log_messages' not in st.session_state:
+                st.session_state.log_messages = []
+                
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            log_message = f"{timestamp} - System initialized with data source: {st.session_state.data_source}"
+            st.session_state.log_messages.append(log_message)
             
             # Initialize data processor
             st.session_state.data_processor = DataProcessor()
@@ -1243,12 +1264,48 @@ elif st.session_state.selected_tab == "System Status":
             try:
                 if isinstance(st.session_state.data_collector, MockDataCollector):
                     st.warning("Using simulated data (MockDataCollector)")
-                    st.info("The system is configured to use mock data due to API restrictions in the current environment.")
-                    st.info("Actual API implementation is available in the code for deployment in production environments.")
+                    
+                    # Check if we have API status information
+                    if hasattr(st.session_state, 'api_status'):
+                        # If we tried to connect to the API but failed
+                        if 'error' in st.session_state.api_status and st.session_state.api_status['error']:
+                            st.error(f"API Connection Error: {st.session_state.api_status['message']}")
+                            
+                            # Check for geographic restrictions
+                            if "Geographic restriction" in st.session_state.api_status.get('error', ''):
+                                st.warning("⚠️ Binance has geographic restrictions in your region")
+                                st.info("Consider using a VPN service to access Binance API from supported regions")
+                            
+                            # Show more details in an expander
+                            with st.expander("API Connection Details"):
+                                st.write("**Error Type:**", st.session_state.api_status.get('error', 'Unknown'))
+                                st.write("**Last Check:**", st.session_state.api_status.get('last_check', 'Unknown'))
+                                st.write("**Try using the mock data collector for development purposes**")
+                        else:
+                            st.info("The system is configured to use mock data")
+                            
+                            # Show toggle in expander
+                            with st.expander("Data Source Configuration"):
+                                st.write("To use real Binance API data, update the following in config.py:")
+                                st.code("""
+# Feature flags
+USE_REAL_API = True  # Set to True to use real Binance API 
+FORCE_MOCK_DATA = False  # Set to False to allow real API usage
+                                """)
+                    else:
+                        st.info("The system is configured to use mock data due to API restrictions in the current environment.")
+                        st.info("Actual API implementation is available in the code for deployment in production environments.")
                 else:
+                    # We're using real Binance API
                     # Test connection to Binance
                     api_status = "Connected" if hasattr(st.session_state.data_collector, 'client') and st.session_state.data_collector.client else "Not Connected"
                     st.success(f"Binance API: {api_status}")
+                    
+                    # Display API connection details
+                    with st.expander("API Connection Details"):
+                        st.write("**API Key:** ", "✓ Configured" if config.BINANCE_API_KEY else "❌ Missing")
+                        st.write("**API Secret:** ", "✓ Configured" if config.BINANCE_API_SECRET else "❌ Missing")
+                        st.write("**Last Check:** ", st.session_state.api_status.get('last_check', 'Unknown'))
             except Exception as e:
                 st.error(f"Error checking API status: {e}")
             
