@@ -204,8 +204,20 @@ def create_metric_card(title, value, subtitle=None, icon=None, color="blue", is_
         color (str): Màu sắc của card
         is_percent (bool): Có hiển thị dạng % không
     """
+    # Xử lý giá trị value đầu vào để tránh các lỗi khi hiển thị
+    if isinstance(value, str) and "<div>" in value or "</div>" in value:
+        # Nếu chứa HTML tags, sử dụng giá trị đơn giản thay thế
+        value_str = "N/A"
+    else:
+        # Định dạng giá trị bình thường
+        try:
+            value_str = f"{float(value):.2f}%" if is_percent else f"{value}"
+        except (ValueError, TypeError):
+            # Nếu không thể chuyển thành số, hiển thị nguyên dạng
+            value_str = f"{value}%" if is_percent else f"{value}"
+    
+    # Xử lý icon
     icon_html = f"<span style='font-size: 24px;'>{icon}</span>" if icon else ""
-    value_str = f"{value:.2f}%" if is_percent else f"{value}"
     
     color_map = {
         "blue": "#485ec4",
@@ -217,6 +229,7 @@ def create_metric_card(title, value, subtitle=None, icon=None, color="blue", is_
     
     border_color = color_map.get(color, "#485ec4")
     
+    # Tạo HTML an toàn
     card_html = f"""
     <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {border_color}; margin-bottom: 15px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
