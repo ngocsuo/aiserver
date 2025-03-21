@@ -9,7 +9,7 @@ BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
 # Proxy Configuration
-USE_PROXY = os.environ.get("USE_PROXY", "True").lower() in ("true", "1", "yes")  # Bật lại proxy vì địa chỉ IP hiện tại bị Binance chặn
+USE_PROXY = False  # Tắt proxy đi vì đang gặp vấn đề với việc kết nối Binance. Người dùng có thể thay đổi trong UI
 PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
 PROXY_PORT = os.environ.get("PROXY_PORT", "39817")
 PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "1Xrce7oXNaV2jT5K")

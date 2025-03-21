@@ -432,26 +432,34 @@ class BinanceDataCollector:
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
-                # Thiết lập proxy giống curl command style
+                # Thiết lập proxy theo yêu cầu của Python-requests
                 if username and password:
-                    # Định dạng proxy giống với curl command:
-                    # curl -x http://username:password@host:port https://api.binance.com/api/v3/ping
+                    # Proxy URL cho python-requests được thiết lập khác với curl
+                    # Thay vì http://user:pass@host:port, chúng ta thiết lập proxies dict
+                    
+                    # Chỉ thiết lập proxy cho HTTP, không cho HTTPS theo hướng dẫn trong lỗi
                     proxy_url = f"http://{username}:{password}@{host}:{port}"
                     
-                    # Sử dụng định dạng proxy đúng cho HTTPS
                     proxy_settings = {
                         'http': proxy_url,
-                        'https': proxy_url
+                        # Không đặt https proxy để tránh lỗi SSL
                     }
                     
-                    logger.info(f"Connecting via authenticated proxy ({host}:{port}) in curl-style format")
+                    # Thiết lập biến môi trường (cách cũ nhưng đã hoạt động trước đây)
+                    os.environ["HTTP_PROXY"] = proxy_url
+                    
+                    logger.info(f"Connecting via authenticated proxy ({host}:{port}) with HTTP only")
                 else:
                     proxy_url = f"http://{host}:{port}"
                     proxy_settings = {
                         'http': proxy_url,
-                        'https': proxy_url
+                        # Không đặt https proxy để tránh lỗi SSL
                     }
-                    logger.info(f"Connecting via proxy ({host}:{port}) in curl-style format")
+                    
+                    # Thiết lập biến môi trường (cách cũ nhưng đã hoạt động trước đây)
+                    os.environ["HTTP_PROXY"] = proxy_url
+                    
+                    logger.info(f"Connecting via proxy ({host}:{port}) with HTTP only")
             
             # Khởi tạo client với hoặc không có proxy
             if proxy_settings:

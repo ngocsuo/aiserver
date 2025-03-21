@@ -105,23 +105,30 @@ class TradingManager:
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
-                # Định dạng proxy giống với curl command
+                # Thiết lập proxy theo yêu cầu của Python-requests (chỉ HTTP, không HTTPS)
                 if username and password:
                     proxy_url = f"http://{username}:{password}@{host}:{port}"
                     
                     proxy_settings = {
                         'http': proxy_url,
-                        'https': proxy_url
+                        # Không đặt https proxy để tránh lỗi SSL
                     }
                     
-                    logger.info(f"TradingManager kết nối qua proxy xác thực ({host}:{port})")
+                    # Thiết lập biến môi trường 
+                    os.environ["HTTP_PROXY"] = proxy_url
+                    
+                    logger.info(f"TradingManager kết nối qua proxy xác thực ({host}:{port}) với HTTP only")
                 else:
                     proxy_url = f"http://{host}:{port}"
                     proxy_settings = {
                         'http': proxy_url,
-                        'https': proxy_url
+                        # Không đặt https proxy để tránh lỗi SSL
                     }
-                    logger.info(f"TradingManager kết nối qua proxy không xác thực ({host}:{port})")
+                    
+                    # Thiết lập biến môi trường
+                    os.environ["HTTP_PROXY"] = proxy_url
+                    
+                    logger.info(f"TradingManager kết nối qua proxy không xác thực ({host}:{port}) với HTTP only")
                 
                 # Tạo kết nối với proxy
                 self.client = Client(
