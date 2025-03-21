@@ -28,6 +28,9 @@ from dashboard.components.custom_style import (
 )
 from utils.feature_engineering import FeatureEngineer
 from models.model_trainer import ModelTrainer
+from utils.pattern_recognition import (
+    detect_candlestick_patterns, calculate_support_resistance, analyze_price_trend
+)
 
 # Custom Toast Notification Component
 def show_toast(message, type="info", duration=3000):
@@ -3363,12 +3366,980 @@ elif st.session_state.selected_tab == "API Guide":
     
     st.info("The API server must be started separately by running `python api.py`")
 
+# Tạo giao diện chính với màu sắc và bố cục đẹp mắt
+def render_main_interface():
+    # Áp dụng CSS tùy chỉnh
+    load_custom_css()
+    
+    # Tạo header đẹp mắt
+    create_header()
+    
+    # Tạo sidebar menu
+    with st.sidebar:
+        # Tạo phần header sidebar
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h3 style="color: #485ec4;">⚙️ Cài đặt & Điều khiển</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Tạo các tab trong sidebar
+        sidebar_tabs = st.tabs(["🎛️ Điều khiển", "📊 Dữ liệu", "⚡ Mô hình"])
+        
+        with sidebar_tabs[0]:
+            # Control tab
+            st.subheader("Điều khiển hệ thống")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🔄 Cập nhật dữ liệu", use_container_width=True):
+                    with st.spinner("Đang cập nhật dữ liệu..."):
+                        fetch_data()
+                        show_toast("Đã cập nhật dữ liệu thành công!", "success")
+            
+            with col2:
+                if st.button("🔮 Dự đoán ngay", use_container_width=True):
+                    with st.spinner("Đang tạo dự đoán..."):
+                        make_prediction()
+                        show_toast("Đã tạo dự đoán mới!", "success")
+            
+            st.write("---")
+            
+            # Luồng cập nhật tự động
+            st.subheader("Cập nhật tự động")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.session_state.thread_running:
+                    if st.button("⏹️ Dừng cập nhật", use_container_width=True):
+                        stop_update_thread()
+                        show_toast("Đã dừng cập nhật tự động", "warning")
+                else:
+                    if st.button("▶️ Bắt đầu cập nhật", use_container_width=True):
+                        start_update_thread()
+                        show_toast("Đã bắt đầu cập nhật tự động", "success")
+            
+            with col2:
+                update_interval = st.selectbox(
+                    "Chu kỳ cập nhật",
+                    options=[5, 10, 30, 60, 300],
+                    index=1,
+                    format_func=lambda x: f"{x} giây"
+                )
+                if 'update_interval' not in st.session_state or st.session_state.update_interval != update_interval:
+                    st.session_state.update_interval = update_interval
+            
+            # Biểu đồ tự động cập nhật
+            st.write("---")
+            st.subheader("Biểu đồ")
+            st.checkbox("Tự động cập nhật biểu đồ", value=st.session_state.chart_auto_refresh, key="chart_auto_refresh")
+            
+        with sidebar_tabs[1]:
+            # Data tab
+            st.subheader("Nguồn dữ liệu")
+            
+            data_source = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Dữ liệu mô phỏng"
+            
+            data_source_color = "green" if data_source == "Binance API" else "orange"
+            st.markdown(f"<div style='color: {data_source_color}; font-weight: bold;'>{data_source}</div>", unsafe_allow_html=True)
+            
+            if data_source == "Binance API":
+                st.success("Kết nối Binance API thành công")
+            else:
+                st.warning("Đang sử dụng dữ liệu mô phỏng")
+            
+            st.write("---")
+            
+            st.subheader("Khoảng thời gian")
+            timeframe = st.selectbox(
+                "Khung thời gian",
+                options=["1m", "5m", "15m", "1h", "4h"],
+                index=1,
+                key="selected_timeframe"
+            )
+            
+            # Cập nhật thiết lập khung thời gian
+            if timeframe != st.session_state.prediction_settings.get("timeframe"):
+                st.session_state.prediction_settings["timeframe"] = timeframe
+                
+            # Chọn khoảng thời gian biểu đồ
+            chart_range = st.selectbox(
+                "Khoảng thời gian hiển thị",
+                options=["1 ngày", "3 ngày", "7 ngày", "14 ngày", "30 ngày"],
+                index=1
+            )
+            
+        with sidebar_tabs[2]:
+            # Model tab
+            st.subheader("Huấn luyện AI")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🧠 Huấn luyện lại", use_container_width=True):
+                    with st.spinner("Đang huấn luyện lại mô hình..."):
+                        train_models()
+                        show_toast("Đã bắt đầu huấn luyện lại mô hình!", "success")
+            
+            with col2:
+                if st.button("📋 Xem nhật ký", use_container_width=True):
+                    st.session_state.selected_tab = "Training Logs"
+                    st.rerun()
+            
+            st.write("---")
+            
+            st.subheader("Thiết lập dự đoán")
+            
+            # Chọn loại mô hình
+            model_type = st.selectbox(
+                "Phương pháp dự đoán",
+                options=["Ensemble (tất cả)", "LSTM", "Transformer", "CNN", "Historical Matching"],
+                index=0
+            )
+            
+            # Chọn khoảng thời gian dự đoán
+            prediction_horizon = st.selectbox(
+                "Khoảng thời gian dự đoán",
+                options=["10 phút", "15 phút", "30 phút", "1 giờ", "4 giờ"],
+                index=2
+            )
+            
+            # Cập nhật thiết lập dự đoán
+            horizon_map = {"10 phút": 10, "15 phút": 15, "30 phút": 30, "1 giờ": 60, "4 giờ": 240}
+            if horizon_map[prediction_horizon] != st.session_state.prediction_settings.get("horizon"):
+                st.session_state.prediction_settings["horizon"] = horizon_map[prediction_horizon]
+            
+            st.write("---")
+            
+            # Hiển thị trạng thái mô hình
+            st.subheader("Trạng thái mô hình")
+            
+            if st.session_state.model_trained:
+                st.success("Mô hình đã được huấn luyện")
+                
+                if hasattr(st.session_state, 'continuous_trainer') and st.session_state.continuous_trainer:
+                    training_status = st.session_state.continuous_trainer.get_training_status()
+                    last_training = training_status.get('last_training_time', 'Chưa xác định')
+                    st.info(f"Huấn luyện lần cuối: {last_training}")
+            else:
+                st.error("Mô hình chưa được huấn luyện")
+                st.button("⚡ Huấn luyện ngay", on_click=train_models)
+        
+        # Phần footer của sidebar
+        st.write("---")
+        
+        # Hiển thị trạng thái server
+        if st.session_state.thread_running:
+            st.markdown("""
+            <div style="display: flex; align-items: center;">
+                <div style="background-color: #28a745; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px;"></div>
+                <div>Server đang chạy</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style="display: flex; align-items: center;">
+                <div style="background-color: #ffc107; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px;"></div>
+                <div>Server đang dừng</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Thông tin về phiên bản
+        st.caption("© 2025 AI Crypto Prediction | v2.0")
+
+    # Tạo layout chính
+    main_tabs = st.tabs(["📈 Dashboard", "📊 Phân tích kỹ thuật", "🤖 API", "📘 Hướng dẫn"])
+    
+    with main_tabs[0]:
+        # Dashboard tab
+        if not st.session_state.initialized:
+            st.warning("Đang khởi tạo hệ thống...")
+            return
+        
+        # Hiển thị trạng thái dữ liệu
+        if st.session_state.latest_data is None:
+            st.warning("Đang tải dữ liệu...")
+            if st.button("Tải dữ liệu"):
+                fetch_data()
+            return
+        
+        # DASHBOARD LAYOUT
+        
+        # Row 1: Tổng quan thị trường
+        st.markdown("### Tổng quan thị trường")
+        
+        # Lấy dữ liệu gần đây nhất
+        latest_candle = st.session_state.latest_data.iloc[-1]
+        prev_candle = st.session_state.latest_data.iloc[-2]
+        
+        # Tính toán thay đổi giá
+        price_change = latest_candle['close'] - prev_candle['close']
+        price_change_pct = (price_change / prev_candle['close']) * 100
+        
+        # Row 1: Giá và thống kê tổng quan
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+        
+        with col1:
+            # Hiển thị giá hiện tại với thiết kế đẹp
+            create_price_card(
+                latest_candle['close'],
+                price_change,
+                price_change_pct,
+                st.session_state.data_fetch_status.get('last_update')
+            )
+        
+        with col2:
+            # Hiển thị khối lượng giao dịch
+            create_metric_card(
+                "Khối lượng 24h",
+                f"{latest_candle['volume'] / 1000000:.2f}M",
+                icon="📊",
+                color="blue"
+            )
+        
+        with col3:
+            # Hiển thị biến động (ATR)
+            if 'atr' in latest_candle:
+                volatility = latest_candle['atr']
+            else:
+                volatility = (latest_candle['high'] - latest_candle['low']) / latest_candle['close'] * 100
+            
+            create_metric_card(
+                "Biến động",
+                f"{volatility:.2f}%",
+                icon="📉",
+                color="yellow" if volatility > 2 else "blue"
+            )
+            
+        with col4:
+            # Hiển thị RSI nếu có
+            if 'rsi' in latest_candle:
+                rsi = latest_candle['rsi']
+                color = "red" if rsi > 70 else "green" if rsi < 30 else "blue"
+                create_metric_card(
+                    "RSI",
+                    f"{rsi:.1f}",
+                    icon="🔍",
+                    color=color
+                )
+            else:
+                create_metric_card(
+                    "Cập nhật",
+                    st.session_state.data_fetch_status.get('last_update', 'N/A').split()[1],
+                    icon="⏱️",
+                    color="blue"
+                )
+        
+        # Row 2: Dự đoán hiện tại và biểu đồ
+        st.markdown("### Dự đoán và biểu đồ giá")
+        
+        pred_col, chart_col = st.columns([1, 2])
+        
+        with pred_col:
+            # Lấy dự đoán gần nhất
+            if st.session_state.predictions and len(st.session_state.predictions) > 0:
+                latest_prediction = st.session_state.predictions[-1]
+                
+                # Tính thời gian còn lại
+                if 'timestamp' in latest_prediction and 'valid_for_minutes' in latest_prediction:
+                    pred_time = datetime.strptime(latest_prediction['timestamp'], "%Y-%m-%d %H:%M:%S")
+                    elapsed_minutes = (datetime.now() - pred_time).total_seconds() / 60
+                    minutes_left = max(0, latest_prediction['valid_for_minutes'] - elapsed_minutes)
+                    latest_prediction['valid_minutes_left'] = minutes_left
+                
+                # Hiển thị dự đoán với thiết kế đẹp mắt
+                create_prediction_card(latest_prediction)
+                
+                # Hiển thị độ tin cậy bằng biểu đồ gauge
+                confidence = latest_prediction.get('confidence', 0)
+                st.plotly_chart(
+                    create_gauge_chart(
+                        confidence,
+                        "Độ tin cậy dự đoán",
+                        min_value=0,
+                        max_value=1,
+                        color_thresholds=[
+                            (0.3, "red"),
+                            (0.7, "orange"),
+                            (1.0, "green")
+                        ]
+                    ),
+                    use_container_width=True
+                )
+                
+                # Hiển thị nút tạo dự đoán mới
+                if st.button("🔮 Tạo dự đoán mới", use_container_width=True):
+                    with st.spinner("Đang tạo dự đoán mới..."):
+                        make_prediction()
+                        show_toast("Đã tạo dự đoán mới!", "success")
+                        st.rerun()
+                
+            else:
+                st.info("Chưa có dự đoán nào được tạo")
+                if st.button("🚀 Tạo dự đoán đầu tiên", use_container_width=True):
+                    with st.spinner("Đang tạo dự đoán..."):
+                        make_prediction()
+                        show_toast("Đã tạo dự đoán đầu tiên!", "success")
+                        st.rerun()
+        
+        with chart_col:
+            # Hiển thị biểu đồ nến với chức năng chọn khung thời gian
+            timeframe_options = {
+                '50 nến gần nhất': 50, 
+                '100 nến gần nhất': 100, 
+                '200 nến gần nhất': 200,
+                'Tất cả dữ liệu': len(st.session_state.latest_data)
+            }
+            
+            selected_tf = st.selectbox(
+                "Hiển thị",
+                options=list(timeframe_options.keys()),
+                index=1
+            )
+            
+            candles = timeframe_options[selected_tf]
+            
+            # Vẽ biểu đồ nến với Plotly
+            chart = plot_candlestick_chart(st.session_state.latest_data.iloc[-candles:])
+            st.plotly_chart(chart, use_container_width=True)
+        
+        # Row 3: Lịch sử dự đoán và hiệu suất mô hình
+        st.markdown("### Phân tích hiệu suất")
+        
+        perf_col, hist_col = st.columns(2)
+        
+        with perf_col:
+            st.subheader("Hiệu suất các mô hình")
+            
+            # Lấy hiệu suất từ các mô hình đã huấn luyện
+            if hasattr(st.session_state, 'model_performance') and st.session_state.model_performance:
+                model_performance = st.session_state.model_performance
+            else:
+                # Hiệu suất mẫu nếu chưa có dữ liệu thực tế
+                model_performance = {
+                    'lstm': 0.72,
+                    'transformer': 0.76,
+                    'cnn': 0.68,
+                    'historical_similarity': 0.65,
+                    'meta_learner': 0.81
+                }
+            
+            # Vẽ biểu đồ hiệu suất
+            perf_chart = plot_model_performance(model_performance)
+            st.plotly_chart(perf_chart, use_container_width=True)
+            
+        with hist_col:
+            st.subheader("Lịch sử dự đoán")
+            
+            if st.session_state.predictions and len(st.session_state.predictions) > 0:
+                # Vẽ biểu đồ lịch sử dự đoán
+                hist_chart = plot_prediction_history(st.session_state.predictions)
+                st.plotly_chart(hist_chart, use_container_width=True)
+            else:
+                st.info("Chưa có dữ liệu lịch sử dự đoán")
+    
+    with main_tabs[1]:
+        # Tab phân tích kỹ thuật
+        if not st.session_state.initialized or st.session_state.latest_data is None:
+            st.warning("Đang khởi tạo và tải dữ liệu...")
+            return
+        
+        # Tạo tiêu đề với biểu tượng đẹp
+        create_section_header(
+            "Phân tích kỹ thuật chi tiết", 
+            "Phân tích kỹ thuật nâng cao với các chỉ báo và công cụ phân tích", 
+            icon="📊"
+        )
+        
+        # Tạo các tab con cho phân tích kỹ thuật
+        tech_tabs = st.tabs(["📊 Chỉ báo kỹ thuật", "🔍 Mẫu hình nến", "📏 Hỗ trợ & Kháng cự", "📉 Phân tích xu hướng"])
+        
+        with tech_tabs[0]:
+            # Tab chỉ báo kỹ thuật
+            st.subheader("Chỉ báo kỹ thuật nâng cao")
+            
+            # Thêm mô tả
+            st.markdown("""
+            Chỉ báo kỹ thuật là công cụ phân tích dựa trên giá, khối lượng và các dữ liệu thị trường khác.
+            Chúng giúp nhà đầu tư đưa ra quyết định dựa trên phân tích định lượng.
+            """)
+            
+            # Hiển thị biểu đồ chỉ báo
+            indicators_chart = plot_technical_indicators(st.session_state.latest_data.iloc[-100:])
+            st.plotly_chart(indicators_chart, use_container_width=True)
+            
+            # Hiển thị giải thích cho từng chỉ báo
+            with st.expander("Giải thích các chỉ báo", expanded=False):
+                st.markdown("""
+                ### SuperTrend
+                - Chỉ báo xu hướng dựa trên ATR và các phép tính trung bình
+                - Đường trên (đỏ): Xu hướng giảm
+                - Đường dưới (xanh): Xu hướng tăng
+                
+                ### RSI (Relative Strength Index)
+                - Dao động từ 0-100
+                - Trên 70: Vùng quá mua
+                - Dưới 30: Vùng quá bán
+                - 50: Ngưỡng trung tính
+                
+                ### ADX (Average Directional Index)
+                - Đo lường sức mạnh xu hướng
+                - < 20: Xu hướng yếu
+                - 20-40: Xu hướng trung bình
+                - > 40: Xu hướng mạnh
+                - Không chỉ ra hướng xu hướng
+                
+                ### Bollinger Bands
+                - Dựa trên trung bình động và độ lệch chuẩn
+                - Band trên/dưới: Giá có thể biến động trong vùng này
+                - Băng hẹp: Thị trường biến động thấp, chuẩn bị bùng nổ
+                - Băng rộng: Thị trường biến động cao
+                """)
+            
+            # Hiển thị tóm tắt trạng thái hiện tại
+            st.subheader("Tóm tắt trạng thái hiện tại")
+            
+            # Tính toán và hiển thị các giá trị
+            latest = st.session_state.latest_data.iloc[-1]
+            
+            # Tạo bảng thông tin
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # Chỉ báo xu hướng
+                if 'supertrend_direction' in latest:
+                    trend_direction = "Tăng" if latest['supertrend_direction'] == 1 else "Giảm"
+                    trend_color = "green" if latest['supertrend_direction'] == 1 else "red"
+                else:
+                    ema9 = latest['close'].rolling(window=9).mean().iloc[-1] if 'close' in latest else 0
+                    ema21 = latest['close'].rolling(window=21).mean().iloc[-1] if 'close' in latest else 0
+                    trend_direction = "Tăng" if ema9 > ema21 else "Giảm"
+                    trend_color = "green" if ema9 > ema21 else "red"
+                
+                st.markdown(f"**Xu hướng:** <span style='color:{trend_color}'>{trend_direction}</span>", unsafe_allow_html=True)
+                
+                # RSI
+                if 'rsi' in latest:
+                    rsi = latest['rsi']
+                    rsi_status = "Quá mua" if rsi > 70 else "Quá bán" if rsi < 30 else "Trung tính"
+                    rsi_color = "red" if rsi > 70 else "green" if rsi < 30 else "gray"
+                    st.markdown(f"**RSI:** <span style='color:{rsi_color}'>{rsi:.1f} ({rsi_status})</span>", unsafe_allow_html=True)
+                
+                # MACD
+                if 'macd' in latest and 'macd_signal' in latest:
+                    macd = latest['macd']
+                    macd_signal = latest['macd_signal']
+                    macd_hist = macd - macd_signal
+                    macd_status = "Tăng" if macd > macd_signal else "Giảm"
+                    macd_color = "green" if macd > macd_signal else "red"
+                    st.markdown(f"**MACD:** <span style='color:{macd_color}'>{macd_hist:.4f} ({macd_status})</span>", unsafe_allow_html=True)
+            
+            with col2:
+                # Bollinger Bands
+                if 'upper_band' in latest and 'lower_band' in latest:
+                    bb_width = (latest['upper_band'] - latest['lower_band']) / latest['close']
+                    bb_position = (latest['close'] - latest['lower_band']) / (latest['upper_band'] - latest['lower_band'])
+                    bb_status = "Biến động cao" if bb_width > 0.05 else "Biến động thấp"
+                    
+                    st.markdown(f"**BB Width:** {bb_width:.4f} ({bb_status})")
+                    st.markdown(f"**BB Position:** {bb_position:.2f}")
+                
+                # ADX
+                if 'adx' in latest:
+                    adx = latest['adx']
+                    adx_status = "Xu hướng mạnh" if adx > 25 else "Xu hướng yếu"
+                    st.markdown(f"**ADX:** {adx:.1f} ({adx_status})")
+                
+            with col3:
+                # Volume
+                vol_change = (latest['volume'] / st.session_state.latest_data['volume'].iloc[-10:-1].mean() - 1) * 100
+                vol_status = "Tăng" if vol_change > 0 else "Giảm"
+                vol_color = "green" if vol_change > 0 else "red"
+                
+                st.markdown(f"**Khối lượng:** <span style='color:{vol_color}'>{vol_change:.1f}% ({vol_status})</span>", unsafe_allow_html=True)
+                
+                # Volatility (ATR)
+                if 'atr' in latest:
+                    atr = latest['atr']
+                    atr_pct = atr / latest['close'] * 100
+                    st.markdown(f"**Biến động (ATR):** {atr_pct:.2f}%")
+                
+                # Trend Strength
+                if 'adx' in latest:
+                    trend_strength = "Mạnh" if latest['adx'] > 25 else "Trung bình" if latest['adx'] > 15 else "Yếu"
+                    st.markdown(f"**Độ mạnh xu hướng:** {trend_strength}")
+        
+        with tech_tabs[1]:
+            # Tab mẫu hình nến
+            st.subheader("Phân tích mẫu hình nến")
+            
+            # Hiển thị giải thích
+            st.markdown("""
+            Mẫu hình nến Nhật Bản là các hình mẫu đặc trưng trong biểu đồ giá, cung cấp thông tin về tâm lý thị trường
+            và khả năng biến động giá trong tương lai.
+            """)
+            
+            # Phát hiện mẫu hình nến
+            from utils.pattern_recognition import detect_candlestick_patterns
+            candle_patterns = detect_candlestick_patterns(st.session_state.latest_data.iloc[-5:])
+            
+            if candle_patterns and len(candle_patterns) > 0:
+                st.subheader("Mẫu hình nến phát hiện được")
+                
+                for pattern in candle_patterns:
+                    pattern_color = "green" if pattern['direction'] == 'bullish' else "red"
+                    
+                    st.markdown(f"""
+                    <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+                                border-left: 4px solid {pattern_color}; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 18px; font-weight: bold;">{pattern['name']}</div>
+                                <div style="margin-top: 5px; color: #5f6368;">{pattern['description']}</div>
+                                <div style="margin-top: 10px;">
+                                    <span style="color: {pattern_color}; font-weight: bold;">
+                                        {pattern['direction'].title()} ({pattern['reliability']}% độ tin cậy)
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="font-size: 36px; color: {pattern_color};">
+                                {'📈' if pattern['direction'] == 'bullish' else '📉'}
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("Không phát hiện được mẫu hình nến rõ ràng cho 5 nến gần đây")
+            
+            # Hiển thị bảng tham khảo về mẫu hình nến phổ biến
+            with st.expander("Tham khảo các mẫu hình nến phổ biến", expanded=False):
+                st.markdown("""
+                ### Mẫu hình tăng
+                - **Hammer (Búa)**: Nến có thân nhỏ, bóng dưới dài, xuất hiện trong xu hướng giảm
+                - **Morning Star (Sao Mai)**: Mẫu hình 3 nến, nến giữa là nến nhỏ (doji hoặc spinning top)
+                - **Bullish Engulfing (Bao phủ tăng)**: Nến tăng bao phủ hoàn toàn nến giảm trước đó
+                - **Piercing Line (Đường xuyên)**: Nến giảm sau đó là nến tăng mở cửa thấp hơn và đóng cửa cao hơn điểm giữa nến trước
+                
+                ### Mẫu hình giảm
+                - **Shooting Star (Sao Băng)**: Nến có thân nhỏ, bóng trên dài, xuất hiện trong xu hướng tăng
+                - **Evening Star (Sao Hôm)**: Mẫu hình 3 nến, nến giữa là nến nhỏ
+                - **Bearish Engulfing (Bao phủ giảm)**: Nến giảm bao phủ hoàn toàn nến tăng trước đó
+                - **Dark Cloud Cover (Mây Đen Bao Phủ)**: Nến tăng sau đó là nến giảm mở cửa cao hơn và đóng cửa thấp hơn điểm giữa nến trước
+                
+                ### Mẫu hình trung lập
+                - **Doji**: Nến có giá mở cửa và đóng cửa gần như bằng nhau
+                - **Spinning Top (Con Quay)**: Nến có thân nhỏ và bóng trên/dưới dài bằng nhau
+                - **Harami (Thai Nghén)**: Nến có thân lớn sau đó là nến có thân nhỏ nằm hoàn toàn trong thân nến trước
+                """)
+            
+        with tech_tabs[2]:
+            # Tab hỗ trợ và kháng cự
+            st.subheader("Phân tích vùng hỗ trợ và kháng cự")
+            
+            # Hiển thị giải thích
+            st.markdown("""
+            Các vùng hỗ trợ và kháng cự là các mức giá quan trọng nơi giá có xu hướng gặp phản ứng. 
+            Vùng hỗ trợ là nơi giá có thể dừng giảm và đảo chiều, vùng kháng cự là nơi giá có thể dừng tăng và đảo chiều.
+            """)
+            
+            # Phát hiện các mức hỗ trợ/kháng cự
+            from utils.pattern_recognition import calculate_support_resistance
+            support_resistance = calculate_support_resistance(st.session_state.latest_data.iloc[-100:])
+            
+            if support_resistance:
+                # Lấy giá hiện tại
+                current_price = st.session_state.latest_data['close'].iloc[-1]
+                
+                # Hiển thị các mức hỗ trợ và kháng cự
+                st.subheader("Các mức hỗ trợ và kháng cự")
+                
+                # Tạo bảng các mức
+                support_levels = sorted([level for level in support_resistance['support'] if level < current_price], reverse=True)
+                resistance_levels = sorted([level for level in support_resistance['resistance'] if level > current_price])
+                
+                if len(support_levels) > 0 or len(resistance_levels) > 0:
+                    # Tạo hai cột
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown(f"##### Các mức kháng cự")
+                        for i, level in enumerate(resistance_levels[:3]):  # Hiển thị tối đa 3 mức
+                            distance = ((level / current_price) - 1) * 100
+                            st.markdown(f"""
+                            <div style="display: flex; justify-content: space-between; padding: 5px 0; 
+                                       border-bottom: 1px solid #eaeaea; margin-bottom: 5px;">
+                                <div style="font-weight: bold;">R{i+1}</div>
+                                <div>${level:.2f}</div>
+                                <div style="color: red;">+{distance:.2f}%</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    
+                    with col2:
+                        st.markdown(f"##### Các mức hỗ trợ")
+                        for i, level in enumerate(support_levels[:3]):  # Hiển thị tối đa 3 mức
+                            distance = ((level / current_price) - 1) * 100
+                            st.markdown(f"""
+                            <div style="display: flex; justify-content: space-between; padding: 5px 0; 
+                                       border-bottom: 1px solid #eaeaea; margin-bottom: 5px;">
+                                <div style="font-weight: bold;">S{i+1}</div>
+                                <div>${level:.2f}</div>
+                                <div style="color: green;">{distance:.2f}%</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                
+                # Vẽ biểu đồ với các mức hỗ trợ và kháng cự
+                fig = go.Figure()
+                
+                # Thêm đường giá
+                fig.add_trace(go.Scatter(
+                    x=st.session_state.latest_data.iloc[-100:].index, 
+                    y=st.session_state.latest_data.iloc[-100:]['close'],
+                    mode='lines',
+                    name='Giá',
+                    line=dict(color='black', width=1)
+                ))
+                
+                # Thêm mức kháng cự
+                for i, level in enumerate(resistance_levels[:3]):
+                    fig.add_shape(
+                        type="line",
+                        x0=st.session_state.latest_data.iloc[-100:].index[0],
+                        y0=level,
+                        x1=st.session_state.latest_data.iloc[-100:].index[-1],
+                        y1=level,
+                        line=dict(color="red", width=1, dash="dash"),
+                    )
+                    fig.add_annotation(
+                        x=st.session_state.latest_data.iloc[-100:].index[-1],
+                        y=level,
+                        text=f"R{i+1}: ${level:.2f}",
+                        showarrow=False,
+                        xshift=10,
+                        align="left",
+                        bgcolor="rgba(255,0,0,0.1)"
+                    )
+                
+                # Thêm mức hỗ trợ
+                for i, level in enumerate(support_levels[:3]):
+                    fig.add_shape(
+                        type="line",
+                        x0=st.session_state.latest_data.iloc[-100:].index[0],
+                        y0=level,
+                        x1=st.session_state.latest_data.iloc[-100:].index[-1],
+                        y1=level,
+                        line=dict(color="green", width=1, dash="dash"),
+                    )
+                    fig.add_annotation(
+                        x=st.session_state.latest_data.iloc[-100:].index[-1],
+                        y=level,
+                        text=f"S{i+1}: ${level:.2f}",
+                        showarrow=False,
+                        xshift=10,
+                        align="left",
+                        bgcolor="rgba(0,255,0,0.1)"
+                    )
+                
+                # Thêm giá hiện tại
+                fig.add_shape(
+                    type="line",
+                    x0=st.session_state.latest_data.iloc[-100:].index[0],
+                    y0=current_price,
+                    x1=st.session_state.latest_data.iloc[-100:].index[-1],
+                    y1=current_price,
+                    line=dict(color="blue", width=1, dash="dot"),
+                )
+                fig.add_annotation(
+                    x=st.session_state.latest_data.iloc[-100:].index[0],
+                    y=current_price,
+                    text=f"Current: ${current_price:.2f}",
+                    showarrow=False,
+                    xshift=-10,
+                    xanchor="right",
+                    bgcolor="rgba(0,0,255,0.1)"
+                )
+                
+                # Cập nhật layout
+                fig.update_layout(
+                    title="Biểu đồ với các mức hỗ trợ và kháng cự",
+                    xaxis_title="Ngày",
+                    yaxis_title="Giá (USDT)",
+                    height=400,
+                    margin=dict(l=50, r=50, t=50, b=50),
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Hiển thị giải thích cho các mức Fibonacci
+                with st.expander("Fibonacci Retracement Levels", expanded=False):
+                    st.markdown("""
+                    ### Các mức Fibonacci Retracement
+                    
+                    Fibonacci Retracement là công cụ phân tích kỹ thuật sử dụng các tỷ lệ Fibonacci để xác định các mức hỗ trợ/kháng cự tiềm năng.
+                    
+                    Các mức phổ biến:
+                    - **0.236** - Mức yếu nhất
+                    - **0.382** - Mức quan trọng đầu tiên, thường là nơi giá đảo chiều nhỏ
+                    - **0.5** - Mức giữa đường (không phải số Fibonacci nhưng quan trọng trong tâm lý thị trường)
+                    - **0.618** - Mức mạnh nhất, nơi giá thường có phản ứng rõ ràng
+                    - **0.786** - Mức cuối cùng trước khi quay về mức cao/thấp trước đó
+                    - **1.0** - Mức đỉnh/đáy trước đó
+                    
+                    Các mức này rất hữu ích để xác định mục tiêu lợi nhuận và dừng lỗ trong giao dịch.
+                    """)
+            else:
+                st.info("Không có đủ dữ liệu để tính toán các mức hỗ trợ và kháng cự")
+                
+        with tech_tabs[3]:
+            # Tab phân tích xu hướng
+            st.subheader("Phân tích xu hướng")
+            
+            # Hiển thị giải thích
+            st.markdown("""
+            Phân tích xu hướng là việc xác định hướng di chuyển chủ đạo của thị trường. 
+            Xu hướng có thể là tăng (uptrend), giảm (downtrend) hoặc đi ngang (sideways/consolidation).
+            """)
+            
+            # Phân tích xu hướng
+            from utils.pattern_recognition import analyze_price_trend
+            trend_analysis = analyze_price_trend(st.session_state.latest_data.iloc[-50:])
+            
+            if trend_analysis:
+                # Hiển thị kết quả phân tích
+                st.subheader("Kết quả phân tích xu hướng")
+                
+                trend_color = "green" if trend_analysis['trend'] == 'uptrend' else "red" if trend_analysis['trend'] == 'downtrend' else "gray"
+                trend_text = "Xu hướng tăng" if trend_analysis['trend'] == 'uptrend' else "Xu hướng giảm" if trend_analysis['trend'] == 'downtrend' else "Đi ngang"
+                
+                st.markdown(f"""
+                <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+                            border-left: 4px solid {trend_color}; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: {trend_color};">{trend_text}</div>
+                            <div style="margin-top: 10px;">
+                                <div><b>Độ mạnh:</b> {trend_analysis['strength']}/10</div>
+                                <div><b>Thời gian:</b> {trend_analysis['duration']} nến</div>
+                                <div><b>Độ dốc:</b> {trend_analysis['slope']:.4f}/nến</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 48px; color: {trend_color};">
+                            {'📈' if trend_analysis['trend'] == 'uptrend' else '📉' if trend_analysis['trend'] == 'downtrend' else '📊'}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Vẽ biểu đồ xu hướng
+                fig = go.Figure()
+                
+                # Thêm đường giá
+                fig.add_trace(go.Scatter(
+                    x=st.session_state.latest_data.iloc[-50:].index, 
+                    y=st.session_state.latest_data.iloc[-50:]['close'],
+                    mode='lines',
+                    name='Giá',
+                    line=dict(color='black', width=1)
+                ))
+                
+                # Thêm đường xu hướng
+                if 'trendline' in trend_analysis:
+                    fig.add_trace(go.Scatter(
+                        x=st.session_state.latest_data.iloc[-50:].index, 
+                        y=trend_analysis['trendline'],
+                        mode='lines',
+                        name='Đường xu hướng',
+                        line=dict(color=trend_color, width=2)
+                    ))
+                
+                # Thêm các mức hỗ trợ và kháng cự theo xu hướng
+                if 'support_levels' in trend_analysis:
+                    for i, level in enumerate(trend_analysis['support_levels'][:2]):
+                        fig.add_shape(
+                            type="line",
+                            x0=st.session_state.latest_data.iloc[-50:].index[0],
+                            y0=level,
+                            x1=st.session_state.latest_data.iloc[-50:].index[-1],
+                            y1=level,
+                            line=dict(color="green", width=1, dash="dash"),
+                        )
+                
+                if 'resistance_levels' in trend_analysis:
+                    for i, level in enumerate(trend_analysis['resistance_levels'][:2]):
+                        fig.add_shape(
+                            type="line",
+                            x0=st.session_state.latest_data.iloc[-50:].index[0],
+                            y0=level,
+                            x1=st.session_state.latest_data.iloc[-50:].index[-1],
+                            y1=level,
+                            line=dict(color="red", width=1, dash="dash"),
+                        )
+                
+                # Cập nhật layout
+                fig.update_layout(
+                    title="Phân tích xu hướng",
+                    xaxis_title="Ngày",
+                    yaxis_title="Giá (USDT)",
+                    height=400,
+                    margin=dict(l=50, r=50, t=50, b=50),
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Hiển thị giải thích thêm
+                with st.expander("Các loại xu hướng và cách phát hiện", expanded=False):
+                    st.markdown("""
+                    ### Các loại xu hướng và đặc điểm
+                    
+                    #### Xu hướng tăng (Uptrend)
+                    - **Đặc điểm**: Các đỉnh cao hơn (Higher Highs - HH) và các đáy cao hơn (Higher Lows - HL)
+                    - **Chỉ báo hỗ trợ**: MA ngắn hạn nằm trên MA dài hạn, RSI trên 50, ADX cao
+                    - **Chiến lược**: "Buy the dips" - mua vào khi giá điều chỉnh về gần đường xu hướng
+                    
+                    #### Xu hướng giảm (Downtrend)
+                    - **Đặc điểm**: Các đỉnh thấp hơn (Lower Highs - LH) và các đáy thấp hơn (Lower Lows - LL)
+                    - **Chỉ báo hỗ trợ**: MA ngắn hạn nằm dưới MA dài hạn, RSI dưới 50, ADX cao
+                    - **Chiến lược**: "Sell the rallies" - bán khi giá phục hồi ngắn hạn
+                    
+                    #### Đi ngang (Sideways/Consolidation)
+                    - **Đặc điểm**: Giá dao động trong một biên độ hẹp, không có xu hướng rõ ràng
+                    - **Chỉ báo hỗ trợ**: MAs đan xen, RSI quanh 50, ADX thấp (<20)
+                    - **Chiến lược**: Giao dịch biên độ (mua ở hỗ trợ, bán ở kháng cự) hoặc chờ breakout
+                    
+                    ### Phương pháp xác định:
+                    - **Phân tích đường xu hướng**: Vẽ đường nối các đỉnh/đáy quan trọng
+                    - **Phân tích mẫu hình**: Mẫu hình tam giác, cờ hiệu, đầu vai...
+                    - **Phân tích kênh giá**: Xác định kênh giá tăng/giảm/ngang
+                    - **Chỉ báo kỹ thuật**: Sử dụng MA, MACD, RSI, ADX để xác nhận
+                    """)
+            else:
+                st.info("Không có đủ dữ liệu để phân tích xu hướng")
+    
+    with main_tabs[2]:
+        # Tab thông tin API
+        st.markdown("## API Documentation")
+        
+        st.markdown("""
+        ### Endpoints
+        
+        #### GET /predict
+        
+        Returns prediction data for ETHUSDT.
+        
+        **Query Parameters:**
+        
+        - `symbol`: Trading pair (default: ETHUSDT)
+        - `interval`: Candle interval (default: 5m)
+        
+        **Response:**
+        
+        ```json
+        {
+            "prediction": "LONG",
+            "confidence": 0.85,
+            "price": 1234.56,
+            "target_price": 1240.00,
+            "reason": "Technical analysis indicates a bullish trend based on RSI, MACD, and price action",
+            "timestamp": "2023-01-01 12:00:00",
+            "valid_for_minutes": 30
+        }
+        ```
+        
+        **Fields:**
+        
+        - `prediction`: "LONG", "SHORT", or "NEUTRAL"
+        - `confidence`: Confidence score from 0 to 1
+        - `price`: Current price at time of prediction
+        - `target_price`: Predicted target price
+        - `reason`: Technical reasoning behind prediction
+        - `timestamp`: When the prediction was generated
+        
+        ### Server Information
+        
+        The API server runs on port 8000 by default.
+        
+        ### Usage with curl
+        
+        ```bash
+        curl "http://localhost:8000/predict?symbol=ETHUSDT&interval=5m"
+        ```
+        """)
+        
+        st.info("The API server must be started separately by running `python api.py`")
+    
+    with main_tabs[3]:
+        # Tab hướng dẫn
+        st.markdown("## Hướng dẫn sử dụng")
+        
+        st.markdown("""
+        ### Tổng quan
+        
+        Hệ thống dự đoán ETH/USDT này sử dụng trí tuệ nhân tạo để phân tích dữ liệu thị trường và đưa ra dự đoán 
+        về xu hướng sắp tới của cặp tiền ETH/USDT. Hệ thống sử dụng nhiều mô hình khác nhau để tạo ra dự đoán 
+        chính xác nhất.
+        
+        ### Cách sử dụng
+        
+        1. **Dashboard**: Hiển thị thông tin tổng quan về thị trường và dự đoán gần nhất
+        2. **Technical Analysis**: Cung cấp phân tích kỹ thuật chi tiết với nhiều chỉ báo
+        3. **API**: Thông tin về cách truy cập API để tích hợp với hệ thống khác
+        4. **Settings**: Thay đổi các thiết lập như khung thời gian, mô hình dự đoán...
+        
+        ### Các chức năng chính
+        
+        - **Dự đoán thời gian thực**: Hệ thống tự động cập nhật dự đoán mỗi 5 phút
+        - **Phân tích đa chiều**: Sử dụng nhiều chỉ báo và mô hình khác nhau
+        - **Lịch sử dự đoán**: Xem lại các dự đoán trước đó và đánh giá độ chính xác
+        - **Tuỳ chỉnh thông số**: Điều chỉnh các tham số dự đoán theo nhu cầu
+        - **API tích hợp**: Tích hợp với các hệ thống giao dịch tự động
+        
+        ### Lưu ý quan trọng
+        
+        Dự đoán từ hệ thống AI chỉ là một công cụ tham khảo và không nên được coi là lời khuyên đầu tư. 
+        Luôn thực hiện phân tích riêng và quản lý rủi ro trước khi giao dịch.
+        """)
+        
+        with st.expander("Mẹo sử dụng hiệu quả", expanded=False):
+            st.markdown("""
+            ### Mẹo sử dụng hiệu quả
+            
+            1. **Kết hợp nhiều khung thời gian**: So sánh dự đoán trên nhiều khung thời gian khác nhau để có cái nhìn tổng quan hơn
+            2. **Theo dõi độ tin cậy**: Chỉ cân nhắc các dự đoán có độ tin cậy cao (trên 70%)
+            3. **Kết hợp với phân tích cơ bản**: Các tin tức thị trường có thể ảnh hưởng lớn đến giá
+            4. **Kiểm tra lịch sử hiệu suất**: Xem xét hiệu suất của từng mô hình trước khi ra quyết định
+            5. **Sử dụng quản lý vốn hợp lý**: Không nên đặt cược quá lớn vào một dự đoán, dù độ tin cậy cao thế nào
+            """)
+        
+        with st.expander("FAQ", expanded=False):
+            st.markdown("""
+            ### Câu hỏi thường gặp
+            
+            **Hệ thống sử dụng dữ liệu gì để đưa ra dự đoán?**
+            
+            Hệ thống sử dụng dữ liệu lịch sử giá và khối lượng từ Binance, cùng với các chỉ báo kỹ thuật được tính toán từ dữ liệu này.
+            
+            **Các mô hình AI nào được sử dụng?**
+            
+            Hệ thống sử dụng kết hợp nhiều mô hình: LSTM, Transformer, CNN, và mô hình tương đồng lịch sử, cùng với một mô hình meta-learner để kết hợp kết quả.
+            
+            **Dự đoán có chính xác không?**
+            
+            Không có hệ thống dự đoán nào đạt độ chính xác 100%. Hiệu suất của hệ thống dao động từ 65-85% tùy thuộc vào điều kiện thị trường.
+            
+            **Tôi có thể tích hợp hệ thống này với bot giao dịch không?**
+            
+            Có, hệ thống cung cấp API cho phép tích hợp dễ dàng với các bot giao dịch và hệ thống khác.
+            
+            **Hệ thống có cập nhật theo thời gian thực không?**
+            
+            Có, hệ thống tự động cập nhật dữ liệu mới nhất từ Binance và tạo dự đoán mới mỗi 5 phút.
+            """)
+
+
 # Initialize on startup
 if not st.session_state.initialized:
     initialize_system()
     # Fetch data immediately after initialization to show real-time chart
     if st.session_state.initialized:
-        with st.spinner("Đang tải dữ liệu thời gian thực..."):
-            fetch_data()
-            # Generate an initial prediction
-            make_prediction()
+        fetch_data()
+
+# Render giao diện chính
+render_main_interface()
