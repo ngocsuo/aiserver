@@ -1,6 +1,5 @@
 """
 Data collection module for fetching ETHUSDT data from Binance Futures.
-For demo purposes, this also provides a simulated data generator.
 """
 import time
 import pandas as pd
@@ -9,9 +8,9 @@ from datetime import datetime, timedelta
 import logging
 import random
 
-# In production, uncomment these:
-# from binance.client import Client
-# from binance.exceptions import BinanceAPIException
+# Import Binance client for real API access
+from binance.client import Client
+from binance.exceptions import BinanceAPIException
 
 import config
 
@@ -348,5 +347,251 @@ class MockDataCollector:
         
         return df
 
-# Use this in development/demo mode
-BinanceDataCollector = MockDataCollector
+class BinanceDataCollector:
+    """
+    A data collector that fetches real OHLCV data from Binance Futures API.
+    """
+    def __init__(self):
+        """Initialize the Binance data collector."""
+        try:
+            # Initialize Binance client with API keys from config
+            self.client = Client(config.BINANCE_API_KEY, config.BINANCE_API_SECRET)
+            
+            # Test connection
+            self.client.ping()
+            logger.info("Binance API connection successful")
+            
+            # Track last update time
+            self.last_update = None
+            
+            # Store the collected data
+            self.data = {}
+            for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
+                self.data[tf] = None
+                
+            logger.info("Binance data collector initialized")
+            
+        except BinanceAPIException as e:
+            logger.error(f"Binance API error: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Error initializing BinanceDataCollector: {e}")
+            raise
+            
+    def _convert_klines_to_dataframe(self, klines):
+        """
+        Convert kline data from Binance to DataFrame.
+        
+        Args:
+            klines (list): Raw kline data from Binance
+            
+        Returns:
+            pd.DataFrame: DataFrame with OHLCV data
+        """
+        columns = [
+            'open_time', 'open', 'high', 'low', 'close', 'volume',
+            'close_time', 'quote_asset_volume', 'number_of_trades',
+            'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'
+        ]
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(klines, columns=columns)
+        
+        # Convert timestamps to datetime
+        df['open_time'] = pd.to_datetime(df['open_time'], unit='ms')
+        df['close_time'] = pd.to_datetime(df['close_time'], unit='ms')
+        
+        # Convert numeric columns
+        numeric_cols = ['open', 'high', 'low', 'close', 'volume', 
+                        'quote_asset_volume', 'number_of_trades',
+                        'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume']
+                        
+        for col in numeric_cols:
+            df[col] = pd.to_numeric(df[col])
+            
+        # Set index to open_time
+        df.set_index('open_time', inplace=True)
+        
+        return df
+            
+    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.TIMEFRAMES["primary"], 
+                              limit=config.LOOKBACK_PERIODS):
+        """
+        Collect historical OHLCV data from Binance.
+        
+        Args:
+            symbol (str): Trading pair symbol
+            timeframe (str): Candle timeframe
+            limit (int): Number of candles to collect
+            
+        Returns:
+            pd.DataFrame: DataFrame with OHLCV data
+        """
+        try:
+            logger.info(f"Fetching {limit} {timeframe} candles for {symbol} from Binance")
+            
+            # Get klines from Binance
+            klines = self.client.get_historical_klines(
+                symbol=symbol,
+                interval=timeframe,
+                limit=limit
+            )
+            
+            # Convert to DataFrame
+            df = self._convert_klines_to_dataframe(klines)
+            
+            logger.info(f"Fetched {len(df)} {timeframe} candles for {symbol}")
+            return df
+            
+        except BinanceAPIException as e:
+            logger.error(f"Binance API error fetching historical data: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Error fetching historical data: {e}")
+            raise
+            
+    def update_data(self, symbol=config.SYMBOL):
+        """
+        Update data for all configured timeframes.
+        
+        Args:
+            symbol (str): Trading pair symbol
+            
+        Returns:
+            dict: Dictionary with updated dataframes for each timeframe
+        """
+        now = datetime.now()
+        
+        # Check if we need to update (based on configured interval)
+        if self.last_update and (now - self.last_update).total_seconds() < config.UPDATE_INTERVAL:
+            # Not time to update yet
+            return self.data
+        
+        try:
+            # Update data for each timeframe
+            for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
+                # If we don't have data yet, collect historical data
+                if self.data[tf] is None:
+                    self.data[tf] = self.collect_historical_data(symbol=symbol, timeframe=tf)
+                else:
+                    # We have existing data, just update with recent candles
+                    # Determine how many candles to fetch based on the last timestamp
+                    last_timestamp = self.data[tf].index.max()
+                    # Fetch a reasonable number of recent candles to ensure no gaps
+                    recent_klines = self.client.get_historical_klines(
+                        symbol=symbol,
+                        interval=tf,
+                        start_str=int((last_timestamp - timedelta(hours=1)).timestamp() * 1000),
+                        limit=100
+                    )
+                    
+                    # Convert to DataFrame
+                    if recent_klines:
+                        recent_df = self._convert_klines_to_dataframe(recent_klines)
+                        
+                        # Filter to new data only
+                        recent_df = recent_df[recent_df.index > last_timestamp]
+                        
+                        if not recent_df.empty:
+                            # Append the new data
+                            self.data[tf] = pd.concat([self.data[tf], recent_df])
+                            
+                            # Remove duplicates if any
+                            self.data[tf] = self.data[tf][~self.data[tf].index.duplicated(keep='last')]
+                            
+                            # Sort by time
+                            self.data[tf].sort_index(inplace=True)
+                    
+            # Update last update time
+            self.last_update = now
+            logger.info(f"Binance data updated for all timeframes at {now}")
+            
+            # Return the updated data
+            return self.data
+            
+        except BinanceAPIException as e:
+            logger.error(f"Binance API error updating data: {e}")
+            return self.data
+        except Exception as e:
+            logger.error(f"Error updating Binance data: {e}")
+            return self.data
+            
+    def get_funding_rate(self, symbol=config.SYMBOL, limit=500):
+        """
+        Get funding rate data from Binance.
+        
+        Args:
+            symbol (str): Trading pair symbol
+            limit (int): Number of funding rate records to retrieve
+            
+        Returns:
+            pd.DataFrame: DataFrame with funding rate data
+        """
+        try:
+            logger.info(f"Fetching funding rate data for {symbol}")
+            
+            # Fetch funding rate history
+            funding_rates = self.client.futures_funding_rate(symbol=symbol, limit=limit)
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(funding_rates)
+            
+            # Convert timestamps and numeric values
+            df['fundingTime'] = pd.to_datetime(df['fundingTime'], unit='ms')
+            df['fundingRate'] = pd.to_numeric(df['fundingRate'])
+            
+            df.set_index('fundingTime', inplace=True)
+            
+            return df
+            
+        except BinanceAPIException as e:
+            logger.error(f"Binance API error fetching funding rates: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Error fetching funding rates: {e}")
+            raise
+            
+    def get_open_interest(self, symbol=config.SYMBOL, timeframe="5m", limit=500):
+        """
+        Get open interest data from Binance.
+        
+        Args:
+            symbol (str): Trading pair symbol
+            timeframe (str): Data timeframe
+            limit (int): Number of records to retrieve
+            
+        Returns:
+            pd.DataFrame: DataFrame with open interest data
+        """
+        try:
+            logger.info(f"Fetching open interest data for {symbol}")
+            
+            # Fetch open interest history
+            open_interest = self.client.futures_open_interest_hist(
+                symbol=symbol,
+                period=timeframe,
+                limit=limit
+            )
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(open_interest)
+            
+            # Convert timestamps and numeric values
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df['sumOpenInterest'] = pd.to_numeric(df['sumOpenInterest'])
+            df['sumOpenInterestValue'] = pd.to_numeric(df['sumOpenInterestValue'])
+            
+            df.set_index('timestamp', inplace=True)
+            
+            return df
+            
+        except BinanceAPIException as e:
+            logger.error(f"Binance API error fetching open interest: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Error fetching open interest: {e}")
+            raise
+
+# In production mode, we use the real Binance API collector
+# To use mock data collector instead, uncomment this line:
+# BinanceDataCollector = MockDataCollector
