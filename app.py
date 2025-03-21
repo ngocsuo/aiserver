@@ -2162,46 +2162,55 @@ elif st.session_state.selected_tab == "Cài đặt":
         with settings_tab1:
             st.subheader("⚙️ Cấu hình dự đoán")
             
-            # Khung thời gian chính để dự đoán
+            # Lấy giá trị từ session state nếu có, nếu không thì dùng giá trị mặc định
+            default_timeframe_index = 0  # Mặc định là 1m (index 0)
+            default_horizon_1m_index = 0
+            default_horizon_5m_index = 0
+            
+            # Khởi tạo giá trị từ session state (nếu đã có)
+            if "prediction_settings" in st.session_state:
+                settings = st.session_state.prediction_settings
+                if settings["timeframe"] == "5m":
+                    default_timeframe_index = 1
+                    
+                # Lấy danh sách horizons cho các timeframes
+                horizons_1m = list(config.PREDICTION_SETTINGS["1m"]["horizons"].keys())
+                horizons_5m = list(config.PREDICTION_SETTINGS["5m"]["horizons"].keys())
+                
+                # Tìm index của horizon trong danh sách tương ứng
+                if settings["timeframe"] == "1m" and settings["horizon"] in horizons_1m:
+                    default_horizon_1m_index = horizons_1m.index(settings["horizon"])
+                elif settings["timeframe"] == "5m" and settings["horizon"] in horizons_5m:
+                    default_horizon_5m_index = horizons_5m.index(settings["horizon"])
+            
+            # Khung thời gian chính để dự đoán với giá trị mặc định từ session state
             selected_timeframe = st.selectbox(
                 "Khung thời gian dữ liệu",
                 options=["1m", "5m"],
-                index=0,
-                help="Khung thời gian dữ liệu sử dụng cho việc dự đoán"
+                index=default_timeframe_index,
+                help="Khung thời gian dữ liệu sử dụng cho việc dự đoán",
+                key="timeframe_selectbox"
             )
             
-            # Thời gian dự đoán cho tương lai
+            # Thời gian dự đoán cho tương lai với giá trị mặc định từ session state
             if selected_timeframe == "1m":
                 prediction_horizons = list(config.PREDICTION_SETTINGS["1m"]["horizons"].keys())
                 selected_horizon = st.selectbox(
                     "Khoảng thời gian dự đoán",
                     options=prediction_horizons,
-                    index=0,
-                    help="Thời gian dự đoán trong tương lai"
+                    index=default_horizon_1m_index,
+                    help="Thời gian dự đoán trong tương lai",
+                    key="horizon_1m_selectbox"
                 )
             else:  # 5m
                 prediction_horizons = list(config.PREDICTION_SETTINGS["5m"]["horizons"].keys())
                 selected_horizon = st.selectbox(
                     "Khoảng thời gian dự đoán",
                     options=prediction_horizons,
-                    index=0,
-                    help="Thời gian dự đoán trong tương lai"
+                    index=default_horizon_5m_index,
+                    help="Thời gian dự đoán trong tương lai",
+                    key="horizon_5m_selectbox"
                 )
-            
-            # Khởi tạo giá trị từ session state (nếu đã có)
-            if "prediction_settings" in st.session_state:
-                settings = st.session_state.prediction_settings
-                # Cập nhật giá trị hiện tại của selectbox để đồng bộ với session state
-                if selected_timeframe != settings["timeframe"]:
-                    selected_timeframe = settings["timeframe"]
-                
-                # Cần điều chỉnh horizon tương ứng với timeframe
-                if selected_timeframe == "1m":
-                    if settings["horizon"] in prediction_horizons:
-                        selected_horizon = settings["horizon"]
-                else:  # 5m
-                    if settings["horizon"] in prediction_horizons:
-                        selected_horizon = settings["horizon"]
             
             # Áp dụng thiết lập mới
             col1, col2 = st.columns(2)
@@ -2222,11 +2231,20 @@ elif st.session_state.selected_tab == "Cài đặt":
         with settings_tab2:
             st.subheader("🧠 Cài đặt huấn luyện")
             
+            # Xác định giá trị mặc định từ session state nếu có
+            default_start_date = datetime.strptime(config.DEFAULT_TRAINING_START_DATE, "%Y-%m-%d").date()
+            if "training_settings" in st.session_state and "start_date" in st.session_state.training_settings:
+                try:
+                    default_start_date = datetime.strptime(st.session_state.training_settings["start_date"], "%Y-%m-%d").date()
+                except:
+                    pass
+                
             # Chọn khoảng thời gian dữ liệu huấn luyện
             start_date = st.date_input(
                 "Ngày bắt đầu dữ liệu huấn luyện",
-                value=datetime.strptime(config.DEFAULT_TRAINING_START_DATE, "%Y-%m-%d").date(),
-                help="Chọn ngày bắt đầu khoảng thời gian dữ liệu huấn luyện"
+                value=default_start_date,
+                help="Chọn ngày bắt đầu khoảng thời gian dữ liệu huấn luyện",
+                key="start_date_input"
             )
             
             # Hiển thị ngày hiện tại làm điểm kết thúc
@@ -2239,11 +2257,20 @@ elif st.session_state.selected_tab == "Cài đặt":
             
             # Thiết lập tần suất huấn luyện lại
             st.subheader("⏱️ Tần suất huấn luyện tự động")
+            
+            # Xác định giá trị mặc định từ session state nếu có
+            default_frequency_index = 0
+            if "training_settings" in st.session_state and "training_frequency" in st.session_state.training_settings:
+                frequency_options = ["30 phút", "1 giờ", "3 giờ", "6 giờ", "12 giờ", "24 giờ"]
+                if st.session_state.training_settings["training_frequency"] in frequency_options:
+                    default_frequency_index = frequency_options.index(st.session_state.training_settings["training_frequency"])
+            
             training_frequency = st.selectbox(
                 "Huấn luyện lại mỗi",
                 options=["30 phút", "1 giờ", "3 giờ", "6 giờ", "12 giờ", "24 giờ"],
-                index=0,
-                help="Tần suất hệ thống tự động huấn luyện lại model"
+                index=default_frequency_index,
+                help="Tần suất hệ thống tự động huấn luyện lại model",
+                key="training_frequency_selectbox"
             )
             
             # Button để bắt đầu huấn luyện và áp dụng thiết lập mới
