@@ -614,9 +614,9 @@ class BinanceDataCollector:
                     # Binance limit is 1200 requests per minute, but we'll be more conservative
                     # Especially for 1m data which has more candles
                     if timeframe == "1m":
-                        time.sleep(3.0)  # 3 seconds between requests for 1m data
+                        time.sleep(1.0)  # 1 second between requests for 1m data (giảm từ 3 xuống 1)
                     else:
-                        time.sleep(2.0)  # 2 seconds for other timeframes
+                        time.sleep(0.5)  # 0.5 seconds for other timeframes (giảm từ 2 xuống 0.5)
                 
                 # Use the combined klines
                 klines = all_klines
