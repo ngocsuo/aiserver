@@ -221,12 +221,12 @@ def train_models():
         progress_bar.progress(60)
         update_log("Step 4/5: Training LSTM model...")
         lstm_model, lstm_history = st.session_state.model_trainer.train_lstm(sequence_data)
-        update_log(f"LSTM model trained with accuracy: {lstm_history.history.get('val_accuracy', [-1])[-1]:.4f}")
+        update_log(f"LSTM model trained with accuracy: {lstm_history.get('val_accuracy', [-1])[-1]:.4f}")
         
         progress_bar.progress(70)
         update_log("Training Transformer model...")
         transformer_model, transformer_history = st.session_state.model_trainer.train_transformer(sequence_data)
-        update_log(f"Transformer model trained with accuracy: {transformer_history.history.get('val_accuracy', [-1])[-1]:.4f}")
+        update_log(f"Transformer model trained with accuracy: {transformer_history.get('val_accuracy', [-1])[-1]:.4f}")
         
         progress_bar.progress(80)
         update_log("Training CNN model...")
@@ -258,9 +258,9 @@ def train_models():
                 "LONG": class_dist.get(2, 0) if 'target_class' in processed_data.columns else 0
             },
             "model_performance": {
-                "lstm": lstm_history.history.get('val_accuracy', [-1])[-1],
-                "transformer": transformer_history.history.get('val_accuracy', [-1])[-1],
-                "cnn": cnn_history.history.get('val_accuracy', [-1])[-1],
+                "lstm": lstm_history.get('val_accuracy', [-1])[-1],
+                "transformer": transformer_history.get('val_accuracy', [-1])[-1],
+                "cnn": cnn_history.get('val_accuracy', [-1])[-1],
                 "historical_similarity": 0.65,  # Mock value as it doesn't return standard accuracy
                 "meta_learner": 0.81  # Mock value as it doesn't return standard accuracy in the same way
             },
