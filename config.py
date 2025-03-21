@@ -8,6 +8,11 @@ from datetime import datetime
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
+# Feature flags
+USE_REAL_API = False  # Set to True to use real Binance API instead of mock data
+DEBUG_MODE = True     # Enable additional logging and debug information
+FORCE_MOCK_DATA = True  # Force the use of mock data even with valid API keys (for development)
+
 # Trading Symbol and Timeframes
 SYMBOL = "ETHUSDT"
 TIMEFRAMES = {

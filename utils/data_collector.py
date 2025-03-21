@@ -353,30 +353,88 @@ class BinanceDataCollector:
     """
     def __init__(self):
         """Initialize the Binance data collector."""
+        # Track last update time
+        self.last_update = None
+        self.client = None
+        self.connection_status = {
+            "connected": False,
+            "error": None,
+            "message": "Not initialized",
+            "last_check": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        # Store the collected data
+        self.data = {}
+        for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
+            self.data[tf] = None
+            
         try:
-            # Initialize Binance client with API keys from config
+            # Check if API keys are available
+            if not config.BINANCE_API_KEY or not config.BINANCE_API_SECRET:
+                logger.warning("Binance API keys not found in config")
+                self.connection_status["message"] = "API keys not found in configuration"
+                return
+                
+            # Initialize Binance client with API keys
             self.client = Client(config.BINANCE_API_KEY, config.BINANCE_API_SECRET)
             
+            # Test connection with timeout
+            import socket
+            original_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(5)  # 5 second timeout
+            
             # Test connection
-            self.client.ping()
-            logger.info("Binance API connection successful")
-            
-            # Track last update time
-            self.last_update = None
-            
-            # Store the collected data
-            self.data = {}
-            for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
-                self.data[tf] = None
+            try:
+                self.client.ping()
+                logger.info("Binance API connection successful")
                 
-            logger.info("Binance data collector initialized")
-            
-        except BinanceAPIException as e:
-            logger.error(f"Binance API error: {e}")
-            raise
+                # Check system status
+                system_status = self.client.get_system_status()
+                if system_status['status'] == 0:
+                    logger.info("Binance system status: Normal")
+                else:
+                    logger.warning(f"Binance system status: Maintenance - {system_status['msg']}")
+                
+                # Check if futures API is accessible
+                test_klines = self.client.futures_klines(
+                    symbol=config.SYMBOL,
+                    interval=config.TIMEFRAMES["primary"],
+                    limit=1
+                )
+                
+                if test_klines:
+                    logger.info("Binance Futures API accessible")
+                    self.connection_status["connected"] = True
+                    self.connection_status["message"] = "Connected to Binance Futures API"
+                
+                logger.info("Binance data collector initialized successfully")
+                
+            except BinanceAPIException as e:
+                if 'APIError(code=-1130)' in str(e):
+                    # Invalid API endpoint, likely a geographic restriction
+                    logger.error("Binance API error: Geographic restrictions detected")
+                    self.connection_status["error"] = "Geographic restriction"
+                    self.connection_status["message"] = "Binance access restricted in your region. Consider using VPN."
+                elif 'APIError(code=-2015)' in str(e):
+                    # Invalid API key
+                    logger.error("Binance API error: Invalid API key")
+                    self.connection_status["error"] = "Invalid API key"
+                    self.connection_status["message"] = "Please check your API key and secret"
+                else:
+                    logger.error(f"Binance API error: {e}")
+                    self.connection_status["error"] = str(e)
+                    self.connection_status["message"] = f"API Error: {e}"
+            except socket.timeout:
+                logger.error("Binance API connection timeout")
+                self.connection_status["error"] = "Connection timeout"
+                self.connection_status["message"] = "Connection to Binance API timed out, network issues detected"
+            finally:
+                socket.setdefaulttimeout(original_timeout)
+                
         except Exception as e:
             logger.error(f"Error initializing BinanceDataCollector: {e}")
-            raise
+            self.connection_status["error"] = str(e)
+            self.connection_status["message"] = f"Initialization error: {e}"
             
     def _convert_klines_to_dataframe(self, klines):
         """
