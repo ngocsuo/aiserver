@@ -8,16 +8,102 @@ import time
 import threading
 import os
 import json
+import html
 from datetime import datetime, timedelta
 import pytz
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import random
+import streamlit.components.v1 as components
 
 from utils.data_collector import BinanceDataCollector, MockDataCollector
 from utils.data_processor import DataProcessor
 from utils.feature_engineering import FeatureEngineer
 from models.model_trainer import ModelTrainer
+
+# Custom Toast Notification Component
+def show_toast(message, type="info", duration=3000):
+    """
+    Display a toast notification that fades out.
+    
+    Args:
+        message (str): Message to display
+        type (str): Type of notification ('info', 'success', 'warning', 'error')
+        duration (int): Duration in milliseconds before fading out
+    """
+    # Escape HTML to prevent XSS
+    message = html.escape(message)
+    
+    # Choose color based on type
+    colors = {
+        "info": "#17a2b8",
+        "success": "#28a745",
+        "warning": "#ffc107",
+        "error": "#dc3545"
+    }
+    color = colors.get(type, colors["info"])
+    
+    # Create toast HTML with CSS animation
+    toast_html = f"""
+    <style>
+    .toast-container {{
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }}
+    
+    .toast {{
+        background-color: white;
+        color: #333;
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        border-left: 4px solid {color};
+        font-family: sans-serif;
+        max-width: 300px;
+        animation: fadein 0.5s, fadeout 0.5s {duration/1000 - 0.5}s;
+        opacity: 0;
+    }}
+    
+    @keyframes fadein {{
+        from {{ right: -300px; opacity: 0; }}
+        to {{ right: 0; opacity: 1; }}
+    }}
+    
+    @keyframes fadeout {{
+        from {{ opacity: 1; }}
+        to {{ opacity: 0; }}
+    }}
+    </style>
+    
+    <div class="toast-container">
+        <div class="toast">{message}</div>
+    </div>
+    
+    <script>
+        setTimeout(function(){{
+            const toasts = document.getElementsByClassName('toast');
+            for(let i = 0; i < toasts.length; i++){{
+                toasts[i].style.opacity = "1";
+            }}
+        }}, 100);
+        
+        setTimeout(function(){{
+            const container = document.getElementsByClassName('toast-container')[0];
+            if(container){{
+                container.remove();
+            }}
+        }}, {duration});
+    </script>
+    """
+    
+    # Display the toast
+    components.html(toast_html, height=0)
 from models.continuous_trainer import get_continuous_trainer
 from prediction.prediction_engine import PredictionEngine
 import config
@@ -1249,25 +1335,127 @@ if not st.session_state.initialized and not st.session_state.auto_initialize_tri
     st.session_state.auto_initialize_triggered = True
     initialize_system()
 
+# Định nghĩa hàm fetch_historical_data_thread
+def fetch_historical_data_thread():
+    """Fetch historical data from Binance for training in a separate thread"""
+    if not st.session_state.initialized:
+        st.warning("Vui lòng khởi tạo hệ thống trước")
+        return
+        
+    if 'historical_data_status' not in st.session_state:
+        st.session_state.historical_data_status = {
+            "status": "Đang lấy dữ liệu lịch sử...",
+            "progress": 0
+        }
+    
+    def update_status():
+        # This function will update the status in the session state
+        try:
+            start_time = time.time()
+            
+            # Khởi tạo tiến trình
+            st.session_state.historical_data_status['progress'] = 5
+            
+            # Lấy dữ liệu cho từng khung thời gian
+            timeframes = ["1m", "5m", "15m", "1h", "4h"]
+            total_timeframes = len(timeframes)
+            
+            for idx, timeframe in enumerate(timeframes):
+                # Cập nhật trạng thái
+                progress = 5 + int(95 * (idx / total_timeframes))
+                st.session_state.historical_data_status['progress'] = progress
+                st.session_state.historical_data_status['status'] = f"Đang lấy dữ liệu {timeframe}..."
+                
+                # Thực sự lấy dữ liệu ở đây
+                try:
+                    # Lấy dữ liệu thật từ Binance qua data_collector
+                    if hasattr(st.session_state, 'data_collector'):
+                        data = st.session_state.data_collector.collect_historical_data(
+                            symbol=config.SYMBOL,
+                            timeframe=timeframe,
+                            limit=config.LOOKBACK_PERIODS,
+                            start_date=config.HISTORICAL_START_DATE
+                        )
+                        
+                        # Lưu vào session state
+                        if 'historical_data' not in st.session_state:
+                            st.session_state.historical_data = {}
+                        st.session_state.historical_data[timeframe] = data
+                        
+                        # Cập nhật trạng thái chi tiết
+                        data_length = len(data) if data is not None else 0
+                        st.session_state.historical_data_status['details'] = f"{data_length} nến {timeframe} từ {config.HISTORICAL_START_DATE}"
+                        
+                        # Thêm vào log thông báo
+                        if 'log_messages' not in st.session_state:
+                            st.session_state.log_messages = []
+                        timestamp = datetime.now().strftime("%H:%M:%S")
+                        st.session_state.log_messages.append(f"{timestamp} - 📥 Đã tải {data_length} nến {timeframe} từ {config.HISTORICAL_START_DATE}")
+                    
+                    # Giả lập thời gian xử lý
+                    time.sleep(0.5)
+                    
+                except Exception as e:
+                    st.session_state.historical_data_status['status'] = f"Lỗi khi lấy dữ liệu {timeframe}: {e}"
+                    if 'log_messages' not in st.session_state:
+                        st.session_state.log_messages = []
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    st.session_state.log_messages.append(f"{timestamp} - ❌ Lỗi khi tải dữ liệu {timeframe}: {e}")
+            
+            # Hoàn tất
+            st.session_state.historical_data_status['status'] = "Hoàn tất lấy dữ liệu lịch sử!"
+            st.session_state.historical_data_status['progress'] = 100
+            
+            # Tính tổng thời gian
+            elapsed_time = time.time() - start_time
+            st.session_state.historical_data_status['elapsed_time'] = f"{elapsed_time:.2f} giây"
+            
+            # Thêm log thành công
+            if 'log_messages' not in st.session_state:
+                st.session_state.log_messages = []
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            st.session_state.log_messages.append(f"{timestamp} - ✅ Hoàn tất lấy dữ liệu lịch sử ({elapsed_time:.2f}s)")
+            
+        except Exception as e:
+            st.session_state.historical_data_status['status'] = f"Lỗi: {e}"
+            st.session_state.historical_data_status['progress'] = 0
+            if 'log_messages' not in st.session_state:
+                st.session_state.log_messages = []
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            st.session_state.log_messages.append(f"{timestamp} - ❌ Lỗi: {e}")
+                
+    thread = threading.Thread(target=update_status)
+    thread.daemon = True  # Đảm bảo thread sẽ bị hủy khi chương trình chính kết thúc
+    thread.start()
+    
+    # Thêm log bắt đầu
+    if 'log_messages' not in st.session_state:
+        st.session_state.log_messages = []
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    st.session_state.log_messages.append(f"{timestamp} - 🔄 Bắt đầu lấy dữ liệu lịch sử từ {config.HISTORICAL_START_DATE}")
+
 # Main content
 if st.session_state.selected_tab == "Live Dashboard":
     st.title("ETHUSDT AI Prediction Dashboard")
     
     if not st.session_state.initialized:
-        st.warning("Please initialize the system first")
+        st.warning("Vui lòng khởi tạo hệ thống trước")
         
         # Add a big initialize button in the center
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            if st.button("🚀 Initialize System", use_container_width=True):
+            if st.button("🚀 Khởi tạo hệ thống", use_container_width=True):
                 initialize_system()
                 # Add initial log
                 if 'log_messages' not in st.session_state:
                     st.session_state.log_messages = []
                 timestamp = datetime.now().strftime("%H:%M:%S")
-                st.session_state.log_messages.append(f"{timestamp} - System initialization started")
+                st.session_state.log_messages.append(f"{timestamp} - Bắt đầu khởi tạo hệ thống")
                 st.rerun()
     else:
+        # Đảm bảo dữ liệu được tải khi xem Live Dashboard
+        if st.session_state.latest_data is None:
+            fetch_data()  # Đảm bảo dữ liệu được tải
         # Initialize system if not done yet - load data immediately
         if st.session_state.latest_data is None:
             with st.spinner("Đang tải dữ liệu thời gian thực..."):
