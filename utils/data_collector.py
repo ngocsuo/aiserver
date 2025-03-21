@@ -31,6 +31,14 @@ class MockDataCollector:
         # Track last update time
         self.last_update = None
         
+        # Set connection status for compatibility with BinanceDataCollector
+        self.connection_status = {
+            "connected": True,  # Mock collector is always "connected"
+            "error": None,
+            "message": "Using simulated data for development",
+            "last_check": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
         # Store the collected data
         self.data = {}
         for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
