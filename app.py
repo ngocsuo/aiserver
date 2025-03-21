@@ -86,7 +86,16 @@ def fetch_data():
     if not st.session_state.initialized:
         st.warning("System not initialized yet")
         return None
-        
+    
+    # Create log container if not exists
+    if 'log_messages' not in st.session_state:
+        st.session_state.log_messages = []
+    
+    # Add log message
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    log_message = f"{timestamp} - Fetching latest ETHUSDT data..."
+    st.session_state.log_messages.append(log_message)
+    
     try:
         # Update data for all timeframes
         st.session_state.data_fetch_status = {
@@ -94,9 +103,23 @@ def fetch_data():
             "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
+        # Get data source type
+        data_source_type = "Simulated Data" if isinstance(st.session_state.data_collector, MockDataCollector) else "Binance API"
+        
+        # Add log message
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - Requesting data from {data_source_type}..."
+        st.session_state.log_messages.append(log_message)
+        
         data = st.session_state.data_collector.update_data()
         
         st.session_state.latest_data = data.get(config.TIMEFRAMES["primary"])
+        
+        # Add success log
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        candle_count = len(st.session_state.latest_data) if st.session_state.latest_data is not None else 0
+        log_message = f"{timestamp} - ✅ Data fetched successfully: {candle_count} candles retrieved"
+        st.session_state.log_messages.append(log_message)
         
         st.session_state.data_fetch_status = {
             "status": "Data fetched successfully",
@@ -105,6 +128,11 @@ def fetch_data():
         
         return data
     except Exception as e:
+        # Add error log
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - ❌ ERROR: {str(e)}"
+        st.session_state.log_messages.append(log_message)
+        
         st.session_state.data_fetch_status = {
             "status": f"Error: {e}",
             "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -234,24 +262,43 @@ def make_prediction():
         st.warning("System not initialized yet")
         return None
     
+    # Add log message
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    log_message = f"{timestamp} - Starting prediction generation process..."
+    st.session_state.log_messages.append(log_message)
+    
     try:
         # Always fetch the latest data first
         st.info("Fetching the latest ETHUSDT data...")
         fetch_result = fetch_data()
         
         if fetch_result is None or st.session_state.latest_data is None:
+            # Add error log
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            log_message = f"{timestamp} - ❌ Failed to fetch data for prediction"
+            st.session_state.log_messages.append(log_message)
+            
             st.warning("Failed to fetch the latest data")
             return None
+        
+        # Add log message
+        timestamp = datetime.now().strftime("%H:%M:%S")
         
         # Use trained models if available, otherwise use fallback
         if st.session_state.model_trained:
             # Get the latest data
             latest_data = st.session_state.latest_data
             
+            log_message = f"{timestamp} - Using trained AI models for prediction..."
+            st.session_state.log_messages.append(log_message)
+            
             st.info("Using trained AI models to generate prediction...")
             # Use the prediction engine to generate prediction
             prediction = st.session_state.prediction_engine.predict(latest_data)
         else:
+            log_message = f"{timestamp} - No trained models available, using simulated prediction..."
+            st.session_state.log_messages.append(log_message)
+            
             # Fallback to mock prediction for demonstration
             prediction = make_random_prediction()
         
@@ -262,8 +309,18 @@ def make_prediction():
         if len(st.session_state.predictions) > 100:
             st.session_state.predictions = st.session_state.predictions[-100:]
         
+        # Add success log
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - ✅ Prediction generated: {prediction['trend']} with {prediction['confidence']:.2f} confidence"
+        st.session_state.log_messages.append(log_message)
+        
         return prediction
     except Exception as e:
+        # Add error log
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - ❌ ERROR generating prediction: {str(e)}"
+        st.session_state.log_messages.append(log_message)
+        
         st.error(f"Error making prediction: {e}")
         return None
 
@@ -799,11 +856,77 @@ with st.sidebar:
 
 # Main content
 if st.session_state.selected_tab == "Live Dashboard":
-    st.title("Live Trading Dashboard")
+    st.title("ETHUSDT AI Prediction Dashboard")
     
     if not st.session_state.initialized:
         st.warning("Please initialize the system first")
+        
+        # Add a big initialize button in the center
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚀 Initialize System", use_container_width=True):
+                initialize_system()
+                # Add initial log
+                if 'log_messages' not in st.session_state:
+                    st.session_state.log_messages = []
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                st.session_state.log_messages.append(f"{timestamp} - System initialization started")
+                st.rerun()
     else:
+        # Status badges at the top
+        status_col1, status_col2, status_col3, status_col4 = st.columns(4)
+        
+        with status_col1:
+            source_color = "green" if not isinstance(st.session_state.data_collector, MockDataCollector) else "orange"
+            source_text = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Simulated Data"
+            st.markdown(f"**Data Source:** :{source_color}[{source_text}]")
+            
+        with status_col2:
+            data_status = "✅ Data Available" if st.session_state.latest_data is not None else "❌ No Data"
+            data_color = "green" if st.session_state.latest_data is not None else "red"
+            st.markdown(f"**Data Status:** :{data_color}[{data_status}]")
+            
+        with status_col3:
+            model_status = "✅ Models Trained" if st.session_state.model_trained else "❌ Not Trained"
+            model_color = "green" if st.session_state.model_trained else "red"
+            st.markdown(f"**Model Status:** :{model_color}[{model_status}]")
+            
+        with status_col4:
+            update_status = "✅ Auto Updates On" if st.session_state.thread_running else "❌ Updates Off"
+            update_color = "green" if st.session_state.thread_running else "red"
+            st.markdown(f"**Auto Updates:** :{update_color}[{update_status}]")
+        
+        # Quick action buttons
+        action_col1, action_col2, action_col3, action_col4 = st.columns(4)
+        
+        with action_col1:
+            if st.button("🔄 Fetch Data", use_container_width=True):
+                with st.spinner("Fetching latest data..."):
+                    fetch_data()
+                
+        with action_col2:
+            if st.button("🔮 Make Prediction", use_container_width=True):
+                with st.spinner("Generating prediction..."):
+                    make_prediction()
+                
+        with action_col3:
+            if not st.session_state.model_trained:
+                if st.button("🧠 Train Models", use_container_width=True):
+                    with st.spinner("Training models..."):
+                        train_models()
+            else:
+                if st.button("🔄 Retrain Models", use_container_width=True):
+                    with st.spinner("Retraining models..."):
+                        train_models()
+                
+        with action_col4:
+            if not st.session_state.thread_running:
+                if st.button("▶️ Start Auto Updates", use_container_width=True):
+                    start_update_thread()
+            else:
+                if st.button("⏹️ Stop Auto Updates", use_container_width=True):
+                    stop_update_thread()
+        
         # Initialize system if not done yet
         if st.session_state.latest_data is None:
             fetch_data()
@@ -814,46 +937,138 @@ if st.session_state.selected_tab == "Live Dashboard":
         else:
             prediction = st.session_state.predictions[-1]
         
-        # Display prediction and chart
-        col1, col2 = st.columns([2, 1])
+        # Display prediction and chart in tabs
+        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History"])
         
-        with col1:
-            # Candlestick chart
-            if st.session_state.latest_data is not None:
-                st.subheader("ETHUSDT Price Chart (5m)")
-                chart = plot_candlestick_chart(st.session_state.latest_data.iloc[-100:])
-                st.plotly_chart(chart, use_container_width=True)
+        with tabs[0]:
+            # Main dashboard layout
+            chart_col, pred_col = st.columns([2, 1])
+            
+            with chart_col:
+                # Candlestick chart
+                if st.session_state.latest_data is not None:
+                    st.subheader("ETHUSDT Price Chart")
+                    # Add timeframe selector
+                    timeframe = st.selectbox("Select Chart Timeframe", ['Last 50 candles', 'Last 100 candles', 'Last 200 candles', 'All data'])
+                    
+                    # Convert selection to number of candles
+                    if timeframe == 'Last 50 candles':
+                        candles = 50
+                    elif timeframe == 'Last 100 candles':
+                        candles = 100
+                    elif timeframe == 'Last 200 candles':
+                        candles = 200
+                    else:
+                        candles = len(st.session_state.latest_data)
+                    
+                    chart = plot_candlestick_chart(st.session_state.latest_data.iloc[-candles:])
+                    st.plotly_chart(chart, use_container_width=True)
+            
+            with pred_col:
+                # Current prediction with enhanced styling
+                st.subheader("Current AI Prediction")
                 
-                # Technical indicators
+                # Add prediction timestamp
+                if prediction:
+                    time_difference = datetime.now() - datetime.strptime(prediction['timestamp'], "%Y-%m-%d %H:%M:%S")
+                    minutes_ago = int(time_difference.total_seconds() / 60)
+                    prediction_freshness = f"{minutes_ago} minutes ago" if minutes_ago > 0 else "Just now"
+                    
+                    st.markdown(f"**Generated:** {prediction_freshness}")
+                
+                # Display prediction
+                display_current_prediction(prediction)
+                
+                # Add log of last action 
+                if 'log_messages' in st.session_state and st.session_state.log_messages:
+                    st.write("**Last System Action:**")
+                    st.info(st.session_state.log_messages[-1])
+                
+                # Display current data info
+                if st.session_state.latest_data is not None:
+                    st.write("**Current Dataset:**")
+                    st.write(f"Total candles: {len(st.session_state.latest_data)}")
+                    st.write(f"Last update: {st.session_state.data_fetch_status.get('last_update', 'Unknown')}")
+                    
+                    # Add a small data preview
+                    with st.expander("Latest Price Data"):
+                        st.dataframe(st.session_state.latest_data.tail(5)[['open', 'high', 'low', 'close', 'volume']])
+        
+        with tabs[1]:
+            # Technical Analysis Tab
+            if st.session_state.latest_data is not None:
                 st.subheader("Technical Indicators")
+                
+                # Add simple description
+                st.markdown("""
+                Technical indicators are mathematical calculations based on price, volume, or open interest of a security.
+                These indicators help traders identify trading opportunities and make more informed decisions.
+                """)
+                
+                # Technical indicators chart
                 indicators_chart = plot_technical_indicators(st.session_state.latest_data.iloc[-100:])
                 st.plotly_chart(indicators_chart, use_container_width=True)
+                
+                # Confidence distribution if predictions exist
+                if st.session_state.predictions:
+                    st.subheader("Prediction Confidence Distribution")
+                    confidence_chart = plot_confidence_distribution(st.session_state.predictions[-20:])
+                    st.plotly_chart(confidence_chart, use_container_width=True)
+            else:
+                st.warning("No data available for technical analysis. Please fetch data first.")
         
-        with col2:
-            # Current prediction
-            st.subheader("Current Prediction")
-            display_current_prediction(prediction)
+        with tabs[2]:
+            # Prediction History Tab
+            st.subheader("AI Prediction History")
             
-            # Confidence distribution
             if st.session_state.predictions:
-                st.subheader("Prediction Confidence")
-                confidence_chart = plot_confidence_distribution(st.session_state.predictions[-20:])
-                st.plotly_chart(confidence_chart, use_container_width=True)
-        
-        # Prediction history
-        st.subheader("Prediction History")
-        if st.session_state.predictions:
-            history_chart = plot_prediction_history(st.session_state.predictions)
-            st.plotly_chart(history_chart, use_container_width=True)
-            
-            # Show most recent predictions in a table
-            with st.expander("Recent Predictions"):
-                recent_preds = pd.DataFrame(st.session_state.predictions[-10:])
-                recent_preds['timestamp'] = pd.to_datetime(recent_preds['timestamp'])
-                recent_preds = recent_preds.sort_values('timestamp', ascending=False)
-                st.dataframe(recent_preds, use_container_width=True)
-        else:
-            st.info("No prediction history available")
+                # Add filters
+                filter_col1, filter_col2 = st.columns(2)
+                with filter_col1:
+                    trend_filter = st.multiselect(
+                        "Filter by Trend",
+                        options=["ALL", "LONG", "NEUTRAL", "SHORT"],
+                        default=["ALL"]
+                    )
+                
+                with filter_col2:
+                    confidence_threshold = st.slider(
+                        "Minimum Confidence",
+                        min_value=0.0, 
+                        max_value=1.0,
+                        value=0.0,
+                        step=0.05
+                    )
+                
+                # Apply filters to predictions
+                filtered_predictions = st.session_state.predictions.copy()
+                if "ALL" not in trend_filter and trend_filter:
+                    filtered_predictions = [p for p in filtered_predictions if p["trend"] in trend_filter]
+                
+                filtered_predictions = [p for p in filtered_predictions if p["confidence"] >= confidence_threshold]
+                
+                # Display history chart
+                if filtered_predictions:
+                    history_chart = plot_prediction_history(filtered_predictions)
+                    st.plotly_chart(history_chart, use_container_width=True)
+                    
+                    # Show most recent predictions in a table
+                    with st.expander("Recent Predictions (Table View)", expanded=True):
+                        recent_preds = pd.DataFrame(filtered_predictions[-15:])
+                        recent_preds['timestamp'] = pd.to_datetime(recent_preds['timestamp'])
+                        recent_preds = recent_preds.sort_values('timestamp', ascending=False)
+                        
+                        # Add styling to the dataframe
+                        def style_trend(val):
+                            color = 'green' if val == 'LONG' else 'red' if val == 'SHORT' else 'gray'
+                            return f'background-color: {color}; color: white'
+                        
+                        styled_df = recent_preds.style.applymap(style_trend, subset=['trend'])
+                        st.dataframe(styled_df, use_container_width=True)
+                else:
+                    st.info("No predictions match your filters")
+            else:
+                st.info("No prediction history available yet. Generate predictions to see history.")
 
 elif st.session_state.selected_tab == "Models & Training":
     st.title("AI Models & Training")
@@ -974,14 +1189,82 @@ elif st.session_state.selected_tab == "System Status":
     if not st.session_state.initialized:
         st.warning("Please initialize the system first")
     else:
-        # Display system status
-        display_system_status(
-            data_status=st.session_state.data_fetch_status,
-            thread_status=st.session_state.thread_running,
-            prediction_count=len(st.session_state.predictions)
-        )
+        # Use columns for better layout
+        col1, col2 = st.columns([2, 1])
         
-        # Data preview
+        with col1:
+            # Display system status
+            display_system_status(
+                data_status=st.session_state.data_fetch_status,
+                thread_status=st.session_state.thread_running,
+                prediction_count=len(st.session_state.predictions)
+            )
+            
+            # Activity Logs
+            st.write("### Activity Logs")
+            if 'log_messages' in st.session_state and st.session_state.log_messages:
+                # Create a scrollable log area with fixed height
+                log_container = st.container()
+                with log_container:
+                    st.markdown("""
+                    <style>
+                    .log-container {
+                        height: 300px;
+                        overflow-y: auto;
+                        background-color: #f0f0f0;
+                        padding: 10px;
+                        border-radius: 5px;
+                        font-family: monospace;
+                    }
+                    </style>
+                    <div class="log-container">
+                    """ + "<br>".join(st.session_state.log_messages[-50:]) + """
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Add clear logs button
+                if st.button("Clear Logs"):
+                    st.session_state.log_messages = []
+                    st.rerun()
+            else:
+                st.info("No activity logs available. Perform actions to generate logs.")
+        
+        with col2:
+            # Data source information
+            st.write("### Data Source")
+            if 'data_source' in st.session_state:
+                source_color = "green" if st.session_state.data_source == "Binance API (Real Data)" else "orange"
+                st.markdown(f"**Current Source:** :{source_color}[{st.session_state.data_source}]")
+            else:
+                st.info("Data source not initialized")
+            
+            # API status
+            st.write("### API Connection Status")
+            try:
+                if isinstance(st.session_state.data_collector, MockDataCollector):
+                    st.warning("Using simulated data (MockDataCollector)")
+                    st.info("The system is configured to use mock data due to API restrictions in the current environment.")
+                    st.info("Actual API implementation is available in the code for deployment in production environments.")
+                else:
+                    # Test connection to Binance
+                    api_status = "Connected" if hasattr(st.session_state.data_collector, 'client') and st.session_state.data_collector.client else "Not Connected"
+                    st.success(f"Binance API: {api_status}")
+            except Exception as e:
+                st.error(f"Error checking API status: {e}")
+            
+            # Quick actions
+            st.write("### Quick Actions")
+            if st.button("Fetch Latest Data", key="fetch_latest_btn"):
+                with st.spinner("Fetching..."):
+                    fetch_data()
+                    st.success("Data fetched successfully!")
+            
+            if st.button("Make New Prediction", key="new_pred_btn"):
+                with st.spinner("Generating prediction..."):
+                    make_prediction()
+                    st.success("New prediction generated!")
+        
+        # Data preview (full width)
         if st.session_state.latest_data is not None:
             with st.expander("Preview Latest Data"):
                 st.dataframe(st.session_state.latest_data.tail(10), use_container_width=True)
