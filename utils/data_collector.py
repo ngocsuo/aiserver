@@ -383,13 +383,18 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
                 
-            # Initialize Binance client with API keys
-            self.client = Client(config.BINANCE_API_KEY, config.BINANCE_API_SECRET)
+            # Initialize Binance client with API keys and proxy
+            # Use proxy for API requests to bypass geographic restrictions
+            proxy_settings = {
+                'http': 'http://118.68.96.73:11065',
+                'https': 'http://118.68.96.73:11065'
+            }
+            self.client = Client(config.BINANCE_API_KEY, config.BINANCE_API_SECRET, {"proxies": proxy_settings})
             
             # Test connection with timeout
             import socket
             original_timeout = socket.getdefaulttimeout()
-            socket.setdefaulttimeout(5)  # 5 second timeout
+            socket.setdefaulttimeout(10)  # 10 second timeout for proxy connections
             
             # Test connection
             try:
