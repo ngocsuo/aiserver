@@ -295,21 +295,87 @@ class PredictionEngine:
             confidence = votes[prediction_class] / total_votes if total_votes > 0 else 0.5
         
         # Get reference to latest data
-        latest_price = 3500.0  # Placeholder if we don't have real data
+        latest_price = 3500.0  # Default if we don't have real data
+        
+        # Try to extract actual latest price and indicator data if available
+        technical_indicators = {}
+        if data is not None and not data.empty:
+            try:
+                latest_row = data.iloc[-1]
+                latest_price = latest_row['close']
+                
+                # Extract technical indicators for display
+                indicator_keys = [
+                    'rsi', 'macd', 'macd_signal', 'macd_hist',
+                    'bb_upper', 'bb_lower', 'bb_middle', 
+                    'ema_9', 'ema_21', 'ema_55', 'ema_200',
+                    'atr', 'obv', 'volume'
+                ]
+                
+                for key in indicator_keys:
+                    if key in latest_row:
+                        technical_indicators[key] = latest_row[key]
+                
+                # Calculate derived indicators
+                if 'bb_upper' in technical_indicators and 'bb_lower' in technical_indicators:
+                    bb_width = (technical_indicators['bb_upper'] - technical_indicators['bb_lower']) / technical_indicators['bb_middle']
+                    technical_indicators['bb_width'] = bb_width
+                
+                # Calculate price relative to Bollinger Bands
+                if 'bb_upper' in technical_indicators and 'bb_lower' in technical_indicators:
+                    bb_range = technical_indicators['bb_upper'] - technical_indicators['bb_lower']
+                    if bb_range > 0:
+                        bb_position = (latest_price - technical_indicators['bb_lower']) / bb_range
+                        technical_indicators['bb_position'] = bb_position
+                
+            except Exception as e:
+                logger.warning(f"Error extracting technical indicators: {e}")
         
         # Generate prediction details
         classes = config.CLASSES
         prediction_label = classes[prediction_class]
         
-        # Generate target price and move percentage based on prediction
+        # Generate target price and move percentage based on prediction and class
         if prediction_class == 0:  # SHORT
-            predicted_move = -random.uniform(0.3, 1.2)
+            # More pessimistic if RSI is high
+            rsi_factor = 1.0
+            if 'rsi' in technical_indicators:
+                rsi = technical_indicators['rsi']
+                # Stronger downside projection if RSI is overbought
+                if rsi > 70:
+                    rsi_factor = 1.5
+                elif rsi < 30:
+                    rsi_factor = 0.7
+                    
+            predicted_move = -random.uniform(0.3, 1.2) * rsi_factor
             target_price = latest_price * (1 + predicted_move/100)
+            
         elif prediction_class == 2:  # LONG
-            predicted_move = random.uniform(0.3, 1.2)
+            # More optimistic if RSI is low
+            rsi_factor = 1.0
+            if 'rsi' in technical_indicators:
+                rsi = technical_indicators['rsi']
+                # Stronger upside projection if RSI is oversold
+                if rsi < 30:
+                    rsi_factor = 1.5
+                elif rsi > 70:
+                    rsi_factor = 0.7
+                    
+            predicted_move = random.uniform(0.3, 1.2) * rsi_factor
             target_price = latest_price * (1 + predicted_move/100)
+            
         else:  # NEUTRAL
-            predicted_move = random.uniform(-0.2, 0.2)
+            volatility_factor = 1.0
+            # Use ATR or Bollinger width to estimate volatility if available
+            if 'atr' in technical_indicators and latest_price > 0:
+                volatility_factor = technical_indicators['atr'] / latest_price * 100  # ATR as percent of price
+            elif 'bb_width' in technical_indicators:
+                volatility_factor = technical_indicators['bb_width'] * 10
+                
+            # Limit the volatility factor to a reasonable range
+            volatility_factor = max(0.5, min(1.5, volatility_factor))
+            
+            predicted_move = random.uniform(-0.2, 0.2) * volatility_factor
             target_price = latest_price * (1 + predicted_move/100)
         
         # Generate reason for prediction with actual data
@@ -323,7 +389,8 @@ class PredictionEngine:
             "target_price": round(target_price, 2),
             "predicted_move": round(predicted_move, 2),
             "reason": reason,
-            "valid_for_minutes": config.VALIDITY_MINUTES
+            "valid_for_minutes": config.VALIDITY_MINUTES,
+            "technical_indicators": technical_indicators
         }
         
         return prediction
@@ -355,6 +422,24 @@ class PredictionEngine:
             target_price = current_price * (1 + predicted_move/100)
             reason = "Sideways price action; low volatility; mixed signals"
         
+        # Create random technical indicators
+        technical_indicators = {
+            "rsi": random.uniform(30, 70),
+            "macd": random.uniform(-0.5, 0.5),
+            "macd_signal": random.uniform(-0.5, 0.5),
+            "bb_upper": current_price * 1.01,
+            "bb_lower": current_price * 0.99,
+            "bb_middle": current_price,
+            "ema_9": current_price * (1 + random.uniform(-0.01, 0.01)),
+            "ema_21": current_price * (1 + random.uniform(-0.01, 0.01)),
+            "atr": current_price * 0.01,
+            "volume": random.uniform(1000, 10000)
+        }
+        
+        # Add derived indicators
+        technical_indicators["bb_width"] = (technical_indicators["bb_upper"] - technical_indicators["bb_lower"]) / technical_indicators["bb_middle"]
+        technical_indicators["bb_position"] = (current_price - technical_indicators["bb_lower"]) / (technical_indicators["bb_upper"] - technical_indicators["bb_lower"])
+        
         prediction = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "price": current_price,
@@ -363,7 +448,8 @@ class PredictionEngine:
             "target_price": round(target_price, 2),
             "predicted_move": round(predicted_move, 2),
             "reason": reason,
-            "valid_for_minutes": config.VALIDITY_MINUTES
+            "valid_for_minutes": config.VALIDITY_MINUTES,
+            "technical_indicators": technical_indicators
         }
         
         return prediction
@@ -565,5 +651,6 @@ class PredictionEngine:
             "target_price": 0,
             "predicted_move": 0,
             "reason": f"Error generating prediction: {error_message}",
-            "valid_for_minutes": 0
+            "valid_for_minutes": 0,
+            "technical_indicators": {}
         }

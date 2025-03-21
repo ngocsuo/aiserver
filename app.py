@@ -786,7 +786,66 @@ def display_current_prediction(prediction):
     st.progress(prediction['confidence'])
     
     # Reasoning
-    st.write(f"**Reasoning:** {prediction['reason']}")
+    st.write("### Technical Analysis")
+    
+    # Create an expander for detailed technical analysis
+    with st.expander("Detailed Technical Analysis", expanded=True):
+        # Split the reason into individual points for better readability
+        reasoning_points = prediction['reason'].split(';')
+        
+        for i, point in enumerate(reasoning_points):
+            if point.strip():  # Only display non-empty points
+                st.write(f"{i+1}. {point.strip()}")
+        
+        # Add additional technical indicator information if available
+        if 'technical_indicators' in prediction:
+            st.write("#### Key Technical Indicators")
+            indicators = prediction['technical_indicators']
+            
+            # Create 3 columns for technical indicators
+            ind_col1, ind_col2, ind_col3 = st.columns(3)
+            
+            with ind_col1:
+                if 'rsi' in indicators:
+                    st.metric("RSI", f"{indicators['rsi']:.1f}", 
+                              delta="Overbought" if indicators['rsi'] > 70 else "Oversold" if indicators['rsi'] < 30 else "Neutral")
+                
+                if 'macd' in indicators:
+                    st.metric("MACD", f"{indicators['macd']:.4f}", 
+                              delta=f"{indicators['macd'] - indicators.get('macd_signal', 0):.4f}")
+            
+            with ind_col2:
+                if 'ema_9' in indicators and 'ema_21' in indicators:
+                    diff = indicators['ema_9'] - indicators['ema_21']
+                    st.metric("EMA 9/21 Diff", f"{diff:.2f}", 
+                              delta="Bullish" if diff > 0 else "Bearish")
+                
+                if 'atr' in indicators:
+                    st.metric("ATR", f"{indicators['atr']:.2f}")
+            
+            with ind_col3:
+                if 'bb_width' in indicators:
+                    st.metric("BB Width", f"{indicators['bb_width']:.2f}",
+                              delta="High Volatility" if indicators['bb_width'] > 0.05 else "Low Volatility")
+                
+                if 'volume' in indicators:
+                    st.metric("Volume", f"{indicators['volume']:.0f}")
+        
+        # Show buy/sell signals
+        if prediction['trend'] != "NEUTRAL":
+            signal_type = "BUY" if prediction['trend'] == "LONG" else "SELL"
+            signal_color = "green" if prediction['trend'] == "LONG" else "red"
+            
+            st.markdown(f"<h3 style='color:{signal_color}'>Signal: {signal_type}</h3>", unsafe_allow_html=True)
+            
+            st.write(f"**Entry Price:** ${prediction['price']:.2f}")
+            st.write(f"**Target Price:** ${prediction['target_price']:.2f}")
+            
+            # Show potential profit/loss
+            move_pct = prediction['predicted_move']
+            move_value = prediction['target_price'] - prediction['price']
+            
+            st.write(f"**Expected Move:** {move_pct:.2f}% ({move_value:.2f} USDT)")
     
     # Validity
     st.caption(f"Prediction made at {prediction['timestamp']} (valid for {prediction['valid_for_minutes']} minutes)")
