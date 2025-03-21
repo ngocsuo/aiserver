@@ -18,6 +18,7 @@ from utils.data_collector import BinanceDataCollector, MockDataCollector
 from utils.data_processor import DataProcessor
 from utils.feature_engineering import FeatureEngineer
 from models.model_trainer import ModelTrainer
+from models.continuous_trainer import get_continuous_trainer
 from prediction.prediction_engine import PredictionEngine
 import config
 
@@ -385,14 +386,47 @@ def make_random_prediction():
 
 def update_data_continuously():
     """Update data continuously in a separate thread"""
+    # Initialize continuous trainer
+    continuous_trainer = get_continuous_trainer()
+    
+    # Keep track of the number of updates to trigger periodic actions
+    update_count = 0
+    
     while st.session_state.thread_running:
         try:
-            fetch_data()
-            make_prediction()
+            # Fetch latest data
+            data_result = fetch_data()
+            
+            if data_result is not None:
+                # Update new data counter in continuous trainer
+                # Note: In a real implementation, you'd count the actual number of new candles
+                continuous_trainer.increment_new_data_count(1)
+                
+                # Generate prediction
+                make_prediction()
+                
+                # Increment update counter
+                update_count += 1
+                
+                # Every 10 updates (or another appropriate interval), check training schedule
+                if update_count % 10 == 0 and config.CONTINUOUS_TRAINING:
+                    training_status = continuous_trainer.get_training_status()
+                    
+                    # Log training status
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    log_message = f"{timestamp} - Continuous training status: {training_status['new_data_points']} new data points"
+                    if 'log_messages' in st.session_state:
+                        st.session_state.log_messages.append(log_message)
+            
             # Sleep for the update interval
             time.sleep(config.UPDATE_INTERVAL)
+            
         except Exception as e:
             print(f"Error in update thread: {e}")
+            if 'log_messages' in st.session_state:
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                log_message = f"{timestamp} - ❌ ERROR in update thread: {str(e)}"
+                st.session_state.log_messages.append(log_message)
             time.sleep(60)  # Sleep longer on error
 
 def start_update_thread():

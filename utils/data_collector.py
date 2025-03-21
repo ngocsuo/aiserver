@@ -514,7 +514,7 @@ class BinanceDataCollector:
         return df
             
     def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.TIMEFRAMES["primary"], 
-                              limit=config.LOOKBACK_PERIODS, start_date=None):
+                              limit=config.LOOKBACK_PERIODS, start_date=None, end_date=None):
         """
         Collect historical OHLCV data from Binance.
         
@@ -523,6 +523,7 @@ class BinanceDataCollector:
             timeframe (str): Candle timeframe
             limit (int): Number of candles to collect
             start_date (str, optional): Start date for historical data in format "YYYY-MM-DD"
+            end_date (str, optional): End date for historical data in format "YYYY-MM-DD"
             
         Returns:
             pd.DataFrame: DataFrame with OHLCV data
@@ -531,17 +532,65 @@ class BinanceDataCollector:
             # If start_date is provided, use it instead of limit
             if start_date is not None:
                 start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000)
-                end_timestamp = int(datetime.now().timestamp() * 1000)
                 
-                logger.info(f"Fetching {timeframe} candles for {symbol} from {start_date} to now")
+                if end_date is not None:
+                    end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp() * 1000)
+                    logger.info(f"Fetching {timeframe} candles for {symbol} from {start_date} to {end_date}")
+                else:
+                    end_timestamp = int(datetime.now().timestamp() * 1000)
+                    logger.info(f"Fetching {timeframe} candles for {symbol} from {start_date} to now")
                 
-                # Get klines from Binance with start_date
-                klines = self.client.get_historical_klines(
-                    symbol=symbol,
-                    interval=timeframe,
-                    start_str=start_timestamp,
-                    end_str=end_timestamp
-                )
+                # Get klines from Binance with date range, but in chunks to avoid exceeding API limits
+                # Binance limit is typically 1000 candles per request, so we'll use 900 to be safe
+                chunk_size = 900
+                
+                # Calculate approximate time increment in milliseconds based on timeframe
+                # This is a rough estimate for chunking requests
+                ms_per_candle = {
+                    "1m": 60 * 1000,
+                    "5m": 5 * 60 * 1000,
+                    "15m": 15 * 60 * 1000,
+                    "30m": 30 * 60 * 1000,
+                    "1h": 60 * 60 * 1000,
+                    "4h": 4 * 60 * 60 * 1000,
+                    "1d": 24 * 60 * 60 * 1000,
+                }.get(timeframe, 5 * 60 * 1000)  # Default to 5m if timeframe not found
+                
+                # Time increment for each chunk (chunk_size candles)
+                time_increment = ms_per_candle * chunk_size
+                
+                # Initialize empty list to store all klines
+                all_klines = []
+                chunk_start = start_timestamp
+                
+                # Fetch data in chunks until we reach the end timestamp
+                while chunk_start < end_timestamp:
+                    chunk_end = min(chunk_start + time_increment, end_timestamp)
+                    
+                    logger.info(f"Fetching chunk from {datetime.fromtimestamp(chunk_start/1000).strftime('%Y-%m-%d %H:%M')} to {datetime.fromtimestamp(chunk_end/1000).strftime('%Y-%m-%d %H:%M')}")
+                    
+                    # Get klines for this chunk
+                    chunk_klines = self.client.get_historical_klines(
+                        symbol=symbol,
+                        interval=timeframe,
+                        start_str=chunk_start,
+                        end_str=chunk_end,
+                        limit=1000
+                    )
+                    
+                    # Add to our collection
+                    all_klines.extend(chunk_klines)
+                    
+                    # Move to next chunk
+                    chunk_start = chunk_end
+                    
+                    # Respect API rate limits with a small delay
+                    time.sleep(0.5)
+                
+                # Use the combined klines
+                klines = all_klines
+                logger.info(f"Fetched a total of {len(klines)} candles")
+                
             else:
                 logger.info(f"Fetching {limit} {timeframe} candles for {symbol} from Binance")
                 

@@ -52,6 +52,20 @@ BATCH_SIZE = 32
 EPOCHS = 50
 EARLY_STOPPING_PATIENCE = 5
 
+# Continuous Training Configuration
+CONTINUOUS_TRAINING = True  # Enable continuous model retraining
+TRAINING_SCHEDULE = {
+    "frequency": "daily",  # Options: 'hourly', 'daily', 'weekly'
+    "hour": 2,            # For daily/weekly: hour of day (0-23) to train
+    "minute": 30,         # Minute of hour to train
+    "day_of_week": 1      # For weekly: day of week (0=Monday, 6=Sunday)
+}
+MINIMUM_NEW_DATA_POINTS = 288  # Minimum new 5-min candles required for retraining (equals 24h)
+
+# Chunked Training Configuration
+CHUNK_BY_MONTHS = True  # Enable chunked training by months
+MAX_CHUNK_SIZE = 10000  # Maximum number of candles per chunk
+
 # Model Paths
 MODEL_DIR = "saved_models"
 os.makedirs(MODEL_DIR, exist_ok=True)
