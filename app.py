@@ -138,7 +138,7 @@ def fetch_data():
     
     # Add log message
     timestamp = datetime.now().strftime("%H:%M:%S")
-    log_message = f"{timestamp} - Fetching latest ETHUSDT data..."
+    log_message = f"{timestamp} - 🔄 Đang thu thập dữ liệu ETHUSDT..."
     st.session_state.log_messages.append(log_message)
     
     try:
@@ -153,7 +153,7 @@ def fetch_data():
         
         # Add log message
         timestamp = datetime.now().strftime("%H:%M:%S")
-        log_message = f"{timestamp} - Requesting data from {data_source_type}..."
+        log_message = f"{timestamp} - 📡 Gửi yêu cầu đến {data_source_type}..."
         st.session_state.log_messages.append(log_message)
         
         data = st.session_state.data_collector.update_data()
@@ -163,7 +163,7 @@ def fetch_data():
         # Add success log
         timestamp = datetime.now().strftime("%H:%M:%S")
         candle_count = len(st.session_state.latest_data) if st.session_state.latest_data is not None else 0
-        log_message = f"{timestamp} - ✅ Data fetched successfully: {candle_count} candles retrieved"
+        log_message = f"{timestamp} - ✅ Đã cập nhật thành công {candle_count} nến ETHUSDT"
         st.session_state.log_messages.append(log_message)
         
         st.session_state.data_fetch_status = {
