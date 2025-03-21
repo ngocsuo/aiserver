@@ -432,21 +432,34 @@ class BinanceDataCollector:
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
-                # Thiết lập proxy giống format ban đầu đã hoạt động
+                # Thiết lập proxy HTTP-only như đề xuất trong lỗi
                 if username and password:
                     proxy_auth = f"{username}:{password}@{host}:{port}"
+                    # Chỉ sử dụng 'http' không có 'https' theo hướng dẫn trong lỗi
                     proxy_settings = {
                         'http': f'http://{proxy_auth}',
-                        'https': f'https://{proxy_auth}'
+                        # KHÔNG sử dụng 'https' để tránh lỗi SSL
                     }
                     
-                    logger.info(f"Connecting via authenticated proxy ({host}:{port})")
+                    # Thiết lập biến môi trường
+                    os.environ["HTTP_PROXY"] = f"http://{proxy_auth}"
+                    # Chuyển hướng tất cả traffic HTTPS qua HTTP
+                    os.environ["HTTPS_PROXY"] = f"http://{proxy_auth}"
+                    
+                    logger.info(f"Connecting via authenticated HTTP-only proxy ({host}:{port})")
                 else:
+                    # Chỉ sử dụng 'http' không có 'https' theo hướng dẫn trong lỗi
                     proxy_settings = {
                         'http': f'http://{host}:{port}',
-                        'https': f'https://{host}:{port}'
+                        # KHÔNG sử dụng 'https' để tránh lỗi SSL
                     }
-                    logger.info(f"Connecting via proxy ({host}:{port})")
+                    
+                    # Thiết lập biến môi trường
+                    os.environ["HTTP_PROXY"] = f"http://{host}:{port}"
+                    # Chuyển hướng tất cả traffic HTTPS qua HTTP
+                    os.environ["HTTPS_PROXY"] = f"http://{host}:{port}"
+                    
+                    logger.info(f"Connecting via HTTP-only proxy ({host}:{port})")
             
             # Khởi tạo client với hoặc không có proxy
             if proxy_settings:
