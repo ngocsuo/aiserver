@@ -645,33 +645,47 @@ class ContinuousTrainer:
             logger.error(f"Error loading cached data: {e}")
         
         return None
+        
+        # Sau khi xử lý toàn bộ dữ liệu cho tất cả các khung thời gian
+        model_results = {}
+        for timeframe, data_chunks in all_processed_data.items():
+            if data_chunks:
+                # Kết hợp tất cả các đoạn dữ liệu đã xử lý cho khung thời gian này
+                combined_data = pd.concat(data_chunks)
                 
-        # Combine all processed chunks
-        if all_processed_data:
-            combined_data = pd.concat(all_processed_data)
-            
-            # Remove duplicates
-            combined_data = combined_data[~combined_data.index.duplicated(keep='last')]
-            
-            # Sort by time
-            combined_data.sort_index(inplace=True)
-            
-            self._add_log(f"📊 Tổng hợp dữ liệu: {len(combined_data)} điểm dữ liệu đã được xử lý")
-            logger.info(f"Combined data: {len(combined_data)} data points")
-            
-            # Prepare data for different model types
-            sequence_data = self.data_processor.prepare_sequence_data(combined_data)
-            image_data = self.data_processor.prepare_cnn_data(combined_data)
-            
-            # Train all models
-            self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình với {len(combined_data)} điểm dữ liệu")
-            models = self.model_trainer.train_all_models(sequence_data, image_data)
-            
-            self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình")
-            logger.info(f"Trained {len(models)} models with chunked data")
-        else:
-            self._add_log("❌ Không có dữ liệu khả dụng sau khi xử lý tất cả các đoạn")
-            logger.error("No processed data available after processing all chunks")
+                # Loại bỏ các dòng trùng lặp
+                combined_data = combined_data[~combined_data.index.duplicated(keep='last')]
+                
+                # Sắp xếp theo thời gian
+                combined_data.sort_index(inplace=True)
+                
+                self._add_log(f"📊 Tổng hợp dữ liệu ({timeframe}): {len(combined_data)} điểm dữ liệu đã được xử lý")
+                logger.info(f"Combined data for {timeframe}: {len(combined_data)} data points")
+                
+                # Chuẩn bị dữ liệu cho các loại mô hình khác nhau
+                sequence_data = self.data_processor.prepare_sequence_data(combined_data)
+                image_data = self.data_processor.prepare_cnn_data(combined_data)
+                
+                # Huấn luyện tất cả các mô hình với khung thời gian cụ thể
+                self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình cho {timeframe} với {len(combined_data)} điểm dữ liệu")
+                
+                # Lưu thông tin về khung thời gian vào dữ liệu huấn luyện
+                for data_dict in [sequence_data, image_data]:
+                    for key in data_dict:
+                        if isinstance(data_dict[key], dict):
+                            data_dict[key]['timeframe'] = timeframe
+                
+                models = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                model_results[timeframe] = models
+                
+                self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình cho {timeframe}")
+                logger.info(f"Trained {len(models)} models for {timeframe} with {len(combined_data)} data points")
+            else:
+                self._add_log(f"❌ Không có dữ liệu khả dụng cho {timeframe} sau khi xử lý tất cả các đoạn")
+                logger.error(f"No processed data available for {timeframe} after processing all chunks")
+        
+        # Trả về kết quả huấn luyện cho tất cả các khung thời gian
+        return model_results
             
     def _train_with_all_data(self):
         """Train models using all data at once."""
