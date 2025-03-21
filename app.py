@@ -187,11 +187,70 @@ if 'initialized' not in st.session_state:
         "lookback_periods": config.LOOKBACK_PERIODS
     }
 
+# Hàm lưu trạng thái giao dịch vào tập tin
+def save_trading_state():
+    """Lưu trạng thái giao dịch vào tập tin để khôi phục khi F5 hoặc chuyển tab"""
+    if hasattr(st.session_state, 'trading_settings'):
+        try:
+            trading_state = {
+                'api_key': st.session_state.trading_settings.get('api_key', ''),
+                'api_secret': st.session_state.trading_settings.get('api_secret', ''),
+                'take_profit_type': st.session_state.trading_settings.get('take_profit_type', 'percent'),
+                'take_profit_value': st.session_state.trading_settings.get('take_profit_value', 3.0),
+                'stop_loss_type': st.session_state.trading_settings.get('stop_loss_type', 'percent'),
+                'stop_loss_value': st.session_state.trading_settings.get('stop_loss_value', 2.0),
+                'account_percent': st.session_state.trading_settings.get('account_percent', 10.0),
+                'leverage': st.session_state.trading_settings.get('leverage', 5),
+                'min_confidence': st.session_state.trading_settings.get('min_confidence', 70.0),
+                'is_trading': st.session_state.trading_settings.get('is_trading', False),
+            }
+            
+            with open("trading_state.json", "w") as f:
+                json.dump(trading_state, f)
+        except Exception as e:
+            print(f"Lỗi khi lưu trạng thái giao dịch: {e}")
+
+# Hàm tải trạng thái giao dịch từ tập tin
+def load_trading_state():
+    """Tải trạng thái giao dịch từ tập tin"""
+    try:
+        if os.path.exists("trading_state.json"):
+            with open("trading_state.json", "r") as f:
+                trading_state = json.load(f)
+                
+            # Cập nhật trạng thái giao dịch nếu có
+            if hasattr(st.session_state, 'trading_settings'):
+                st.session_state.trading_settings.update(trading_state)
+                
+                # Khởi tạo lại trading_manager nếu cần
+                if trading_state.get('is_trading', False) and trading_state.get('api_key') and trading_state.get('api_secret'):
+                    # Đảm bảo chúng ta có trading_manager
+                    if not hasattr(st.session_state, "trading_manager") or st.session_state.trading_manager is None:
+                        from utils.trading_manager import TradingManager
+                        st.session_state.trading_manager = TradingManager()
+                    
+                    # Kết nối lại với API
+                    if not hasattr(st.session_state.trading_manager, 'client') or st.session_state.trading_manager.client is None:
+                        st.session_state.trading_manager.connect(
+                            trading_state.get('api_key'),
+                            trading_state.get('api_secret')
+                        )
+                
+                return True
+    except Exception as e:
+        print(f"Lỗi khi tải trạng thái giao dịch: {e}")
+    
+    return False
+
 # Kiểm tra và hiển thị toast từ thread riêng
 if hasattr(st.session_state, 'pending_toast') and st.session_state.pending_toast is not None:
     toast_data = st.session_state.pending_toast
     show_toast(toast_data['message'], toast_data['type'], toast_data['duration'])
     st.session_state.pending_toast = None
+
+# Tải trạng thái giao dịch từ tập tin
+if 'trading_state_loaded' not in st.session_state:
+    st.session_state.trading_state_loaded = load_trading_state()
 
 def initialize_system():
     """Initialize the prediction system"""
