@@ -204,47 +204,74 @@ def create_metric_card(title, value, subtitle=None, icon=None, color="blue", is_
         color (str): Màu sắc của card
         is_percent (bool): Có hiển thị dạng % không
     """
-    # Xử lý giá trị value đầu vào để tránh các lỗi khi hiển thị
-    if isinstance(value, str) and "<div>" in value or "</div>" in value:
-        # Nếu chứa HTML tags, sử dụng giá trị đơn giản thay thế
-        value_str = "N/A"
-    else:
-        # Định dạng giá trị bình thường
-        try:
-            value_str = f"{float(value):.2f}%" if is_percent else f"{value}"
-        except (ValueError, TypeError):
-            # Nếu không thể chuyển thành số, hiển thị nguyên dạng
-            value_str = f"{value}%" if is_percent else f"{value}"
-    
-    # Xử lý icon
-    icon_html = f"<span style='font-size: 24px;'>{icon}</span>" if icon else ""
-    
-    color_map = {
-        "blue": "#485ec4",
-        "green": "#2ecc71",
-        "red": "#e74c3c",
-        "yellow": "#f1c40f",
-        "gray": "#95a5a6"
-    }
-    
-    border_color = color_map.get(color, "#485ec4")
-    
-    # Tạo HTML an toàn
-    card_html = f"""
-    <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {border_color}; margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="color: #7f8c8d; font-size: 14px;">{title}</div>
-                <div style="font-size: 28px; font-weight: bold; color: #2c3e50;">{value_str}</div>
-                {f'<div style="color: #95a5a6; font-size: 12px;">{subtitle}</div>' if subtitle else ''}
-            </div>
-            <div>
-                {icon_html}
+    try:
+        # Xử lý title an toàn
+        if title is None:
+            title = "Không xác định"
+        else:
+            title = str(title).replace("<", "&lt;").replace(">", "&gt;")
+            
+        # Xử lý giá trị value đầu vào để tránh các lỗi khi hiển thị
+        if value is None:
+            value_str = "N/A"
+        elif isinstance(value, str) and ("<" in value or ">" in value or "&" in value):
+            # Nếu chứa HTML tags, sử dụng giá trị an toàn
+            value_str = str(value).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;")
+            if is_percent:
+                value_str += "%"
+        else:
+            # Định dạng giá trị bình thường
+            try:
+                value_str = f"{float(value):.2f}%" if is_percent else f"{value}"
+            except (ValueError, TypeError):
+                # Nếu không thể chuyển thành số, hiển thị nguyên dạng an toàn
+                value_str = str(value).replace("<", "&lt;").replace(">", "&gt;")
+                if is_percent:
+                    value_str += "%"
+        
+        # Xử lý subtitle an toàn
+        if subtitle is not None:
+            subtitle = str(subtitle).replace("<", "&lt;").replace(">", "&gt;")
+        
+        # Xử lý icon an toàn
+        if icon is not None:
+            if len(str(icon)) > 5:  # Nếu icon quá dài, có thể là mã độc
+                icon = "📊"  # Sử dụng biểu tượng mặc định an toàn
+            icon_html = f"<span style='font-size: 24px;'>{icon}</span>"
+        else:
+            icon_html = ""
+        
+        # Xác định màu an toàn
+        color_map = {
+            "blue": "#485ec4",
+            "green": "#2ecc71",
+            "red": "#e74c3c",
+            "yellow": "#f1c40f",
+            "gray": "#95a5a6"
+        }
+        
+        border_color = color_map.get(color, "#485ec4")
+        
+        # Tạo HTML an toàn với tất cả các giá trị đã được xử lý
+        card_html = f"""
+        <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {border_color}; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: #7f8c8d; font-size: 14px;">{title}</div>
+                    <div style="font-size: 28px; font-weight: bold; color: #2c3e50;">{value_str}</div>
+                    {f'<div style="color: #95a5a6; font-size: 12px;">{subtitle}</div>' if subtitle else ''}
+                </div>
+                <div>
+                    {icon_html}
+                </div>
             </div>
         </div>
-    </div>
-    """
-    st.markdown(card_html, unsafe_allow_html=True)
+        """
+        st.markdown(card_html, unsafe_allow_html=True)
+    except Exception as e:
+        # Hiển thị phiên bản dự phòng nếu có lỗi
+        st.warning(f"{title}: {str(value)}")
+        print(f"Error in create_metric_card: {str(e)}")
 
 def create_price_card(price, change, change_percent, last_update=None):
     """
@@ -289,76 +316,121 @@ def create_prediction_card(prediction):
         st.info("Chưa có dự đoán")
         return
     
-    # Xác định màu sắc và biểu tượng dựa trên xu hướng
-    colors = {"LONG": "#2ecc71", "SHORT": "#e74c3c", "NEUTRAL": "#95a5a6"}
-    icons = {"LONG": "📈", "SHORT": "📉", "NEUTRAL": "📊"}
-    
-    trend = prediction.get("trend", "NEUTRAL")
-    color = colors.get(trend, "#95a5a6")
-    icon = icons.get(trend, "📊")
-    
-    # Tính toán hiển thị thời gian
-    timestamp = prediction.get("timestamp", "")
-    time_diff = ""
-    if timestamp:
+    try:
+        # Xác định màu sắc và biểu tượng dựa trên xu hướng
+        colors = {"LONG": "#2ecc71", "SHORT": "#e74c3c", "NEUTRAL": "#95a5a6"}
+        icons = {"LONG": "📈", "SHORT": "📉", "NEUTRAL": "📊"}
+        
+        # Đảm bảo prediction là một dict hợp lệ và trend có giá trị hợp lệ
+        if not isinstance(prediction, dict):
+            st.error("Dữ liệu dự đoán không hợp lệ")
+            return
+            
+        trend = prediction.get("trend", "NEUTRAL")
+        if not isinstance(trend, str):
+            trend = "NEUTRAL"
+            
+        color = colors.get(trend, "#95a5a6")
+        icon = icons.get(trend, "📊")
+        
+        # Tính toán hiển thị thời gian
+        timestamp = prediction.get("timestamp", "")
+        time_diff = ""
+        if timestamp and isinstance(timestamp, str):
+            try:
+                pred_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                now = datetime.now()
+                diff = (now - pred_time).total_seconds() / 60
+                if diff < 60:
+                    time_diff = f"{int(diff)} phút trước"
+                else:
+                    time_diff = f"{int(diff/60)} giờ {int(diff%60)} phút trước"
+            except Exception as e:
+                time_diff = "Không rõ"
+                print(f"Error parsing timestamp: {e}")
+        
+        # Xử lý các giá trị số an toàn
         try:
-            pred_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-            now = datetime.now()
-            diff = (now - pred_time).total_seconds() / 60
-            if diff < 60:
-                time_diff = f"{int(diff)} phút trước"
-            else:
-                time_diff = f"{int(diff/60)} giờ {int(diff%60)} phút trước"
-        except:
-            time_diff = timestamp
-    
-    # Tạo card HTML
-    card_html = f"""
-    <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {color}; margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div style="flex-grow: 1;">
-                <div style="font-size: 24px; font-weight: bold; color: {color};">
-                    {trend}
-                    <span style="font-size: 14px; color: #7f8c8d; font-weight: normal; margin-left: 10px;">
-                        {time_diff}
-                    </span>
-                </div>
-                
-                <div style="display: flex; margin-top: 10px;">
-                    <div style="flex: 1;">
-                        <div style="color: #7f8c8d; font-size: 14px;">Giá hiện tại</div>
-                        <div style="font-size: 18px; font-weight: bold;">${prediction.get('price', 0):.2f}</div>
+            price = float(prediction.get('price', 0))
+        except (ValueError, TypeError):
+            price = 0.0
+            
+        try:
+            target_price = float(prediction.get('target_price', 0))
+        except (ValueError, TypeError):
+            target_price = 0.0
+            
+        try:
+            confidence = float(prediction.get('confidence', 0))
+        except (ValueError, TypeError):
+            confidence = 0.0
+            
+        try:
+            valid_minutes_left = float(prediction.get('valid_minutes_left', 0))
+        except (ValueError, TypeError):
+            valid_minutes_left = 0.0
+            
+        try:
+            valid_for_minutes = float(prediction.get('valid_for_minutes', 30))
+        except (ValueError, TypeError):
+            valid_for_minutes = 30.0
+            
+        # Tính toán phần trăm thời gian còn lại một cách an toàn
+        if valid_for_minutes > 0:
+            percent_time_left = min(valid_minutes_left/valid_for_minutes*100, 100)
+        else:
+            percent_time_left = 0
+        
+        # Tạo card HTML đã được làm sạch và an toàn
+        card_html = f"""
+        <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {color}; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex-grow: 1;">
+                    <div style="font-size: 24px; font-weight: bold; color: {color};">
+                        {trend}
+                        <span style="font-size: 14px; color: #7f8c8d; font-weight: normal; margin-left: 10px;">
+                            {time_diff}
+                        </span>
                     </div>
-                    <div style="flex: 1;">
-                        <div style="color: #7f8c8d; font-size: 14px;">Giá mục tiêu</div>
-                        <div style="font-size: 18px; font-weight: bold;">${prediction.get('target_price', 0):.2f}</div>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="color: #7f8c8d; font-size: 14px;">Độ tin cậy</div>
-                        <div style="font-size: 18px; font-weight: bold;">{prediction.get('confidence', 0)*100:.1f}%</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px;">
-                    <div style="color: #7f8c8d; font-size: 14px;">Thời gian dự đoán</div>
-                    <div style="margin-top: 5px;">
-                        <div style="background-color: #f0f2f6; height: 8px; border-radius: 4px; position: relative;">
-                            <div style="position: absolute; height: 8px; border-radius: 4px; width: {min(prediction.get('valid_minutes_left', 0)/prediction.get('valid_for_minutes', 30)*100, 100)}%; background-color: {color};"></div>
+                    
+                    <div style="display: flex; margin-top: 10px;">
+                        <div style="flex: 1;">
+                            <div style="color: #7f8c8d; font-size: 14px;">Giá hiện tại</div>
+                            <div style="font-size: 18px; font-weight: bold;">${price:.2f}</div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #7f8c8d;">
-                            <span>0 phút</span>
-                            <span>{prediction.get('valid_for_minutes', 30)} phút</span>
+                        <div style="flex: 1;">
+                            <div style="color: #7f8c8d; font-size: 14px;">Giá mục tiêu</div>
+                            <div style="font-size: 18px; font-weight: bold;">${target_price:.2f}</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="color: #7f8c8d; font-size: 14px;">Độ tin cậy</div>
+                            <div style="font-size: 18px; font-weight: bold;">{confidence*100:.1f}%</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <div style="color: #7f8c8d; font-size: 14px;">Thời gian dự đoán</div>
+                        <div style="margin-top: 5px;">
+                            <div style="background-color: #f0f2f6; height: 8px; border-radius: 4px; position: relative;">
+                                <div style="position: absolute; height: 8px; border-radius: 4px; width: {percent_time_left}%; background-color: {color};"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #7f8c8d;">
+                                <span>0 phút</span>
+                                <span>{int(valid_for_minutes)} phút</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div style="font-size: 36px; margin-left: 15px; color: {color};">
-                {icon}
+                <div style="font-size: 36px; margin-left: 15px; color: {color};">
+                    {icon}
+                </div>
             </div>
         </div>
-    </div>
-    """
-    st.markdown(card_html, unsafe_allow_html=True)
+        """
+        st.markdown(card_html, unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Lỗi khi tạo card dự đoán: {str(e)}")
+        print(f"Error creating prediction card: {str(e)}")
 
 def create_gauge_chart(value, title="Độ tin cậy", min_value=0, max_value=1, color_thresholds=None):
     """
