@@ -433,16 +433,18 @@ class BinanceDataCollector:
                 password = config.PROXY_PASSWORD
                 
                 if username and password:
+                    # Định dạng lại URL proxy - thử dạng địa chỉ đầy đủ
                     proxy_auth = f"{username}:{password}@{host}:{port}"
                     proxy_settings = {
                         'http': f'http://{proxy_auth}',
-                        'https': f'https://{proxy_auth}'
+                        'https': f'http://{proxy_auth}'  # Sửa https thành http vì nhiều proxy không hỗ trợ HTTPS
                     }
                     logger.info(f"Attempting connection via authenticated proxy ({host}:{port})")
                 else:
+                    # Dùng http cho cả kết nối https
                     proxy_settings = {
                         'http': f'http://{host}:{port}',
-                        'https': f'https://{host}:{port}'
+                        'https': f'http://{host}:{port}'  # Sửa https thành http
                     }
                     logger.info(f"Attempting connection via proxy ({host}:{port})")
             
@@ -451,7 +453,7 @@ class BinanceDataCollector:
                 self.client = Client(
                     config.BINANCE_API_KEY, 
                     config.BINANCE_API_SECRET,
-                    {"proxies": proxy_settings, "timeout": 60}
+                    {"proxies": proxy_settings, "timeout": 120}  # Tăng timeout lên 120 giây
                 )
             else:
                 # Sử dụng kết nối trực tiếp khi không cấu hình proxy
