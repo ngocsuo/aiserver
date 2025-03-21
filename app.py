@@ -1349,6 +1349,16 @@ def display_system_status(data_status, thread_status, prediction_count):
     """Display system status overview"""
     st.write("### System Status Overview")
     
+    # Force kiểm tra trạng thái huấn luyện từ continuous_trainer
+    if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
+        training_status = st.session_state.continuous_trainer.get_training_status()
+        
+        # Cập nhật trực tiếp trạng thái vào session_state
+        if 'last_training_time' in training_status and training_status['last_training_time']:
+            # Cập nhật trực tiếp các biến trạng thái
+            st.session_state.model_trained = True
+            st.session_state.historical_data_ready = True
+    
     # Display in columns
     col1, col2, col3 = st.columns(3)
     
@@ -1382,13 +1392,12 @@ def display_system_status(data_status, thread_status, prediction_count):
         if 'historical_data_status' in st.session_state:
             historical_progress = f"{st.session_state.historical_data_status.get('progress', 0)}%"
         
-        # Xác định nếu dữ liệu lịch sử đã sẵn sàng
-        historical_ready = False
-        if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
-            training_status = st.session_state.continuous_trainer.get_training_status()
-            if 'last_training_time' in training_status and training_status['last_training_time']:
-                historical_ready = True
-                historical_progress = "100%"
+        # Kiểm tra biến trạng thái dữ liệu lịch sử đã cập nhật
+        historical_ready = st.session_state.get('historical_data_ready', False)
+        
+        # Ghi đè bằng tiến trình 100% nếu đã sẵn sàng
+        if historical_ready:
+            historical_progress = "100%"
         
         historical_status = f"✅ {historical_progress}" if historical_ready else f"⏳ {historical_progress}"
         st.markdown(historical_status)
@@ -1396,17 +1405,8 @@ def display_system_status(data_status, thread_status, prediction_count):
         # Trạng thái mô hình AI
         st.write("**Mô hình AI**")
         
-        # Kiểm tra xem mô hình đã được huấn luyện chưa
-        models_trained = False
-        if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
-            training_status = st.session_state.continuous_trainer.get_training_status()
-            if 'models_trained' in training_status and training_status['models_trained']:
-                models_trained = True
-            elif 'last_training_time' in training_status and training_status['last_training_time']:
-                models_trained = True
-                
-        # Cập nhật biến trong session state để các thành phần khác có thể sử dụng
-        st.session_state.model_trained = models_trained
+        # Sử dụng biến session_state đã được cập nhật
+        models_trained = st.session_state.get('model_trained', False)
         
         model_status = "✅ Đã huấn luyện" if models_trained else "❌ Chưa huấn luyện"
         st.markdown(model_status)
