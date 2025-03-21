@@ -432,41 +432,23 @@ class BinanceDataCollector:
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
-                # Lấy loại proxy từ config (socks5, http, https)
-                proxy_type = getattr(config, 'PROXY_TYPE', 'http')  # Mặc định là http nếu không tìm thấy
-                
+                # Thiết lập proxy thông qua biến môi trường - cách tiếp cận mới
                 if username and password:
-                    if proxy_type == 'socks5':
-                        # Sử dụng định dạng đặc biệt cho socks5
-                        proxy_auth = f"{username}:{password}@{host}:{port}"
-                        proxy_settings = {
-                            'http': f'socks5://{proxy_auth}',
-                            'https': f'socks5://{proxy_auth}'
-                        }
-                        logger.info(f"Attempting connection via authenticated socks5 proxy ({host}:{port})")
-                    else:
-                        # Định dạng cho http/https
-                        proxy_auth = f"{username}:{password}@{host}:{port}"
-                        proxy_settings = {
-                            'http': f'{proxy_type}://{proxy_auth}',
-                            'https': f'{proxy_type}://{proxy_auth}'
-                        }
-                        logger.info(f"Attempting connection via authenticated {proxy_type} proxy ({host}:{port})")
+                    proxy_url = f"http://{username}:{password}@{host}:{port}"
                 else:
-                    if proxy_type == 'socks5':
-                        # Sử dụng định dạng đặc biệt cho socks5
-                        proxy_settings = {
-                            'http': f'socks5://{host}:{port}',
-                            'https': f'socks5://{host}:{port}'
-                        }
-                        logger.info(f"Attempting connection via socks5 proxy ({host}:{port})")
-                    else:
-                        # Định dạng cho http/https
-                        proxy_settings = {
-                            'http': f'{proxy_type}://{host}:{port}',
-                            'https': f'{proxy_type}://{host}:{port}'
-                        }
-                        logger.info(f"Attempting connection via {proxy_type} proxy ({host}:{port})")
+                    proxy_url = f"http://{host}:{port}"
+                
+                # Thiết lập biến môi trường proxy
+                os.environ["HTTP_PROXY"] = proxy_url
+                os.environ["HTTPS_PROXY"] = proxy_url
+                
+                # Chỉ dùng proxy URL cho HTTP, không dùng cho HTTPS vì lỗi SSL
+                proxy_settings = {
+                    'http': proxy_url,
+                    # Không đặt cho https để tránh lỗi SSL
+                }
+                
+                logger.info(f"Set system-wide proxy environment variables for connection via proxy ({host}:{port})")
             
             # Khởi tạo client với hoặc không có proxy
             if proxy_settings:
