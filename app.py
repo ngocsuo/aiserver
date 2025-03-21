@@ -117,6 +117,7 @@ def show_toast(message, type="info", duration=3000):
     components.html(toast_html, height=0)
 from models.continuous_trainer import get_continuous_trainer
 from prediction.prediction_engine import PredictionEngine
+from utils.trading_manager import TradingManager
 import config
 
 # Set page config
@@ -1725,6 +1726,7 @@ with st.sidebar:
     # Danh sách tab được sắp xếp theo mức độ quan trọng
     tabs = [
         "🔍 Live Dashboard", 
+        "💰 Giao dịch",
         "📊 Backtest",
         "⚙️ Cài đặt", 
         "🧠 Models", 
@@ -1735,6 +1737,7 @@ with st.sidebar:
     # Map từ tab hiển thị đến tên trong session_state
     tab_mapping = {
         "🔍 Live Dashboard": "Live Dashboard",
+        "💰 Giao dịch": "Trading",
         "🧠 Models": "Models & Training",
         "⚙️ Cài đặt": "Cài đặt",
         "📊 Backtest": "Backtest",
