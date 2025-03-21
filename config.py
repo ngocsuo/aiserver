@@ -15,16 +15,17 @@ FORCE_MOCK_DATA = False  # Set to False to use real data with configured proxy
 
 # Trading Symbol and Timeframes
 SYMBOL = "ETHUSDT"
+
+# Cấu trúc khung thời gian đơn giản, rõ ràng hơn
+PRIMARY_TIMEFRAME = "1m"  # Timeframe chính mặc định
+SECONDARY_TIMEFRAME = "5m"  # Timeframe thứ hai cho dự đoán dài hạn
+ALL_TIMEFRAMES = ["1m", "5m", "15m", "1h", "4h"]  # Tất cả khung thời gian hỗ trợ
+
+# Cấu trúc cũ được giữ lại để tương thích
 TIMEFRAMES = {
-    "primary": "1m",   # Khung thời gian chính là 1m
+    "primary": PRIMARY_TIMEFRAME,
     "secondary": ["5m", "15m", "1h", "4h"]
 }
-# Định nghĩa khung thời gian cho các mô hình
-MODEL_TIMEFRAMES = {
-    "1m": "1m",   # Khung thời gian 1m
-    "5m": "5m",   # Khung thời gian 5m
-}
-PRIMARY_TIMEFRAME = "1m"  # Timeframe chính mặc định
 
 # Cấu hình dự đoán cho mỗi khung thời gian
 PREDICTION_SETTINGS = {

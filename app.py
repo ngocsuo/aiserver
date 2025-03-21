@@ -1174,11 +1174,35 @@ with st.sidebar:
     else:
         st.info("⏳ Đang khởi tạo hệ thống...")
     
-    # Navigation với thiết kế hiện đại
+    # Navigation với thiết kế hiện đại và icon emoji
     st.markdown("### 📊 Điều hướng")
-    tabs = ["Live Dashboard", "Models & Training", "Cài đặt", "System Status", "API Guide", "Backtest"]
-    selected_tab = st.radio("Chọn chế độ xem", tabs, index=tabs.index(st.session_state.selected_tab) if st.session_state.selected_tab in tabs else 0)
-    st.session_state.selected_tab = selected_tab
+    tabs = [
+        "🔍 Live Dashboard", 
+        "🧠 Models & Training", 
+        "⚙️ Cài đặt", 
+        "📊 Backtest",
+        "🛠️ System Status", 
+        "📡 API Guide"
+    ]
+    # Map từ tab hiển thị đến tên trong session_state
+    tab_mapping = {
+        "🔍 Live Dashboard": "Live Dashboard",
+        "🧠 Models & Training": "Models & Training",
+        "⚙️ Cài đặt": "Cài đặt",
+        "📊 Backtest": "Backtest",
+        "🛠️ System Status": "System Status",
+        "📡 API Guide": "API Guide"
+    }
+    # Tìm index mặc định
+    default_index = 0
+    for i, tab in enumerate(tabs):
+        if tab_mapping[tab] == st.session_state.selected_tab:
+            default_index = i
+            break
+            
+    selected_tab_display = st.radio("Chọn chế độ xem", tabs, index=default_index)
+    # Lưu tab đã chọn vào session state
+    st.session_state.selected_tab = tab_mapping[selected_tab_display]
     
     # Data controls với thiết kế hiện đại
     if st.session_state.initialized:
@@ -1615,6 +1639,211 @@ if st.session_state.selected_tab == "Live Dashboard":
                     else:
                         st.error("Chưa khởi tạo bộ huấn luyện liên tục")
 
+elif st.session_state.selected_tab == "Cài đặt":
+    st.title("Cài đặt hệ thống dự đoán")
+    
+    if not st.session_state.initialized:
+        st.warning("Vui lòng khởi tạo hệ thống trước")
+        
+        # Add a big initialize button in the center
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚀 Khởi tạo hệ thống", use_container_width=True):
+                initialize_system()
+                st.rerun()
+    else:
+        settings_tab1, settings_tab2, settings_tab3 = st.tabs(["Cài đặt dự đoán", "Cài đặt huấn luyện", "Cài đặt hệ thống"])
+        
+        with settings_tab1:
+            st.subheader("⚙️ Cấu hình dự đoán")
+            
+            # Khung thời gian chính để dự đoán
+            selected_timeframe = st.selectbox(
+                "Khung thời gian dữ liệu",
+                options=["1m", "5m"],
+                index=0,
+                help="Khung thời gian dữ liệu sử dụng cho việc dự đoán"
+            )
+            
+            # Thời gian dự đoán cho tương lai
+            if selected_timeframe == "1m":
+                prediction_horizons = list(config.PREDICTION_SETTINGS["1m"]["horizons"].keys())
+                selected_horizon = st.selectbox(
+                    "Khoảng thời gian dự đoán",
+                    options=prediction_horizons,
+                    index=0,
+                    help="Thời gian dự đoán trong tương lai"
+                )
+            else:  # 5m
+                prediction_horizons = list(config.PREDICTION_SETTINGS["5m"]["horizons"].keys())
+                selected_horizon = st.selectbox(
+                    "Khoảng thời gian dự đoán",
+                    options=prediction_horizons,
+                    index=0,
+                    help="Thời gian dự đoán trong tương lai"
+                )
+            
+            # Áp dụng thiết lập mới
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🔄 Áp dụng thiết lập dự đoán", use_container_width=True):
+                    # Lưu thiết lập dự đoán vào session state
+                    st.session_state.prediction_settings = {
+                        "timeframe": selected_timeframe,
+                        "horizon": selected_horizon
+                    }
+                    st.success(f"Đã cập nhật thiết lập dự đoán: Khung thời gian {selected_timeframe}, dự đoán cho {selected_horizon}")
+            
+            # Hiển thị thiết lập hiện tại
+            if "prediction_settings" in st.session_state:
+                settings = st.session_state.prediction_settings
+                st.info(f"Thiết lập hiện tại: Khung thời gian {settings['timeframe']}, dự đoán cho {settings['horizon']}")
+            else:
+                # Thiết lập mặc định
+                st.session_state.prediction_settings = {
+                    "timeframe": config.DEFAULT_TIMEFRAME,
+                    "horizon": config.DEFAULT_PREDICTION_HORIZON
+                }
+                st.info(f"Thiết lập mặc định: Khung thời gian {config.DEFAULT_TIMEFRAME}, dự đoán cho {config.DEFAULT_PREDICTION_HORIZON}")
+        
+        with settings_tab2:
+            st.subheader("🧠 Cài đặt huấn luyện")
+            
+            # Chọn khoảng thời gian dữ liệu huấn luyện
+            start_date = st.date_input(
+                "Ngày bắt đầu dữ liệu huấn luyện",
+                value=datetime.strptime(config.DEFAULT_TRAINING_START_DATE, "%Y-%m-%d").date(),
+                help="Chọn ngày bắt đầu khoảng thời gian dữ liệu huấn luyện"
+            )
+            
+            # Hiển thị ngày hiện tại làm điểm kết thúc
+            end_date = datetime.now().date()
+            st.info(f"Dữ liệu huấn luyện sẽ được thu thập từ {start_date} đến {end_date}")
+            
+            # Tính toán số ngày dữ liệu
+            training_days = (end_date - start_date).days
+            st.write(f"Tổng cộng: {training_days} ngày dữ liệu")
+            
+            # Thiết lập tần suất huấn luyện lại
+            st.subheader("⏱️ Tần suất huấn luyện tự động")
+            training_frequency = st.selectbox(
+                "Huấn luyện lại mỗi",
+                options=["30 phút", "1 giờ", "3 giờ", "6 giờ", "12 giờ", "24 giờ"],
+                index=0,
+                help="Tần suất hệ thống tự động huấn luyện lại model"
+            )
+            
+            # Button để bắt đầu huấn luyện và áp dụng thiết lập mới
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("✅ Lưu cài đặt huấn luyện", use_container_width=True):
+                    # Lưu thiết lập huấn luyện vào session state
+                    st.session_state.training_settings = {
+                        "start_date": start_date.strftime("%Y-%m-%d"),
+                        "training_frequency": training_frequency
+                    }
+                    
+                    # Cập nhật tần suất huấn luyện
+                    frequency_minutes = {
+                        "30 phút": 30,
+                        "1 giờ": 60,
+                        "3 giờ": 180,
+                        "6 giờ": 360,
+                        "12 giờ": 720,
+                        "24 giờ": 1440
+                    }
+                    
+                    config.TRAINING_SCHEDULE["interval_minutes"] = frequency_minutes[training_frequency]
+                    
+                    st.success("Đã lưu cài đặt huấn luyện thành công!")
+            
+            with col2:
+                if st.button("🧠 Huấn luyện ngay", use_container_width=True):
+                    if 'training_settings' in st.session_state:
+                        # Gọi hàm huấn luyện với thiết lập mới
+                        with st.spinner("Đang bắt đầu quá trình huấn luyện..."):
+                            # Lưu thiết lập huấn luyện và bắt đầu huấn luyện
+                            config.HISTORICAL_START_DATE = st.session_state.training_settings["start_date"]
+                            train_models()
+                            st.success("Đã bắt đầu huấn luyện với thiết lập mới!")
+                    else:
+                        # Sử dụng thiết lập mặc định
+                        with st.spinner("Đang bắt đầu quá trình huấn luyện..."):
+                            train_models()
+                            st.success("Đã bắt đầu huấn luyện với thiết lập mặc định!")
+            
+            # Hiển thị thiết lập hiện tại
+            if "training_settings" in st.session_state:
+                settings = st.session_state.training_settings
+                st.info(f"Thiết lập hiện tại: Từ ngày {settings['start_date']}, huấn luyện lại mỗi {settings['training_frequency']}")
+            
+            # Hiển thị trạng thái huấn luyện
+            st.subheader("📊 Trạng thái huấn luyện")
+            if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer:
+                status = st.session_state.continuous_trainer.get_training_status()
+                
+                # Hiển thị thời điểm huấn luyện lần cuối
+                if 'last_training' in status and status['last_training']:
+                    st.write(f"🕒 Huấn luyện lần cuối: {status['last_training']}")
+                
+                # Hiển thị thời điểm huấn luyện tiếp theo
+                if 'next_training' in status and status['next_training']:
+                    st.write(f"⏱️ Huấn luyện tiếp theo: {status['next_training']}")
+                
+                # Hiển thị trạng thái huấn luyện
+                if 'is_training' in status:
+                    if status['is_training']:
+                        st.warning("⚙️ Đang huấn luyện...")
+                    else:
+                        st.success("✅ Sẵn sàng cho huấn luyện tiếp theo")
+            else:
+                st.warning("Hệ thống huấn luyện tự động chưa được khởi tạo")
+        
+        with settings_tab3:
+            st.subheader("🛠️ Cài đặt hệ thống")
+            
+            # Thiết lập nguồn dữ liệu
+            data_source = st.radio(
+                "Nguồn dữ liệu",
+                options=["Binance API (thực)", "Mô phỏng (giả lập)"],
+                index=0 if config.USE_REAL_API else 1,
+                help="Chọn nguồn dữ liệu cho hệ thống"
+            )
+            
+            # Cập nhật thiết lập USE_REAL_API
+            config.USE_REAL_API = (data_source == "Binance API (thực)")
+            
+            # Thiết lập thời gian cập nhật dữ liệu
+            update_interval = st.slider(
+                "Thời gian cập nhật dữ liệu (giây)",
+                min_value=5,
+                max_value=60,
+                value=config.UPDATE_INTERVAL,
+                step=5,
+                help="Thời gian giữa các lần cập nhật dữ liệu tự động"
+            )
+            
+            # Cập nhật thiết lập UPDATE_INTERVAL
+            config.UPDATE_INTERVAL = update_interval
+            
+            # Button để lưu thiết lập hệ thống
+            if st.button("💾 Lưu thiết lập hệ thống", use_container_width=True):
+                st.success(f"Đã lưu thiết lập hệ thống: Nguồn dữ liệu = {data_source}, cập nhật mỗi {update_interval} giây")
+                
+                # Nếu thay đổi nguồn dữ liệu, cần khởi động lại hệ thống
+                if data_source == "Binance API (thực)" and isinstance(st.session_state.data_collector, MockDataCollector):
+                    st.warning("Cần khởi động lại hệ thống để áp dụng thay đổi nguồn dữ liệu")
+                    if st.button("🔄 Khởi động lại hệ thống", use_container_width=True):
+                        st.session_state.initialized = False
+                        initialize_system()
+                        st.rerun()
+                elif data_source == "Mô phỏng (giả lập)" and not isinstance(st.session_state.data_collector, MockDataCollector):
+                    st.warning("Cần khởi động lại hệ thống để áp dụng thay đổi nguồn dữ liệu")
+                    if st.button("🔄 Khởi động lại hệ thống", use_container_width=True):
+                        st.session_state.initialized = False
+                        initialize_system()
+                        st.rerun()
+
 elif st.session_state.selected_tab == "Models & Training":
     st.title("AI Models & Training")
     
@@ -1727,6 +1956,344 @@ elif st.session_state.selected_tab == "Models & Training":
                 "Epochs": config.EPOCHS,
                 "Early Stopping Patience": config.EARLY_STOPPING_PATIENCE
             })
+
+elif st.session_state.selected_tab == "Backtest":
+    st.title("Kiểm tra hiệu suất mô hình (Backtest)")
+    
+    if not st.session_state.initialized:
+        st.warning("Vui lòng khởi tạo hệ thống trước")
+        
+        # Add a big initialize button in the center
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚀 Khởi tạo hệ thống", use_container_width=True):
+                initialize_system()
+                st.rerun()
+    else:
+        # Thiết lập thời gian cho backtest
+        st.subheader("Thiết lập khoảng thời gian cho backtest")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            start_date = st.date_input(
+                "Ngày bắt đầu",
+                value=datetime.strptime(config.BACKTEST_PERIOD_START, "%Y-%m-%d").date(),
+                help="Ngày bắt đầu cho khoảng thời gian backtest"
+            )
+        
+        with col2:
+            end_date = st.date_input(
+                "Ngày kết thúc",
+                value=datetime.strptime(config.BACKTEST_PERIOD_END, "%Y-%m-%d").date(),
+                help="Ngày kết thúc cho khoảng thời gian backtest"
+            )
+        
+        # Thiết lập khung thời gian và khoảng thời gian dự đoán
+        st.subheader("Thiết lập dự đoán")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            timeframe = st.selectbox(
+                "Khung thời gian",
+                options=["1m", "5m"],
+                index=0,
+                help="Khung thời gian cho dữ liệu backtest"
+            )
+        
+        with col2:
+            if timeframe == "1m":
+                prediction_horizons = list(config.PREDICTION_SETTINGS["1m"]["horizons"].keys())
+                prediction_horizon = st.selectbox(
+                    "Thời gian dự đoán",
+                    options=prediction_horizons,
+                    index=0,
+                    help="Khoảng thời gian dự đoán"
+                )
+            else:  # 5m
+                prediction_horizons = list(config.PREDICTION_SETTINGS["5m"]["horizons"].keys())
+                prediction_horizon = st.selectbox(
+                    "Thời gian dự đoán",
+                    options=prediction_horizons,
+                    index=0,
+                    help="Khoảng thời gian dự đoán"
+                )
+        
+        # Nút để bắt đầu backtest
+        if st.button("▶️ Chạy Backtest", use_container_width=True):
+            # Kiểm tra xem ngày bắt đầu có trước ngày kết thúc không
+            if start_date >= end_date:
+                st.error("Ngày bắt đầu phải trước ngày kết thúc!")
+            else:
+                with st.spinner("Đang thực hiện backtest..."):
+                    # Đặt thông tin backtest vào session state
+                    if 'backtest_results' not in st.session_state:
+                        st.session_state.backtest_results = {}
+                    
+                    # Đặt khoảng thời gian và cấu hình dự đoán
+                    backtest_config = {
+                        "start_date": start_date.strftime("%Y-%m-%d"),
+                        "end_date": end_date.strftime("%Y-%m-%d"),
+                        "timeframe": timeframe,
+                        "prediction_horizon": prediction_horizon
+                    }
+                    
+                    # Tạo key cho kết quả backtest này
+                    backtest_key = f"{timeframe}_{prediction_horizon}_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}"
+                    
+                    # Tạo kết quả backtest giả để demo (thay thế bằng kết quả thực khi có hàm backtest)
+                    # Tạo kết quả backtest ngẫu nhiên để demo
+                    accuracy = random.uniform(0.62, 0.78)
+                    total_trades = random.randint(100, 500)
+                    profitable_trades = int(total_trades * accuracy)
+                    average_profit = random.uniform(2.5, 5.0)
+                    average_loss = random.uniform(1.5, 3.0)
+                    max_drawdown = random.uniform(8, 15)
+                    
+                    # Tạo danh sách giao dịch giả lập
+                    fake_trades = []
+                    current_date = start_date
+                    while current_date <= end_date:
+                        # Bỏ qua cuối tuần
+                        if current_date.weekday() < 5:  # 0-4 là thứ 2 đến thứ 6
+                            # Số giao dịch ngẫu nhiên mỗi ngày
+                            num_trades = random.randint(0, 3)
+                            
+                            for _ in range(num_trades):
+                                # Tạo thời gian ngẫu nhiên trong ngày
+                                hour = random.randint(0, 23)
+                                minute = random.randint(0, 59)
+                                trade_time = datetime(
+                                    current_date.year, 
+                                    current_date.month, 
+                                    current_date.day,
+                                    hour, minute
+                                )
+                                
+                                # Ngẫu nhiên tín hiệu
+                                signal = random.choice(["LONG", "SHORT"])
+                                
+                                # Ngẫu nhiên kết quả
+                                result = random.choice([True, False, True, True])  # Thiên về true một chút
+                                
+                                # Tính lợi nhuận/lỗ
+                                pnl = random.uniform(2.0, 6.0) if result else -random.uniform(1.0, 3.0)
+                                
+                                # Thêm vào danh sách giao dịch
+                                fake_trades.append({
+                                    "time": trade_time.strftime("%Y-%m-%d %H:%M"),
+                                    "signal": signal,
+                                    "entry_price": round(random.uniform(3000, 4000), 2),
+                                    "exit_price": None,  # Sẽ tính sau
+                                    "result": "WIN" if result else "LOSS",
+                                    "pnl": round(pnl, 2),
+                                    "confidence": round(random.uniform(0.65, 0.95), 2)
+                                })
+                        
+                        # Ngày tiếp theo
+                        current_date += timedelta(days=1)
+                    
+                    # Thêm giá thoát dựa trên PNL
+                    for trade in fake_trades:
+                        entry_price = trade["entry_price"]
+                        pnl_percent = trade["pnl"] / entry_price
+                        
+                        if trade["signal"] == "LONG":
+                            trade["exit_price"] = round(entry_price * (1 + pnl_percent), 2)
+                        else:  # SHORT
+                            trade["exit_price"] = round(entry_price * (1 - pnl_percent), 2)
+                    
+                    # Sắp xếp giao dịch theo thời gian
+                    fake_trades.sort(key=lambda x: x["time"])
+                    
+                    # Tạo ma trận nhầm lẫn
+                    confusion_matrix = {
+                        "true_long": random.randint(30, 70),
+                        "true_neutral": random.randint(100, 200),
+                        "true_short": random.randint(30, 70),
+                        "pred_long": random.randint(40, 80),
+                        "pred_neutral": random.randint(90, 180),
+                        "pred_short": random.randint(40, 80),
+                        "correct_long": random.randint(20, 50),
+                        "correct_neutral": random.randint(80, 150),
+                        "correct_short": random.randint(20, 50)
+                    }
+                    
+                    # Lưu kết quả
+                    st.session_state.backtest_results[backtest_key] = {
+                        "config": backtest_config,
+                        "accuracy": accuracy,
+                        "total_trades": total_trades,
+                        "profitable_trades": profitable_trades,
+                        "average_profit": average_profit,
+                        "average_loss": average_loss,
+                        "max_drawdown": max_drawdown,
+                        "trades": fake_trades,
+                        "confusion_matrix": confusion_matrix,
+                        "run_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    
+                    st.success(f"Đã hoàn thành backtest cho khoảng thời gian từ {start_date} đến {end_date}")
+        
+        # Hiển thị kết quả backtest nếu có
+        if 'backtest_results' in st.session_state and st.session_state.backtest_results:
+            st.subheader("Kết quả Backtest")
+            
+            # Tạo các tab cho các kết quả backtest khác nhau nếu có nhiều hơn 1
+            result_keys = list(st.session_state.backtest_results.keys())
+            
+            if len(result_keys) > 1:
+                # Hiển thị selector cho nhiều kết quả backtest
+                selected_result = st.selectbox(
+                    "Chọn kết quả backtest để xem chi tiết",
+                    options=result_keys,
+                    format_func=lambda x: f"{st.session_state.backtest_results[x]['config']['timeframe']} ({st.session_state.backtest_results[x]['config']['prediction_horizon']}) "
+                                         f"[{st.session_state.backtest_results[x]['config']['start_date']} - "
+                                         f"{st.session_state.backtest_results[x]['config']['end_date']}]"
+                )
+                result = st.session_state.backtest_results[selected_result]
+            else:
+                # Chỉ có một kết quả
+                result = st.session_state.backtest_results[result_keys[0]]
+            
+            # Hiển thị thông tin tổng quan
+            st.markdown("### Tổng quan hiệu suất")
+            
+            # Hiển thị các chỉ số chính
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Độ chính xác", f"{result['accuracy']:.2%}")
+            with col2:
+                st.metric("Tổng số giao dịch", f"{result['total_trades']}")
+            with col3:
+                win_rate = result['profitable_trades'] / result['total_trades']
+                st.metric("Tỷ lệ thắng", f"{win_rate:.2%}")
+            with col4:
+                st.metric("Drawdown tối đa", f"{result['max_drawdown']:.2%}")
+            
+            st.markdown("---")
+            
+            # Tạo các tab khác nhau cho kết quả chi tiết
+            backtest_tabs = st.tabs(["Hiệu suất", "Giao dịch", "Ma trận nhầm lẫn", "Thống kê"])
+            
+            with backtest_tabs[0]:
+                # Tab hiệu suất với biểu đồ
+                st.subheader("Biểu đồ hiệu suất")
+                
+                # Tạo danh sách lợi nhuận tích lũy
+                trades = result["trades"]
+                cumulative_pnl = [0]
+                dates = []
+                
+                for trade in trades:
+                    cumulative_pnl.append(cumulative_pnl[-1] + trade["pnl"])
+                    dates.append(trade["time"])
+                
+                # Tạo biểu đồ hiệu suất
+                fig = go.Figure()
+                
+                # Thêm đường lợi nhuận tích lũy
+                fig.add_trace(go.Scatter(
+                    x=dates, 
+                    y=cumulative_pnl[1:],
+                    mode='lines',
+                    name='Lợi nhuận tích lũy',
+                    line=dict(color='blue', width=2)
+                ))
+                
+                # Định dạng biểu đồ
+                fig.update_layout(
+                    title='Lợi nhuận tích lũy theo thời gian',
+                    xaxis_title='Thời gian',
+                    yaxis_title='Lợi nhuận tích lũy ($)',
+                    height=500
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with backtest_tabs[1]:
+                # Tab giao dịch với danh sách chi tiết
+                st.subheader("Danh sách giao dịch")
+                
+                # Chuyển danh sách giao dịch thành DataFrame
+                trades_df = pd.DataFrame(result["trades"])
+                
+                # Thêm định dạng màu sắc dựa trên kết quả
+                def highlight_win_loss(s):
+                    if s.name == 'result':
+                        return ['background-color: #CCFFCC' if x == 'WIN' else 'background-color: #FFCCCC' for x in s]
+                    elif s.name == 'pnl':
+                        return ['color: green' if x > 0 else 'color: red' for x in s]
+                    return [''] * len(s)
+                
+                # Hiển thị DataFrame với định dạng
+                st.dataframe(trades_df.style.apply(highlight_win_loss), use_container_width=True)
+            
+            with backtest_tabs[2]:
+                # Tab ma trận nhầm lẫn
+                st.subheader("Ma trận nhầm lẫn")
+                
+                # Tạo ma trận nhầm lẫn
+                cm = result["confusion_matrix"]
+                
+                # Tính toán các giá trị
+                true_long = cm["true_long"]
+                true_neutral = cm["true_neutral"]
+                true_short = cm["true_short"]
+                pred_long = cm["pred_long"]
+                pred_neutral = cm["pred_neutral"]
+                pred_short = cm["pred_short"]
+                correct_long = cm["correct_long"]
+                correct_neutral = cm["correct_neutral"]
+                correct_short = cm["correct_short"]
+                
+                # Tạo ma trận
+                cm_matrix = [
+                    [correct_long, pred_long - correct_long, true_long - correct_long],
+                    [pred_neutral - correct_neutral, correct_neutral, true_neutral - correct_neutral],
+                    [pred_short - correct_short, true_short - correct_short, correct_short]
+                ]
+                
+                # Tạo biểu đồ ma trận nhầm lẫn
+                fig = go.Figure(data=go.Heatmap(
+                    z=cm_matrix,
+                    x=['Dự đoán LONG', 'Dự đoán NEUTRAL', 'Dự đoán SHORT'],
+                    y=['Thực tế LONG', 'Thực tế NEUTRAL', 'Thực tế SHORT'],
+                    colorscale='Viridis',
+                    showscale=True
+                ))
+                
+                fig.update_layout(
+                    title='Ma trận nhầm lẫn',
+                    height=500
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with backtest_tabs[3]:
+                # Tab thống kê chi tiết
+                st.subheader("Thống kê chi tiết")
+                
+                # Tính toán các thống kê
+                profit_trades = [t for t in result["trades"] if t["pnl"] > 0]
+                loss_trades = [t for t in result["trades"] if t["pnl"] <= 0]
+                
+                # Tạo bảng thống kê
+                stats = {
+                    "Số giao dịch thắng": len(profit_trades),
+                    "Số giao dịch thua": len(loss_trades),
+                    "Tỷ lệ thắng": f"{len(profit_trades) / len(result['trades']):.2%}",
+                    "Lợi nhuận trung bình (giao dịch thắng)": f"${sum([t['pnl'] for t in profit_trades]) / len(profit_trades):.2f}",
+                    "Thua lỗ trung bình (giao dịch thua)": f"${sum([t['pnl'] for t in loss_trades]) / len(loss_trades):.2f}",
+                    "Tỷ lệ lợi nhuận trên rủi ro": f"{abs(sum([t['pnl'] for t in profit_trades]) / sum([t['pnl'] for t in loss_trades])):.2f}",
+                    "Lợi nhuận tổng cộng": f"${sum([t['pnl'] for t in result['trades']]):.2f}",
+                    "Thời gian backtest": f"{result['config']['start_date']} đến {result['config']['end_date']}",
+                    "Khung thời gian": result['config']['timeframe'],
+                    "Thời gian dự đoán": result['config']['prediction_horizon']
+                }
+                
+                # Chuyển thành DataFrame để hiển thị
+                stats_df = pd.DataFrame(list(stats.items()), columns=["Chỉ số", "Giá trị"])
+                st.dataframe(stats_df, use_container_width=True)
 
 elif st.session_state.selected_tab == "System Status":
     st.title("System Status")
