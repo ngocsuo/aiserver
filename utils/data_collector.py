@@ -432,21 +432,24 @@ class BinanceDataCollector:
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
+                # Lấy loại proxy từ config (http/https)
+                proxy_type = getattr(config, 'PROXY_TYPE', 'http')  # Mặc định là http nếu không tìm thấy
+                
                 if username and password:
-                    # Định dạng lại URL proxy - thử dạng địa chỉ đầy đủ
+                    # Định dạng lại URL proxy - luôn dùng http
                     proxy_auth = f"{username}:{password}@{host}:{port}"
                     proxy_settings = {
-                        'http': f'http://{proxy_auth}',
-                        'https': f'http://{proxy_auth}'  # Sửa https thành http vì nhiều proxy không hỗ trợ HTTPS
+                        'http': f'{proxy_type}://{proxy_auth}',
+                        'https': f'{proxy_type}://{proxy_auth}'  # Luôn dùng http cho cả https vì nhiều proxy không hỗ trợ HTTPS
                     }
-                    logger.info(f"Attempting connection via authenticated proxy ({host}:{port})")
+                    logger.info(f"Attempting connection via authenticated {proxy_type} proxy ({host}:{port})")
                 else:
-                    # Dùng http cho cả kết nối https
+                    # Dùng http cho cả kết nối https 
                     proxy_settings = {
-                        'http': f'http://{host}:{port}',
-                        'https': f'http://{host}:{port}'  # Sửa https thành http
+                        'http': f'{proxy_type}://{host}:{port}',
+                        'https': f'{proxy_type}://{host}:{port}'  # Luôn sử dụng proxy_type (http)
                     }
-                    logger.info(f"Attempting connection via proxy ({host}:{port})")
+                    logger.info(f"Attempting connection via {proxy_type} proxy ({host}:{port})")
             
             # Khởi tạo client với hoặc không có proxy
             if proxy_settings:

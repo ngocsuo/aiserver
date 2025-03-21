@@ -14,6 +14,8 @@ PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
 PROXY_PORT = os.environ.get("PROXY_PORT", "15989")
 PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "hvnteam")
 PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "matkhau123")
+# Cấu hình proxy URL loại (http or https)
+PROXY_TYPE = "http"  # Chỉ sử dụng http cho cả https vì proxy không hỗ trợ https
 
 # Feature flags
 USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data
