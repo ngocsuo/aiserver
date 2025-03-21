@@ -429,21 +429,32 @@ def train_models():
         show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
         return False
     
-    # Create a placeholder for progress updates
-    progress_placeholder = st.empty()
-    progress_placeholder.info("Đang bắt đầu quá trình huấn luyện mô hình AI...")
+    # Hiển thị thông báo huấn luyện đang bắt đầu
+    show_toast("Đang bắt đầu quá trình huấn luyện mô hình AI...", "info", 3000)
     
-    # Create a progress bar
-    progress_bar = st.progress(0)
-    
-    # Create a placeholder for detailed logs
-    logs_placeholder = st.empty()
+    # Thêm log messages để hiển thị trong tab Training Logs
     training_logs = []
+    
+    # Tạo progress bar chỉ trong phạm vi function này
+    progress_placeholder = st.empty()
+    progress_bar = st.progress(0)
     
     def update_log(message):
         timestamp = datetime.now().strftime("%H:%M:%S")
-        training_logs.append(f"{timestamp} - {message}")
-        logs_placeholder.code("\n".join(training_logs))
+        log_msg = f"{timestamp} - {message}"
+        
+        # Thêm vào training_logs cho tab Training Logs
+        if 'training_log_messages' not in st.session_state:
+            st.session_state.training_log_messages = []
+        st.session_state.training_log_messages.append(log_msg)
+        
+        # Thêm vào log_messages chung
+        if 'log_messages' not in st.session_state:
+            st.session_state.log_messages = []
+        st.session_state.log_messages.append(log_msg)
+        
+        # Lưu lại local cho function này
+        training_logs.append(log_msg)
         
         # Hiển thị toast notification cho các thông báo quan trọng
         if "Step" in message or "model trained" in message:
@@ -1547,40 +1558,47 @@ if st.session_state.selected_tab == "Live Dashboard":
             update_color = "green" if st.session_state.thread_running else "red"
             st.markdown(f"**Cập nhật tự động:** :{update_color}[{update_status}]")
         
-        # Display prediction and chart in tabs - Default to chart first
-        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History", "📋 Training Logs"])
+        # Bố trí các nút điều khiển tập trung ở bên trái
+        left_col, right_col = st.columns([1, 2])
         
-        # Quick action buttons - moved below tabs to prioritize chart display
-        action_container = st.container()
-        action_col1, action_col2, action_col3, action_col4 = action_container.columns(4)
-        
-        with action_col1:
-            if st.button("🔄 Tải dữ liệu thời gian thực", use_container_width=True):
+        with left_col:
+            st.subheader("🔧 Điều khiển")
+            
+            # Nút Tải dữ liệu
+            if st.button("🔄 Tải dữ liệu thời gian thực", type="primary", use_container_width=True):
                 with st.spinner("Đang tải dữ liệu thời gian thực..."):
                     fetch_realtime_data()
-                
-        with action_col2:
-            if st.button("🔮 Tạo dự đoán", use_container_width=True):
+                    
+            # Nút Tạo dự đoán
+            if st.button("🔮 Tạo dự đoán mới", type="primary", use_container_width=True):
                 with st.spinner("Đang tạo dự đoán..."):
-                    make_prediction()
-                
-        with action_col3:
+                    prediction = make_prediction()
+                    # Cập nhật lại biến prediction để hiển thị dự đoán mới nhất
+                    if prediction and len(st.session_state.predictions) > 0:
+                        prediction = st.session_state.predictions[-1]
+                    st.rerun()  # Buộc cập nhật UI để hiển thị dự đoán mới
+                    
+            # Nút Huấn luyện
             if not st.session_state.model_trained:
                 if st.button("🧠 Huấn luyện mô hình", use_container_width=True):
                     with st.spinner("Đang huấn luyện mô hình..."):
                         train_models()
             else:
-                if st.button("🔄 Huấn luyện lại mô hình", use_container_width=True):
+                if st.button("🔄 Huấn luyện lại", use_container_width=True):
                     with st.spinner("Đang huấn luyện lại mô hình..."):
                         train_models()
-                
-        with action_col4:
+                    
+            # Nút bật/tắt tự động
             if not st.session_state.thread_running:
-                if st.button("▶️ Bật cập nhật tự động", use_container_width=True):
+                if st.button("▶️ Bật tự động cập nhật", use_container_width=True):
                     start_update_thread()
             else:
-                if st.button("⏹️ Tắt cập nhật tự động", use_container_width=True):
+                if st.button("⏹️ Tắt tự động cập nhật", use_container_width=True):
                     stop_update_thread()
+                    
+        # Display prediction and chart in tabs - Default to chart first
+        with right_col:
+            tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History", "📋 Training Logs"])
         
         with tabs[0]:
             # Main dashboard layout
