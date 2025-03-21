@@ -8,6 +8,7 @@ import queue
 import calendar
 from datetime import datetime, timedelta
 import os
+import json
 import pandas as pd
 import numpy as np
 
@@ -343,37 +344,182 @@ class ContinuousTrainer:
         self.total_chunks = len(self.chunk_start_dates)
         self.current_chunk = 0
         
+        # Kiểm tra xem đã có dữ liệu đã tải trước đó chưa
+        existing_data_ranges = self._get_existing_data_ranges()
+        
         # Process each monthly chunk
         for i, (start_date, end_date) in enumerate(self.chunk_start_dates):
             self.current_chunk = i + 1
             chunk_progress = int((self.current_chunk / self.total_chunks) * 100)
-            log_msg = f"Đang xử lý đoạn dữ liệu {i+1}/{len(self.chunk_start_dates)}: từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
-            self._add_log(log_msg)
-            logger.info(f"Processing chunk {i+1}/{len(self.chunk_start_dates)}: {start_date} to {end_date}")
             
-            try:
-                # Collect data for this month
-                raw_data = self.data_collector.collect_historical_data(
-                    timeframe=config.TIMEFRAMES["primary"],
-                    start_date=start_date,
-                    end_date=end_date
-                )
+            # Kiểm tra xem dữ liệu cho khoảng thời gian này đã được tải trước đó chưa
+            if self._is_data_range_covered(start_date, end_date, existing_data_ranges):
+                # Dữ liệu đã tồn tại, sử dụng lại
+                log_msg = f"⏩ Bỏ qua đoạn {i+1}/{len(self.chunk_start_dates)}: từ {start_date} đến {end_date} - đã có dữ liệu"
+                self._add_log(log_msg)
+                logger.info(f"Skipping chunk {i+1}/{len(self.chunk_start_dates)}: {start_date} to {end_date} - data already exists")
                 
-                if raw_data is not None and not raw_data.empty:
-                    # Process the data
-                    processed_chunk = self.data_processor.process_data(raw_data)
-                    all_processed_data.append(processed_chunk)
-                    self._add_log(f"✅ Đoạn {i+1}: Đã xử lý {len(processed_chunk)} điểm dữ liệu thành công")
-                    logger.info(f"Chunk {i+1}: Processed {len(processed_chunk)} data points")
-                else:
-                    error_msg = f"⚠️ Đoạn {i+1}: Không có dữ liệu cho giai đoạn {start_date} đến {end_date}"
-                    self._add_log(error_msg)
-                    logger.warning(f"Chunk {i+1}: No data collected for period {start_date} to {end_date}")
+                # Tải dữ liệu đã lưu từ tệp cache
+                try:
+                    cached_data = self._load_cached_data(start_date, end_date)
+                    if cached_data is not None and not cached_data.empty:
+                        all_processed_data.append(cached_data)
+                        self._add_log(f"✅ Đoạn {i+1}: Đã tải {len(cached_data)} điểm dữ liệu từ bộ nhớ đệm")
+                except Exception as e:
+                    # Nếu không thể tải dữ liệu từ cache, tải lại từ API
+                    log_msg = f"⚠️ Không thể tải dữ liệu đệm cho đoạn {i+1}: {str(e)} - Đang tải lại từ Binance"
+                    self._add_log(log_msg)
+                    logger.warning(f"Could not load cached data for chunk {i+1}: {e} - Redownloading")
+                    # Tiếp tục với quy trình tải mới dưới đây
+                
+            # Nếu không có dữ liệu đệm hoặc không thể tải, tải mới từ API
+            if len(all_processed_data) < i + 1:
+                log_msg = f"📥 Đang tải đoạn dữ liệu {i+1}/{len(self.chunk_start_dates)}: từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
+                self._add_log(log_msg)
+                logger.info(f"Downloading chunk {i+1}/{len(self.chunk_start_dates)}: {start_date} to {end_date}")
+                
+                try:
+                    # Collect data for this month
+                    raw_data = self.data_collector.collect_historical_data(
+                        timeframe=config.TIMEFRAMES["primary"],
+                        start_date=start_date,
+                        end_date=end_date
+                    )
                     
+                    if raw_data is not None and not raw_data.empty:
+                        # Process the data
+                        processed_chunk = self.data_processor.process_data(raw_data)
+                        all_processed_data.append(processed_chunk)
+                        
+                        # Lưu dữ liệu đã xử lý vào bộ nhớ đệm
+                        self._save_cached_data(processed_chunk, start_date, end_date)
+                        
+                        # Cập nhật danh sách các khoảng thời gian đã tải
+                        existing_data_ranges.append((start_date, end_date))
+                        
+                        self._add_log(f"✅ Đoạn {i+1}: Đã xử lý {len(processed_chunk)} điểm dữ liệu thành công")
+                        logger.info(f"Chunk {i+1}: Processed {len(processed_chunk)} data points")
+                    else:
+                        error_msg = f"⚠️ Đoạn {i+1}: Không có dữ liệu cho giai đoạn {start_date} đến {end_date}"
+                        self._add_log(error_msg)
+                        logger.warning(f"Chunk {i+1}: No data collected for period {start_date} to {end_date}")
+                        
+                except Exception as e:
+                    error_msg = f"❌ Lỗi xử lý đoạn {i+1}: {str(e)}"
+                    self._add_log(error_msg)
+                    logger.error(f"Error processing chunk {i+1}: {e}")
+    
+    def _get_existing_data_ranges(self):
+        """
+        Kiểm tra dữ liệu đã tải từ trước đó
+        
+        Returns:
+            list: Danh sách các khoảng thời gian đã tải, dạng [(start_date, end_date), ...]
+        """
+        # Kiểm tra thư mục lưu trữ dữ liệu
+        cache_dir = os.path.join(config.MODEL_DIR, "data_cache")
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
+            return []
+        
+        # Đọc danh sách khoảng thời gian đã tải
+        ranges_file = os.path.join(cache_dir, "data_ranges.json")
+        if os.path.exists(ranges_file):
+            try:
+                with open(ranges_file, 'r') as f:
+                    return json.load(f)
             except Exception as e:
-                error_msg = f"❌ Lỗi xử lý đoạn {i+1}: {str(e)}"
-                self._add_log(error_msg)
-                logger.error(f"Error processing chunk {i+1}: {e}")
+                logger.error(f"Error loading existing data ranges: {e}")
+                return []
+        return []
+    
+    def _is_data_range_covered(self, start_date, end_date, existing_ranges):
+        """
+        Kiểm tra xem khoảng thời gian đã được tải trước đó chưa
+        
+        Args:
+            start_date (str): Ngày bắt đầu khoảng thời gian mới
+            end_date (str): Ngày kết thúc khoảng thời gian mới
+            existing_ranges (list): Danh sách các khoảng thời gian đã tải
+            
+        Returns:
+            bool: True nếu khoảng thời gian đã được tải, False nếu chưa
+        """
+        start = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+        
+        for exist_start, exist_end in existing_ranges:
+            exist_start_date = datetime.strptime(exist_start, "%Y-%m-%d")
+            exist_end_date = datetime.strptime(exist_end, "%Y-%m-%d")
+            
+            # Khoảng thời gian đã được bao phủ bởi một khoảng thời gian hiện có
+            if start >= exist_start_date and end <= exist_end_date:
+                return True
+        
+        return False
+    
+    def _save_cached_data(self, data, start_date, end_date):
+        """
+        Lưu dữ liệu đã xử lý vào bộ nhớ đệm
+        
+        Args:
+            data (pd.DataFrame): Dữ liệu đã xử lý
+            start_date (str): Ngày bắt đầu khoảng thời gian
+            end_date (str): Ngày kết thúc khoảng thời gian
+        """
+        try:
+            # Đảm bảo thư mục cache tồn tại
+            cache_dir = os.path.join(config.MODEL_DIR, "data_cache")
+            os.makedirs(cache_dir, exist_ok=True)
+            
+            # Tạo tên tệp dựa trên khoảng thời gian
+            cache_file = os.path.join(cache_dir, f"{start_date}_to_{end_date}.pkl")
+            
+            # Lưu DataFrame vào tệp
+            data.to_pickle(cache_file)
+            
+            # Cập nhật danh sách khoảng thời gian đã tải
+            ranges_file = os.path.join(cache_dir, "data_ranges.json")
+            existing_ranges = self._get_existing_data_ranges()
+            
+            # Thêm khoảng thời gian mới
+            if not self._is_data_range_covered(start_date, end_date, existing_ranges):
+                existing_ranges.append([start_date, end_date])
+                
+                # Lưu danh sách cập nhật
+                with open(ranges_file, 'w') as f:
+                    json.dump(existing_ranges, f)
+            
+            logger.info(f"Cached data saved for period {start_date} to {end_date}")
+        except Exception as e:
+            logger.error(f"Error saving cached data: {e}")
+    
+    def _load_cached_data(self, start_date, end_date):
+        """
+        Tải dữ liệu đã lưu từ bộ nhớ đệm
+        
+        Args:
+            start_date (str): Ngày bắt đầu khoảng thời gian
+            end_date (str): Ngày kết thúc khoảng thời gian
+            
+        Returns:
+            pd.DataFrame: Dữ liệu đã xử lý hoặc None nếu không tìm thấy
+        """
+        try:
+            # Tạo đường dẫn tệp cache
+            cache_file = os.path.join(config.MODEL_DIR, "data_cache", f"{start_date}_to_{end_date}.pkl")
+            
+            # Kiểm tra xem tệp có tồn tại không
+            if os.path.exists(cache_file):
+                # Tải dữ liệu từ tệp
+                import pandas as pd
+                data = pd.read_pickle(cache_file)
+                logger.info(f"Loaded cached data for period {start_date} to {end_date}")
+                return data
+        except Exception as e:
+            logger.error(f"Error loading cached data: {e}")
+        
+        return None
                 
         # Combine all processed chunks
         if all_processed_data:
