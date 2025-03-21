@@ -3613,6 +3613,21 @@ elif st.session_state.selected_tab == "Trading":
             if not can_start_trading:
                 st.warning("Vui lòng cấu hình API Binance và kiểm tra kết nối trước khi bắt đầu giao dịch")
             
+            # Hiển thị tùy chọn khung thời gian
+            available_timeframes = config.TRADING_SETTINGS["available_timeframes"]
+            selected_timeframe = st.radio(
+                "⏱️ Chọn khung thời gian giao dịch:",
+                available_timeframes,
+                index=available_timeframes.index(config.TRADING_SETTINGS["default_timeframe"]),
+                horizontal=True,
+                help="Khung thời gian sẽ được sử dụng cho việc dự đoán và giao dịch"
+            )
+            
+            st.caption("""
+            - Khung 1m: Giao dịch ngắn hạn, nhạy với biến động giá, phù hợp cho scalping
+            - Khung 5m: Giao dịch trung hạn, ổn định hơn, giảm tín hiệu giả, phù hợp swing trade
+            """)
+            
             col1, col2 = st.columns(2)
             
             with col1:
@@ -3639,6 +3654,7 @@ elif st.session_state.selected_tab == "Trading":
                     "account_percent": st.session_state.trading_settings["account_percent"],
                     "leverage": st.session_state.trading_settings["leverage"],
                     "min_confidence": st.session_state.trading_settings["min_confidence"] / 100.0,
+                    "timeframe": selected_timeframe,
                 }
                 
                 # Kiểm tra lại kết nối
@@ -3677,7 +3693,12 @@ elif st.session_state.selected_tab == "Trading":
             
             # Hiển thị trạng thái giao dịch
             if st.session_state.trading_settings.get("is_trading", False):
-                st.markdown("### ✅ Trạng thái: Bot giao dịch đang hoạt động")
+                # Lấy thông tin khung thời gian đang sử dụng (nếu có)
+                current_timeframe = "N/A"
+                if hasattr(st.session_state.trading_manager, "trading_config") and st.session_state.trading_manager.trading_config:
+                    current_timeframe = st.session_state.trading_manager.trading_config.get("timeframe", "N/A")
+                
+                st.markdown(f"### ✅ Trạng thái: Bot giao dịch đang hoạt động (khung {current_timeframe})")
                 
                 if hasattr(st.session_state, "trading_manager") and st.session_state.trading_manager is not None:
                     # Hiển thị thống kê PNL theo ngày (múi giờ +7)

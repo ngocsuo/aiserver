@@ -575,6 +575,7 @@ class TradingManager:
         # Thiết lập cấu hình
         self.running = True
         self.status = "Đang chạy"
+        self.trading_config = config  # Lưu trữ cấu hình để tham chiếu sau này
         
         # Bắt đầu thread giao dịch
         self.trading_thread = threading.Thread(
