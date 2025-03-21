@@ -2701,7 +2701,7 @@ elif st.session_state.selected_tab == "Cài đặt":
                 # Nút khởi động lại toàn bộ hệ thống - xóa tất cả dữ liệu và khởi động lại
                 if st.button("🔄 Xóa tất cả dữ liệu và khởi động lại hệ thống", use_container_width=True, type="primary"):
                     try:
-                        # Đặt lại trạng thái proxy về mặc định là False
+                        # Đảm bảo tắt chức năng proxy
                         config.USE_PROXY = False
                         
                         # Xóa dữ liệu đã tải
