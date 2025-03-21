@@ -274,75 +274,138 @@ def plot_prediction_history(predictions):
     Returns:
         go.Figure: Plotly figure with prediction history
     """
-    # Convert predictions to DataFrame
-    df = pd.DataFrame(predictions)
-    
-    # Convert timestamp to datetime
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    
-    # Sort by timestamp
-    df = df.sort_values('timestamp')
-    
-    # Create trend codes for coloring
-    trend_color_map = {
-        'long': 'green',
-        'short': 'red',
-        'neutral': 'gray'
-    }
-    
-    # Create figure
+    # Khởi tạo biến fig ở cấp độ hàm để tránh lỗi unbound variable
     fig = go.Figure()
     
-    # Add confidence line
-    fig.add_trace(
-        go.Scatter(
-            x=df['timestamp'],
-            y=df['confidence'],
-            mode='lines+markers',
-            name='Confidence',
-            line=dict(color='blue', width=2),
-            marker=dict(
-                size=10,
-                color=[trend_color_map.get(trend, 'gray') for trend in df['trend']]
+    try:
+        # Đảm bảo predictions không rỗng
+        if not predictions or len(predictions) == 0:
+            # Trả về biểu đồ trống nếu không có dữ liệu dự đoán
+            fig.update_layout(
+                title='Prediction History',
+                xaxis_title='Time',
+                yaxis_title='Confidence',
+                height=400,
+                annotations=[dict(
+                    text='No prediction data available',
+                    xref="paper", yref="paper",
+                    x=0.5, y=0.5, showarrow=False
+                )]
+            )
+            return fig
+            
+        # Tạo bản sao của dữ liệu để tránh thay đổi
+        pred_copy = predictions.copy()
+        
+        # Chuẩn hóa dữ liệu trước khi chuyển thành DataFrame
+        for p in pred_copy:
+            # Chuẩn hóa trường trend để đảm bảo chữ thường
+            if 'trend' in p and p['trend'] is not None:
+                p['trend'] = str(p['trend']).lower()
+                
+            # Đảm bảo confidence là số
+            if 'confidence' in p:
+                try:
+                    p['confidence'] = float(p['confidence'])
+                except (ValueError, TypeError):
+                    p['confidence'] = 0.0
+        
+        # Chuyển predictions thành DataFrame
+        df = pd.DataFrame(pred_copy)
+        
+        # Kiểm tra xem columns cần thiết có tồn tại không
+        if 'timestamp' not in df.columns or 'confidence' not in df.columns or 'trend' not in df.columns:
+            raise ValueError("Prediction data missing required columns: timestamp, confidence, or trend")
+        
+        # Chuyển đổi timestamp thành datetime
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # Sắp xếp theo timestamp
+        df = df.sort_values('timestamp')
+        
+        # Xác định bản đồ màu cho trend
+        trend_color_map = {
+            'long': 'green',
+            'short': 'red',
+            'neutral': 'gray'
+        }
+        
+        # Tạo figure mới
+        fig = go.Figure()
+        
+        # Thêm đường confidence
+        fig.add_trace(
+            go.Scatter(
+                x=df['timestamp'],
+                y=df['confidence'],
+                mode='lines+markers',
+                name='Confidence',
+                line=dict(color='blue', width=2),
+                marker=dict(
+                    size=10,
+                    color=[trend_color_map.get(str(trend).lower(), 'gray') for trend in df['trend']]
+                )
             )
         )
-    )
-    
-    # Add confidence threshold line
-    fig.add_shape(
-        type='line',
-        x0=df['timestamp'].min(),
-        x1=df['timestamp'].max(),
-        y0=config.CONFIDENCE_THRESHOLD,
-        y1=config.CONFIDENCE_THRESHOLD,
-        line=dict(color='orange', width=1, dash='dash')
-    )
-    
-    # Add trend indicators as annotations
-    for i, row in df.iterrows():
-        fig.add_annotation(
-            x=row['timestamp'],
-            y=row['confidence'],
-            text=row['trend'].upper(),
-            showarrow=False,
-            yshift=15,
-            font=dict(
-                size=10,
-                color=trend_color_map.get(row['trend'], 'gray')
-            )
+        
+        # Thêm ngưỡng confidence
+        fig.add_shape(
+            type='line',
+            x0=df['timestamp'].min(),
+            x1=df['timestamp'].max(),
+            y0=config.CONFIDENCE_THRESHOLD,
+            y1=config.CONFIDENCE_THRESHOLD,
+            line=dict(color='orange', width=1, dash='dash')
+        )
+        
+        # Thêm chỉ báo trend dưới dạng annotations
+        for i, row in df.iterrows():
+            try:
+                trend_text = str(row['trend']).upper()
+                trend_color = trend_color_map.get(str(row['trend']).lower(), 'gray')
+                
+                fig.add_annotation(
+                    x=row['timestamp'],
+                    y=row['confidence'],
+                    text=trend_text,
+                    showarrow=False,
+                    yshift=15,
+                    font=dict(
+                        size=10,
+                        color=trend_color
+                    )
+                )
+            except Exception as e:
+                print(f"Skipping annotation for row {i} due to error: {str(e)}")
+                continue
+        
+        # Update layout trong try block
+        fig.update_layout(
+            title='Prediction History',
+            xaxis_title='Time',
+            yaxis_title='Confidence',
+            height=400,
+            margin=dict(l=50, r=50, b=50, t=70),
+            template='plotly_white',
+            yaxis=dict(range=[0, 1])
+        )
+        
+    except Exception as e:
+        print(f"Error plotting prediction history: {str(e)}")
+        # Cấu hình biểu đồ trống nếu có lỗi
+        fig.update_layout(
+            title='Prediction History',
+            xaxis_title='Time',
+            yaxis_title='Confidence',
+            height=400,
+            annotations=[dict(
+                text=f'Error generating chart: {str(e)}',
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )]
         )
     
-    # Update layout
-    fig.update_layout(
-        title='Prediction History',
-        xaxis_title='Time',
-        yaxis_title='Confidence',
-        height=400,
-        margin=dict(l=50, r=50, b=50, t=70),
-        template='plotly_white',
-        yaxis=dict(range=[0, 1])
-    )
-    
+    # Trả về biểu đồ kết quả
     return fig
 
 def plot_confidence_distribution(predictions):
@@ -355,43 +418,97 @@ def plot_confidence_distribution(predictions):
     Returns:
         go.Figure: Plotly figure with confidence distribution
     """
-    # Create figure
+    # Khởi tạo biến fig ở cấp độ hàm
     fig = go.Figure()
     
-    # Convert predictions to DataFrame
-    df = pd.DataFrame(predictions)
-    
-    # Group by trend
-    trends = df['trend'].unique()
-    
-    # Create histogram for each trend
-    for trend in trends:
-        trend_data = df[df['trend'] == trend]
-        
-        fig.add_trace(
-            go.Histogram(
-                x=trend_data['confidence'],
-                name=trend.upper(),
-                marker_color={
-                    'long': 'green',
-                    'short': 'red',
-                    'neutral': 'gray'
-                }.get(trend, 'blue'),
-                opacity=0.7,
-                nbinsx=10
+    try:
+        # Kiểm tra nếu predictions rỗng
+        if not predictions or len(predictions) == 0:
+            fig.update_layout(
+                title='Confidence Distribution by Trend',
+                xaxis_title='Confidence',
+                yaxis_title='Count',
+                height=300,
+                annotations=[dict(
+                    text='No prediction data available',
+                    xref="paper", yref="paper",
+                    x=0.5, y=0.5, showarrow=False
+                )]
             )
+            return fig
+            
+        # Tạo bản sao của dữ liệu để tránh thay đổi
+        pred_copy = predictions.copy()
+        
+        # Chuẩn hóa dữ liệu trước khi chuyển thành DataFrame
+        for p in pred_copy:
+            # Chuẩn hóa trường trend để đảm bảo chữ thường
+            if 'trend' in p and p['trend'] is not None:
+                p['trend'] = str(p['trend']).lower()
+                
+            # Đảm bảo confidence là số
+            if 'confidence' in p:
+                try:
+                    p['confidence'] = float(p['confidence'])
+                except (ValueError, TypeError):
+                    p['confidence'] = 0.0
+        
+        # Chuyển predictions thành DataFrame
+        df = pd.DataFrame(pred_copy)
+        
+        # Kiểm tra xem columns cần thiết có tồn tại không
+        if 'confidence' not in df.columns or 'trend' not in df.columns:
+            raise ValueError("Prediction data missing required columns: confidence, or trend")
+        
+        # Xác định bản đồ màu cho trend
+        trend_color_map = {
+            'long': 'green',
+            'short': 'red',
+            'neutral': 'gray'
+        }
+        
+        # Group by trend
+        trends = df['trend'].unique()
+        
+        # Create histogram for each trend
+        for trend in trends:
+            trend_data = df[df['trend'] == trend]
+            
+            fig.add_trace(
+                go.Histogram(
+                    x=trend_data['confidence'],
+                    name=str(trend).upper(),
+                    marker_color=trend_color_map.get(str(trend).lower(), 'blue'),
+                    opacity=0.7,
+                    nbinsx=10
+                )
+            )
+        
+        # Update layout
+        fig.update_layout(
+            title='Confidence Distribution by Trend',
+            xaxis_title='Confidence',
+            yaxis_title='Count',
+            height=300,
+            margin=dict(l=50, r=50, b=50, t=70),
+            template='plotly_white',
+            barmode='overlay'
         )
-    
-    # Update layout
-    fig.update_layout(
-        title='Confidence Distribution by Trend',
-        xaxis_title='Confidence',
-        yaxis_title='Count',
-        height=300,
-        margin=dict(l=50, r=50, b=50, t=70),
-        template='plotly_white',
-        barmode='overlay'
-    )
+        
+    except Exception as e:
+        print(f"Error plotting confidence distribution: {str(e)}")
+        # Trả về biểu đồ trống nếu có lỗi
+        fig.update_layout(
+            title='Confidence Distribution by Trend',
+            xaxis_title='Confidence',
+            yaxis_title='Count',
+            height=300,
+            annotations=[dict(
+                text=f'Error generating chart: {str(e)}',
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )]
+        )
     
     return fig
 
@@ -405,48 +522,102 @@ def plot_model_accuracy(evaluation_results):
     Returns:
         go.Figure: Plotly figure with model accuracy comparison
     """
-    # Extract model names and accuracies
-    models = []
-    accuracies = []
-    
-    for model, results in evaluation_results.items():
-        models.append(model)
-        # Get accuracy, falling back to 0 if not available
-        accuracy = results.get('accuracy', 0)
-        accuracies.append(accuracy)
-    
-    # Create color map
-    colors = {
-        'lstm': 'rgb(55, 83, 109)',
-        'transformer': 'rgb(26, 118, 255)',
-        'cnn': 'rgb(86, 175, 211)',
-        'historical': 'rgb(158, 202, 225)',
-        'meta': 'rgb(0, 128, 0)'
-    }
-    
-    # Use default colors for unknown models
-    bar_colors = [colors.get(model, 'lightgray') for model in models]
-    
-    # Create figure
+    # Khởi tạo biến fig ở cấp độ hàm
     fig = go.Figure()
     
-    fig.add_trace(
-        go.Bar(
-            x=models,
-            y=accuracies,
-            marker_color=bar_colors
+    try:
+        # Kiểm tra nếu evaluation_results rỗng
+        if not evaluation_results or not isinstance(evaluation_results, dict):
+            fig.update_layout(
+                title='Model Accuracy Comparison',
+                xaxis_title='Model',
+                yaxis_title='Accuracy',
+                height=400,
+                annotations=[dict(
+                    text='No model evaluation data available',
+                    xref="paper", yref="paper",
+                    x=0.5, y=0.5, showarrow=False
+                )]
+            )
+            return fig
+            
+        # Extract model names and accuracies
+        models = []
+        accuracies = []
+        
+        for model, results in evaluation_results.items():
+            # Đảm bảo results là dict
+            if not isinstance(results, dict):
+                continue
+                
+            models.append(str(model))
+            # Get accuracy, falling back to 0 if not available
+            try:
+                accuracy = float(results.get('accuracy', 0))
+            except (ValueError, TypeError):
+                accuracy = 0.0
+            accuracies.append(accuracy)
+        
+        # Kiểm tra nếu không có dữ liệu hợp lệ
+        if not models or not accuracies:
+            fig.update_layout(
+                title='Model Accuracy Comparison',
+                xaxis_title='Model',
+                yaxis_title='Accuracy',
+                height=400,
+                annotations=[dict(
+                    text='No valid model accuracy data available',
+                    xref="paper", yref="paper",
+                    x=0.5, y=0.5, showarrow=False
+                )]
+            )
+            return fig
+        
+        # Create color map
+        colors = {
+            'lstm': 'rgb(55, 83, 109)',
+            'transformer': 'rgb(26, 118, 255)',
+            'cnn': 'rgb(86, 175, 211)',
+            'historical': 'rgb(158, 202, 225)',
+            'meta': 'rgb(0, 128, 0)'
+        }
+        
+        # Use default colors for unknown models
+        bar_colors = [colors.get(model.lower(), 'lightgray') for model in models]
+        
+        # Thêm bar chart
+        fig.add_trace(
+            go.Bar(
+                x=models,
+                y=accuracies,
+                marker_color=bar_colors
+            )
         )
-    )
-    
-    # Update layout
-    fig.update_layout(
-        title='Model Accuracy Comparison',
-        xaxis_title='Model',
-        yaxis_title='Accuracy',
-        height=400,
-        margin=dict(l=50, r=50, b=50, t=70),
-        template='plotly_white',
-        yaxis=dict(range=[0, 1])
-    )
+        
+        # Update layout
+        fig.update_layout(
+            title='Model Accuracy Comparison',
+            xaxis_title='Model',
+            yaxis_title='Accuracy',
+            height=400,
+            margin=dict(l=50, r=50, b=50, t=70),
+            template='plotly_white',
+            yaxis=dict(range=[0, 1])
+        )
+        
+    except Exception as e:
+        print(f"Error plotting model accuracy: {str(e)}")
+        # Trả về biểu đồ trống nếu có lỗi
+        fig.update_layout(
+            title='Model Accuracy Comparison',
+            xaxis_title='Model',
+            yaxis_title='Accuracy',
+            height=400,
+            annotations=[dict(
+                text=f'Error generating chart: {str(e)}',
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )]
+        )
     
     return fig
