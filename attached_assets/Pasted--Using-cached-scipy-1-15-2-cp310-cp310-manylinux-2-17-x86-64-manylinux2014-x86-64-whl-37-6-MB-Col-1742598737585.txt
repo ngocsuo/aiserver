@@ -1,0 +1,25 @@
+ Using cached scipy-1.15.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (37.6 MB)
+Collecting threadpoolctl>=2.0.0
+  Using cached threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
+INFO: pip is looking at multiple versions of scikit-learn to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of python-binance to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of plotly to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of numpy to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of pandas to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of <Python from Requires-Python> to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of streamlit to determine which version is compatible with other requirements. This could take a while.
+ERROR: Cannot install -r deploy_instructions/requirements.txt (line 1), -r deploy_instructions/requirements.txt (line 2), -r deploy_instructions/requirements.txt (line 6), -r deploy_instructions/requirements.txt (line 7) and numpy==1.24.3 because these package versions have conflicting dependencies.
+
+The conflict is caused by:
+    The user requested numpy==1.24.3
+    streamlit 1.30.0 depends on numpy<2 and >=1.19.3
+    pandas 2.0.3 depends on numpy>=1.21.0; python_version >= "3.10"
+    scikit-learn 1.2.2 depends on numpy>=1.17.3
+    tensorflow 2.12.0 depends on numpy<1.24 and >=1.22
+
+To fix this you could try to:
+1. loosen the range of package versions you've specified
+2. remove package versions to allow pip attempt to solve the dependency conflict
+
+ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts
+(venv) root@hvnai:~/AI/AITradingOracle#
