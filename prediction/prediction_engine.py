@@ -320,7 +320,7 @@ class PredictionEngine:
     def _combine_predictions(self, model_predictions, model_confidences,
                            meta_prediction, meta_confidence, data=None):
         """
-        Combine predictions from all models.
+        Combine predictions from all models using dynamic weighting system.
         
         Args:
             model_predictions (dict): Predictions from individual models
@@ -334,6 +334,20 @@ class PredictionEngine:
         """
         current_time = datetime.now()
         
+        # Try to get model weights from meta_learner (if available and initialized)
+        model_weights = {}
+        try:
+            from models.meta_learner import MetaLearner
+            # Get the meta-learner instance
+            if hasattr(self, 'models') and 'meta_learner' in self.models:
+                meta_learner = self.models['meta_learner']
+                if hasattr(meta_learner, 'model_weights'):
+                    # Use the dynamic weights from meta-learner
+                    model_weights = meta_learner.model_weights
+                    logger.info(f"Using dynamic model weights: {model_weights}")
+        except Exception as e:
+            logger.warning(f"Could not get dynamic weights: {e}. Using default weights.")
+            
         # Determine prediction class - prefer meta-learner if available and confident
         if meta_prediction is not None and meta_confidence >= config.CONFIDENCE_THRESHOLD:
             prediction_class = meta_prediction
@@ -344,7 +358,16 @@ class PredictionEngine:
             
             # Count weighted votes from each model
             for model, pred in model_predictions.items():
-                weight = model_confidences[model]
+                # Get model confidence
+                model_confidence = model_confidences[model]
+                
+                # Apply dynamic weight if available
+                if model in model_weights:
+                    weight = model_confidence * model_weights[model]
+                    logger.info(f"Applied dynamic weight for {model}: {model_weights[model]:.2f}")
+                else:
+                    weight = model_confidence
+                
                 votes[pred] += weight
             
             # Select class with highest votes
@@ -701,53 +724,107 @@ class PredictionEngine:
             return {}
             
     def _enhance_technical_reasoning(self, prediction, data):
-        """Cải thiện phân tích kỹ thuật trong dự đoán"""
+        """
+        Cải thiện phân tích kỹ thuật trong dự đoán, sử dụng phân tích kỹ thuật
+        dựa trên các mẫu nến Nhật Bản, mức hỗ trợ/kháng cự, và phân tích xu hướng.
+        
+        Args:
+            prediction (dict): Dự đoán hiện tại cần cải thiện
+            data (pd.DataFrame): Dữ liệu giá gần đây
+            
+        Returns:
+            dict: Dự đoán được cải thiện với lý do kỹ thuật chi tiết hơn
+        """
         if data is None or data.empty:
             return prediction
         
-        # Phát hiện mẫu nến
-        candle_patterns = self._detect_candlestick_patterns(data)
-        if candle_patterns:
-            prediction['candle_patterns'] = candle_patterns
+        try:
+            latest_data = data.iloc[-20:].copy() if len(data) > 20 else data.copy()
+            current_price = latest_data.iloc[-1]['close']
+            
+            # Phát hiện mẫu nến
+            candle_patterns = self._detect_candlestick_patterns(latest_data)
+            if candle_patterns:
+                prediction['candle_patterns'] = candle_patterns
+                
+                # Tách mẫu nến theo xu hướng tăng/giảm
+                bullish_patterns = [p for p in candle_patterns if p.get('bullish') is True]
+                bearish_patterns = [p for p in candle_patterns if p.get('bullish') is False]
+                
+                # Thêm vào lý do kỹ thuật
+                if 'reason' in prediction:
+                    if bullish_patterns and prediction['trend'] == 'LONG':
+                        pattern_info = ", ".join([f"{p['name']}" for p in bullish_patterns])
+                        prediction['reason'] += f" Phát hiện mẫu nến tăng: {pattern_info}."
+                    elif bearish_patterns and prediction['trend'] == 'SHORT': 
+                        pattern_info = ", ".join([f"{p['name']}" for p in bearish_patterns])
+                        prediction['reason'] += f" Phát hiện mẫu nến giảm: {pattern_info}."
+            
+            # Tính toán mức hỗ trợ/kháng cự
+            sr_levels = self._calculate_support_resistance(latest_data)
+            prediction['support_resistance'] = sr_levels
+            
+            # Thêm phân tích về mức hỗ trợ và kháng cự vào lý do
+            if 'reason' in prediction and (sr_levels.get('support') or sr_levels.get('resistance')):
+                support = sr_levels.get('support', [])
+                resistance = sr_levels.get('resistance', [])
+                
+                if support and current_price < support[0] * 1.01:
+                    support_str = ", ".join([f"{s}" for s in support])
+                    if prediction['trend'] == 'LONG':
+                        prediction['reason'] += f" Giá đang tiếp cận mức hỗ trợ quan trọng ({support_str}), có thể tạo điểm vào lệnh tốt."
+                    else:
+                        prediction['reason'] += f" Giá đang tiếp cận mức hỗ trợ ({support_str})."
+                elif resistance and current_price > resistance[0] * 0.99:
+                    resistance_str = ", ".join([f"{r}" for r in resistance])
+                    if prediction['trend'] == 'SHORT':
+                        prediction['reason'] += f" Giá đang tiếp cận mức kháng cự quan trọng ({resistance_str}), có thể tạo điểm vào lệnh tốt."
+                    else:
+                        prediction['reason'] += f" Giá đang tiếp cận mức kháng cự ({resistance_str})."
         
-        # Tính toán mức hỗ trợ/kháng cự
-        sr_levels = self._calculate_support_resistance(data)
-        prediction['support_resistance'] = sr_levels
+        except Exception as e:
+            logger.warning(f"Error enhancing technical reasoning: {e}")
         
         # Tính toán tỷ lệ R/R (Risk/Reward)
-        current_price = data['close'].iloc[-1]
-        if prediction['trend'] == 'LONG':
-            nearest_resistance = min([r for r in sr_levels['resistance'] if r > current_price], 
-                                  default=current_price * 1.02)
-            nearest_support = max([s for s in sr_levels['support'] if s < current_price], 
-                               default=current_price * 0.99)
+        try:
+            current_price = data['close'].iloc[-1]
+            sr_levels = prediction.get('support_resistance', {'support': [], 'resistance': []})
             
-            risk = current_price - nearest_support
-            reward = nearest_resistance - current_price
-            rr_ratio = round(reward / risk, 2) if risk > 0 else 0
+            if prediction['trend'] == 'LONG':
+                nearest_resistance = min([r for r in sr_levels.get('resistance', []) if r > current_price], 
+                                      default=current_price * 1.02)
+                nearest_support = max([s for s in sr_levels.get('support', []) if s < current_price], 
+                                   default=current_price * 0.99)
+                
+                risk = current_price - nearest_support
+                reward = nearest_resistance - current_price
+                rr_ratio = round(reward / risk, 2) if risk > 0 else 0
+                
+            elif prediction['trend'] == 'SHORT':
+                nearest_resistance = min([r for r in sr_levels.get('resistance', []) if r > current_price], 
+                                      default=current_price * 1.01)
+                nearest_support = max([s for s in sr_levels.get('support', []) if s < current_price], 
+                                   default=current_price * 0.98)
+                
+                risk = nearest_resistance - current_price
+                reward = current_price - nearest_support
+                rr_ratio = round(reward / risk, 2) if risk > 0 else 0
+            else:
+                rr_ratio = 0
             
-        elif prediction['trend'] == 'SHORT':
-            nearest_resistance = min([r for r in sr_levels['resistance'] if r > current_price], 
-                                  default=current_price * 1.01)
-            nearest_support = max([s for s in sr_levels['support'] if s < current_price], 
-                               default=current_price * 0.98)
+            prediction['risk_reward_ratio'] = rr_ratio
             
-            risk = nearest_resistance - current_price
-            reward = current_price - nearest_support
-            rr_ratio = round(reward / risk, 2) if risk > 0 else 0
-        else:
-            rr_ratio = 0
-        
-        prediction['risk_reward_ratio'] = rr_ratio
-        
-        # Phân tích chi tiết thêm
-        prediction['detailed_analysis'] = {
-            'current_price': current_price,
-            'price_position': self._analyze_price_position(data),
-            'momentum': self._analyze_momentum(data),
-            'volume_analysis': self._analyze_volume(data)
-        }
-        
+            # Phân tích chi tiết thêm
+            prediction['detailed_analysis'] = {
+                'current_price': current_price,
+                'price_position': self._analyze_price_position(data),
+                'momentum': self._analyze_momentum(data),
+                'volume_analysis': self._analyze_volume(data)
+            }
+            
+        except Exception as e:
+            logger.warning(f"Error calculating risk/reward ratio: {e}")
+            
         return prediction
 
     def _generate_technical_reason(self, prediction, data=None):

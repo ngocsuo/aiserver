@@ -257,6 +257,78 @@ class MetaLearner:
             for model_name in self.model_weights:
                 self.model_weights[model_name] = 1.0
     
+    def update_performance(self, model_predictions, actual_outcome):
+        """
+        Update the performance history of each model based on their predictions
+        compared to the actual outcome.
+        
+        Args:
+            model_predictions (dict): Dictionary of model name to prediction value
+            actual_outcome (int): The actual outcome that occurred
+        """
+        try:
+            logger.info(f"Updating model performance with actual outcome: {config.CLASSES[actual_outcome]}")
+            
+            # Update each model's performance
+            for model_name, prediction in model_predictions.items():
+                if model_name not in self.performance_history:
+                    logger.warning(f"Model {model_name} not found in performance history")
+                    continue
+                
+                # Increment total predictions
+                self.performance_history[model_name]['total'] += 1
+                
+                # Add to recent total
+                self.performance_history[model_name]['recent_total'].append(1)
+                
+                # Trim recent history if too long
+                while len(self.performance_history[model_name]['recent_total']) > self.recent_window_size:
+                    self.performance_history[model_name]['recent_total'].pop(0)
+                
+                # Check if prediction was correct
+                is_correct = (prediction == actual_outcome)
+                
+                # Increment correct if accurate
+                if is_correct:
+                    self.performance_history[model_name]['correct'] += 1
+                    self.performance_history[model_name]['recent_correct'].append(1)
+                else:
+                    self.performance_history[model_name]['recent_correct'].append(0)
+                
+                # Trim recent history if too long
+                while len(self.performance_history[model_name]['recent_correct']) > self.recent_window_size:
+                    self.performance_history[model_name]['recent_correct'].pop(0)
+                
+                # Calculate current accuracy
+                total = self.performance_history[model_name]['total']
+                correct = self.performance_history[model_name]['correct']
+                accuracy = correct / total if total > 0 else 0
+                
+                logger.info(f"Model {model_name}: Prediction={config.CLASSES[prediction]}, " +
+                          f"Correct={is_correct}, Accuracy={accuracy:.2f} ({correct}/{total})")
+            
+            # Update weights if enough new data
+            if self._should_update_weights():
+                self._update_model_weights()
+                
+        except Exception as e:
+            logger.error(f"Error updating model performance: {e}")
+    
+    def _should_update_weights(self):
+        """
+        Determine if the weights should be updated based on the amount
+        of new performance data.
+        
+        Returns:
+            bool: Whether weights should be updated
+        """
+        # Check if any model has at least 5 new predictions since last update
+        for model_name, stats in self.performance_history.items():
+            if len(stats['recent_total']) >= 5:
+                return True
+                
+        return False
+    
     def evaluate(self, base_model_probs, y_test):
         """
         Evaluate the meta-learner model.
