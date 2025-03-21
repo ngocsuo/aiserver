@@ -303,22 +303,54 @@ class DataProcessor:
                 normalize=True
             )
             
-            # Get most recent lookback candles
-            recent_data = processed_data.iloc[-lookback:]
+            # Check if we have enough data for the full dataset
+            # We need at least lookback+1 candles for create_image_data to work
+            # because it needs to create at least one sequence
+            if len(processed_data) < lookback + 1:
+                logger.warning(f"Not enough processed data for CNN prediction. Need at least {lookback+1} candles, got {len(processed_data)}")
+                
+                # For prediction when we don't have enough historical data, we'll create a single sample
+                # by padding the data if necessary
+                if len(processed_data) < lookback:
+                    logger.warning(f"Padding data for CNN prediction. Need {lookback} candles, got {len(processed_data)}")
+                    # Get all available processed data
+                    recent_data = processed_data.copy()
+                    
+                    # Pad with duplicated first row if needed
+                    pad_size = lookback - len(recent_data)
+                    first_row = recent_data.iloc[0:1]
+                    pad_data = pd.concat([first_row] * pad_size)
+                    recent_data = pd.concat([pad_data, recent_data]).reset_index(drop=True)
+                else:
+                    # Get most recent lookback candles
+                    recent_data = processed_data.iloc[-lookback:].reset_index(drop=True)
+                
+                # Create a manual image representation
+                # Shape: (1, lookback, 5, 1) for a single sample
+                X_image = np.zeros((1, lookback, 5, 1))
+                
+                # Fill with OHLCV data
+                ohlcv_cols = ['open', 'high', 'low', 'close', 'volume']
+                for j, col in enumerate(ohlcv_cols):
+                    if col in recent_data.columns:
+                        X_image[0, :, j, 0] = recent_data[col].values
+                    else:
+                        logger.warning(f"Column {col} not found in data. Using zeros.")
+                
+                logger.info(f"Created manual image data of shape {X_image.shape} for prediction")
+            else:
+                # Create image data using regular method
+                # We use lookback+1 to ensure we have at least one sequence
+                X_image, _ = self.feature_engineer.create_image_data(processed_data, seq_length=lookback)
+                
+                if X_image is None or len(X_image) == 0:
+                    logger.error("Failed to create image data for prediction")
+                    return None
+                
+                # We need just the last sample for prediction
+                X_image = X_image[-1:] 
             
-            # Check if we have enough data
-            if len(recent_data) < lookback:
-                logger.warning(f"Not enough data for CNN prediction. Need {lookback} candles, got {len(recent_data)}")
-                # Not enough data for CNN prediction
-                return None
-            
-            # Create image data
-            X_image, _ = self.feature_engineer.create_image_data(recent_data, seq_length=lookback)
-            
-            # We need a single sample
-            X_image = X_image[-1:] 
-            
-            logger.info(f"Latest data prepared for CNN prediction")
+            logger.info(f"Latest data prepared for CNN prediction with shape {X_image.shape}")
             
             return X_image, data.iloc[-1]
             
