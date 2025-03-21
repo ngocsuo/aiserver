@@ -2281,10 +2281,54 @@ elif st.session_state.selected_tab == "Models & Training":
             # Hiển thị nút huấn luyện
             if not st.session_state.model_trained:
                 if st.button("🧠 Huấn luyện mô hình", type="primary", use_container_width=True):
-                    train_models()
+                    # Hiển thị thông báo đang huấn luyện
+                    st.success("🚀 Đang bắt đầu huấn luyện mô hình...")
+                    # Thêm log message
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    log_message = f"{timestamp} - 🚀 Bắt đầu huấn luyện mô hình từ tab Models & Training"
+                    if 'log_messages' not in st.session_state:
+                        st.session_state.log_messages = []
+                    st.session_state.log_messages.append(log_message)
+                    
+                    # Thực thi huấn luyện trong một luồng riêng
+                    try:
+                        if hasattr(st.session_state, 'continuous_trainer'):
+                            training_thread = threading.Thread(
+                                target=st.session_state.continuous_trainer._execute_training,
+                                args=(True,)  # force=True
+                            )
+                            training_thread.daemon = True
+                            training_thread.start()
+                            
+                            # Hiển thị thông báo hoàn tất
+                            st.success("✅ Đã bắt đầu huấn luyện mô hình! Quá trình này sẽ chạy trong nền.")
+                    except Exception as e:
+                        st.error(f"❌ Lỗi khi bắt đầu huấn luyện: {str(e)}")
             else:
                 if st.button("🔄 Huấn luyện lại mô hình", type="primary", use_container_width=True):
-                    train_models()
+                    # Hiển thị thông báo đang huấn luyện
+                    st.success("🔄 Đang bắt đầu huấn luyện lại mô hình...")
+                    # Thêm log message
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    log_message = f"{timestamp} - 🔄 Bắt đầu huấn luyện lại mô hình từ tab Models & Training"
+                    if 'log_messages' not in st.session_state:
+                        st.session_state.log_messages = []
+                    st.session_state.log_messages.append(log_message)
+                    
+                    # Thực thi huấn luyện trong một luồng riêng
+                    try:
+                        if hasattr(st.session_state, 'continuous_trainer'):
+                            training_thread = threading.Thread(
+                                target=st.session_state.continuous_trainer._execute_training,
+                                args=(True,)  # force=True
+                            )
+                            training_thread.daemon = True
+                            training_thread.start()
+                            
+                            # Hiển thị thông báo hoàn tất
+                            st.success("✅ Đã bắt đầu huấn luyện lại mô hình! Quá trình này sẽ chạy trong nền.")
+                    except Exception as e:
+                        st.error(f"❌ Lỗi khi bắt đầu huấn luyện: {str(e)}")
             
             # Thêm cài đặt huấn luyện
             st.subheader("⚙️ Cài đặt huấn luyện")
