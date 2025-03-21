@@ -16,9 +16,9 @@ PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "")
 PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "")
 
 # Feature flags
-USE_REAL_API = True  # Set to True to use real Binance API instead of mock data
+USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data
 DEBUG_MODE = True     # Enable additional logging and debug information
-FORCE_MOCK_DATA = False  # Set to False to use real data with configured proxy
+FORCE_MOCK_DATA = False  # KHÔNG sử dụng mock data trong mọi trường hợp
 
 # Trading Symbol and Timeframes
 SYMBOL = "ETHUSDT"

@@ -930,15 +930,14 @@ class BinanceDataCollector:
 def create_data_collector():
     """
     Factory function to create the appropriate data collector.
-    Check config.USE_REAL_API and availability of API keys.
-    Also checks for geographic restrictions.
+    We now ONLY use real Binance API, mock data collector has been removed.
     
     Returns:
-        Either BinanceDataCollector or MockDataCollector instance
+        BinanceDataCollector instance or raises an exception if API keys not available
     """
     if config.FORCE_MOCK_DATA:
-        logger.warning("FORCE_MOCK_DATA is enabled, using mock data collector")
-        return MockDataCollector()
+        logger.error("FORCE_MOCK_DATA không còn được hỗ trợ. Hệ thống yêu cầu dữ liệu thực từ Binance API.")
+        raise Exception("FORCE_MOCK_DATA không còn được hỗ trợ. Hệ thống yêu cầu dữ liệu thực từ Binance API.")
         
     if config.USE_REAL_API and config.BINANCE_API_KEY and config.BINANCE_API_SECRET:
         logger.info("Attempting to use Binance API data collector")
@@ -978,18 +977,13 @@ def create_data_collector():
                 if "Geographic restriction" in collector.connection_status.get("error", ""):
                     logger.error("Geographic restriction detected. Consider using VPN.")
                 
-                # Fall back to mock collector
-                logger.warning("Falling back to mock data collector due to API connection issues")
-                return MockDataCollector()
+                # Không dùng mock data nữa, yêu cầu API keys
+                logger.error("Không thể kết nối đến Binance API. Vui lòng kiểm tra API keys và kết nối internet.")
+                raise Exception("Không thể kết nối đến Binance API. Vui lòng kiểm tra API keys và kết nối internet.")
         except Exception as e:
-            logger.error(f"Error initializing Binance API collector: {e}")
-            logger.warning("Falling back to mock data collector")
-            return MockDataCollector()
+            logger.error(f"Lỗi khi khởi tạo Binance API collector: {e}")
+            raise Exception(f"Lỗi khi khởi tạo Binance API collector: {e}")
     else:
-        # Either USE_REAL_API is False or API keys are not available
-        if not config.USE_REAL_API:
-            logger.info("Using mock data collector (USE_REAL_API is False)")
-        else:
-            logger.warning("API keys not available, using mock data collector")
-        
-        return MockDataCollector()
+        # Yêu cầu API keys thực
+        logger.error("Hệ thống yêu cầu API keys thực để kết nối với Binance API.")
+        raise Exception("Hệ thống yêu cầu API keys thực để kết nối với Binance API. Vui lòng cấu hình API keys.")
