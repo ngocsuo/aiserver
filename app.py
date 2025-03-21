@@ -2627,7 +2627,7 @@ elif st.session_state.selected_tab == "Cài đặt":
             with st.expander("🌐 Cài đặt Proxy", expanded=True):
                 use_proxy = st.checkbox("Sử dụng Proxy để kết nối Binance API", 
                                      value=st.session_state.system_settings.get("use_proxy", config.USE_PROXY),
-                                     help="Bật tùy chọn này nếu bạn cần dùng proxy để truy cập Binance API")
+                                     help="Bật tùy chọn này nếu bạn cần dùng proxy để truy cập Binance API. Lưu ý rằng proxy chỉ là lựa chọn dự phòng.")
                 
                 # Hiển thị các trường cài đặt proxy nếu được chọn
                 if use_proxy:
@@ -2649,9 +2649,14 @@ elif st.session_state.selected_tab == "Cài đặt":
                                                      value=st.session_state.system_settings.get("proxy_password", config.PROXY_PASSWORD),
                                                      type="password",
                                                      help="Mật khẩu cho proxy (nếu yêu cầu xác thực)")
-            
-                    # Cập nhật cài đặt proxy ngay khi thay đổi
-                    st.session_state.system_settings["use_proxy"] = use_proxy
+                else:
+                    # Nếu không dùng proxy, đặt cài đặt thành false
+                    st.session_state.system_settings["use_proxy"] = False
+                    config.USE_PROXY = False
+                
+                # Cập nhật cài đặt proxy ngay khi thay đổi
+                st.session_state.system_settings["use_proxy"] = use_proxy
+                if use_proxy:
                     st.session_state.system_settings["proxy_host"] = proxy_host
                     st.session_state.system_settings["proxy_port"] = proxy_port
                     st.session_state.system_settings["proxy_username"] = proxy_username
@@ -2663,6 +2668,32 @@ elif st.session_state.selected_tab == "Cài đặt":
                     config.PROXY_PORT = proxy_port
                     config.PROXY_USERNAME = proxy_username
                     config.PROXY_PASSWORD = proxy_password
+                
+                # Hiển thị thông báo về trạng thái proxy
+                if use_proxy:
+                    st.info("""
+                    **Lưu ý về Proxy**: Proxy chỉ được sử dụng làm tùy chọn dự phòng khi kết nối Binance API
+                    bị chặn do vị trí địa lý hoặc các hạn chế khác. Nếu proxy không hoạt động, hệ thống sẽ tự động 
+                    chuyển sang chế độ dữ liệu mô phỏng để tiếp tục hoạt động.
+                    """)
+                    
+                    # Thêm nút để kiểm tra kết nối proxy
+                    if st.button("🔄 Kiểm tra kết nối proxy", use_container_width=True):
+                        try:
+                            import requests
+                            proxy_url = f"http://{proxy_username}:{proxy_password}@{proxy_host}:{proxy_port}" if proxy_username and proxy_password else f"http://{proxy_host}:{proxy_port}"
+                            proxies = {
+                                "http": proxy_url,
+                                "https": proxy_url.replace("http://", "https://")
+                            }
+                            response = requests.get("https://api.binance.com/api/v3/ping", proxies=proxies, timeout=10)
+                            if response.status_code == 200:
+                                st.success("✅ Kết nối proxy đến Binance API thành công!")
+                            else:
+                                st.error(f"❌ Kết nối proxy không thành công. Mã lỗi: {response.status_code}")
+                        except Exception as e:
+                            st.error(f"❌ Lỗi kết nối proxy: {str(e)}")
+                            st.warning("Proxy sẽ vẫn được lưu lại để sử dụng sau này khi cần thiết.")
                     
                     # Thông báo cho người dùng
                     st.info("Cài đặt proxy đã được lưu. Vui lòng khởi động lại hệ thống để áp dụng thay đổi.")
