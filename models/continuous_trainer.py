@@ -48,6 +48,11 @@ class ContinuousTrainer:
         self.total_chunks = 0
         self.current_chunk = 0
         
+        # Historical start date for training (can be updated at runtime)
+        self.historical_start_date = config.HISTORICAL_START_DATE
+        # Monthly chunks for training
+        self._monthly_chunks = self._generate_monthly_chunks()
+        
         self.chunk_start_dates = self._generate_monthly_chunks()
         self._add_log("Continuous trainer initialized with schedule: " + config.TRAINING_SCHEDULE['frequency'])
         
@@ -59,7 +64,13 @@ class ContinuousTrainer:
         Returns:
             list: List of (start_date, end_date) tuples for monthly chunks
         """
-        if hasattr(config, 'DEFAULT_TRAINING_START_DATE') and config.DEFAULT_TRAINING_START_DATE:
+        # Sử dụng giá trị historical_start_date của đối tượng continuous_trainer
+        # hoặc backup từ config nếu không có
+        if hasattr(self, 'historical_start_date') and self.historical_start_date:
+            start = datetime.strptime(self.historical_start_date, "%Y-%m-%d")
+            logger.info(f"Using custom historical start date: {self.historical_start_date}")
+            self._add_log(f"🔍 Sử dụng ngày bắt đầu tùy chỉnh: {self.historical_start_date}")
+        elif hasattr(config, 'DEFAULT_TRAINING_START_DATE') and config.DEFAULT_TRAINING_START_DATE:
             # Sử dụng dữ liệu 12 tháng gần nhất cho huấn luyện
             start = datetime.strptime(config.DEFAULT_TRAINING_START_DATE, "%Y-%m-%d")
             logger.info(f"Using 12-month data for training: starting from {config.DEFAULT_TRAINING_START_DATE}")

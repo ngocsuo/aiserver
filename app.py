@@ -2158,9 +2158,16 @@ elif st.session_state.selected_tab == "Cài đặt":
                             # Gọi hàm _execute_training trực tiếp để huấn luyện ngay
                             try:
                                 if hasattr(st.session_state, 'continuous_trainer'):
+                                    # Lấy continuous_trainer
+                                    continuous_trainer = st.session_state.continuous_trainer
+                                    # Cập nhật ngày bắt đầu cho continuous_trainer
+                                    continuous_trainer.historical_start_date = config.HISTORICAL_START_DATE
+                                    # Tạo lại các đoạn dữ liệu hàng tháng với ngày bắt đầu mới
+                                    continuous_trainer._monthly_chunks = continuous_trainer._generate_monthly_chunks()
+                                    
                                     # Thực thi huấn luyện ngay trong một luồng riêng
                                     training_thread = threading.Thread(
-                                        target=st.session_state.continuous_trainer._execute_training,
+                                        target=continuous_trainer._execute_training,
                                         args=(True,)  # force=True
                                     )
                                     training_thread.daemon = True
