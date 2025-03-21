@@ -51,9 +51,10 @@ class ContinuousTrainer:
         # Historical start date for training (can be updated at runtime)
         self.historical_start_date = config.HISTORICAL_START_DATE
         # Monthly chunks for training
-        self._monthly_chunks = self._generate_monthly_chunks()
+        self.monthly_chunks = self._generate_monthly_chunks()
         
-        self.chunk_start_dates = self._generate_monthly_chunks()
+        # Lưu danh sách các ngày bắt đầu chunks để dùng sau này
+        self.chunk_start_dates = self.monthly_chunks.copy()
         self._add_log("Continuous trainer initialized with schedule: " + config.TRAINING_SCHEDULE['frequency'])
         
     def _generate_monthly_chunks(self):
@@ -351,28 +352,28 @@ class ContinuousTrainer:
             
     def _train_by_monthly_chunks(self):
         """Train models using monthly data chunks to manage memory usage."""
-        logger.info(f"Training with {len(self.chunk_start_dates)} monthly chunks")
-        self._add_log(f"Bắt đầu huấn luyện với {len(self.chunk_start_dates)} đoạn dữ liệu tháng")
+        logger.info(f"Training with {len(self.monthly_chunks)} monthly chunks from {self.historical_start_date}")
+        self._add_log(f"Bắt đầu huấn luyện với {len(self.monthly_chunks)} đoạn dữ liệu tháng từ {self.historical_start_date}")
         
         all_processed_data = []
         # Set total chunks for progress tracking
-        self.total_chunks = len(self.chunk_start_dates)
+        self.total_chunks = len(self.monthly_chunks)
         self.current_chunk = 0
         
         # Kiểm tra xem đã có dữ liệu đã tải trước đó chưa
         existing_data_ranges = self._get_existing_data_ranges()
         
         # Process each monthly chunk
-        for i, (start_date, end_date) in enumerate(self.chunk_start_dates):
+        for i, (start_date, end_date) in enumerate(self.monthly_chunks):
             self.current_chunk = i + 1
             chunk_progress = int((self.current_chunk / self.total_chunks) * 100)
             
             # Kiểm tra xem dữ liệu cho khoảng thời gian này đã được tải trước đó chưa
             if self._is_data_range_covered(start_date, end_date, existing_data_ranges):
                 # Dữ liệu đã tồn tại, sử dụng lại
-                log_msg = f"⏩ Bỏ qua đoạn {i+1}/{len(self.chunk_start_dates)}: từ {start_date} đến {end_date} - đã có dữ liệu"
+                log_msg = f"⏩ Bỏ qua đoạn {i+1}/{len(self.monthly_chunks)}: từ {start_date} đến {end_date} - đã có dữ liệu"
                 self._add_log(log_msg)
-                logger.info(f"Skipping chunk {i+1}/{len(self.chunk_start_dates)}: {start_date} to {end_date} - data already exists")
+                logger.info(f"Skipping chunk {i+1}/{len(self.monthly_chunks)}: {start_date} to {end_date} - data already exists")
                 
                 # Tải dữ liệu đã lưu từ tệp cache
                 try:
@@ -389,9 +390,9 @@ class ContinuousTrainer:
                 
             # Nếu không có dữ liệu đệm hoặc không thể tải, tải mới từ API
             if len(all_processed_data) < i + 1:
-                log_msg = f"📥 Đang tải đoạn dữ liệu {i+1}/{len(self.chunk_start_dates)}: từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
+                log_msg = f"📥 Đang tải đoạn dữ liệu {i+1}/{len(self.monthly_chunks)}: từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
                 self._add_log(log_msg)
-                logger.info(f"Downloading chunk {i+1}/{len(self.chunk_start_dates)}: {start_date} to {end_date}")
+                logger.info(f"Downloading chunk {i+1}/{len(self.monthly_chunks)}: {start_date} to {end_date}")
                 
                 try:
                     # Collect data for this month

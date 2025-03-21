@@ -2265,8 +2265,19 @@ elif st.session_state.selected_tab == "Cài đặt":
                                     continuous_trainer = st.session_state.continuous_trainer
                                     # Cập nhật ngày bắt đầu cho continuous_trainer
                                     continuous_trainer.historical_start_date = config.HISTORICAL_START_DATE
+                                    # Reset lại dữ liệu cũ
+                                    st.session_state.historical_data_ready = False
+                                    st.session_state.model_trained = False
+                                    if 'historical_data_status' in st.session_state:
+                                        st.session_state.historical_data_status['progress'] = 0
                                     # Tạo lại các đoạn dữ liệu hàng tháng với ngày bắt đầu mới
-                                    continuous_trainer._monthly_chunks = continuous_trainer._generate_monthly_chunks()
+                                    continuous_trainer.monthly_chunks = continuous_trainer._generate_monthly_chunks()
+                                    # Log thông báo
+                                    print(f"Đã cập nhật ngày bắt đầu huấn luyện thành: {config.HISTORICAL_START_DATE}")
+                                    print(f"Số đoạn dữ liệu mới: {len(continuous_trainer.monthly_chunks)}")
+                                    timestamp = datetime.now().strftime("%H:%M:%S")
+                                    log_message = f"{timestamp} - 📅 Đã cập nhật ngày bắt đầu thành {config.HISTORICAL_START_DATE}, tạo lại {len(continuous_trainer.monthly_chunks)} đoạn dữ liệu"
+                                    st.session_state.log_messages.append(log_message)
                                     
                                     # Thực thi huấn luyện ngay trong một luồng riêng
                                     training_thread = threading.Thread(
