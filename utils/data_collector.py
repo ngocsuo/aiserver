@@ -384,11 +384,17 @@ class BinanceDataCollector:
     """
     A data collector that fetches real OHLCV data from Binance Futures API.
     """
-    def __init__(self):
-        """Initialize the Binance data collector."""
+    def __init__(self, proxy=None):
+        """
+        Initialize the Binance data collector.
+        
+        Args:
+            proxy (dict, optional): Dictionary with proxy settings {'http': 'http://...', 'https': 'https://...'}
+        """
         # Track last update time
         self.last_update = None
         self.client = None
+        self.proxy = proxy
         self.connection_status = {
             "connected": False,
             "error": None,
@@ -408,21 +414,38 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
                 
-            # Initialize Binance client with API keys based on proxy configuration
-            if config.USE_PROXY:
+            # Sử dụng cấu hình proxy được truyền vào constructor (nếu có)
+            # hoặc sử dụng thiết lập từ config
+            proxy_settings = None
+            
+            # Nếu proxy được truyền trực tiếp vào constructor
+            if self.proxy:
+                proxy_settings = self.proxy
+                logger.info(f"Using proxy settings from constructor")
+            # Nếu không, kiểm tra cấu hình proxy từ config
+            elif config.USE_PROXY:
                 # Format proxy settings based on configuration
                 host = config.PROXY_HOST
                 port = config.PROXY_PORT
                 username = config.PROXY_USERNAME
                 password = config.PROXY_PASSWORD
                 
-                proxy_auth = f"{username}:{password}@{host}:{port}"
-                proxy_settings = {
-                    'http': f'http://{proxy_auth}',
-                    'https': f'http://{proxy_auth}'
-                }
-                
-                logger.info(f"Attempting connection via authenticated proxy ({host}:{port})")
+                if username and password:
+                    proxy_auth = f"{username}:{password}@{host}:{port}"
+                    proxy_settings = {
+                        'http': f'http://{proxy_auth}',
+                        'https': f'https://{proxy_auth}'
+                    }
+                    logger.info(f"Attempting connection via authenticated proxy ({host}:{port})")
+                else:
+                    proxy_settings = {
+                        'http': f'http://{host}:{port}',
+                        'https': f'https://{host}:{port}'
+                    }
+                    logger.info(f"Attempting connection via proxy ({host}:{port})")
+            
+            # Khởi tạo client với hoặc không có proxy
+            if proxy_settings:
                 self.client = Client(
                     config.BINANCE_API_KEY, 
                     config.BINANCE_API_SECRET,
