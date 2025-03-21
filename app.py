@@ -485,10 +485,43 @@ def train_models():
             # Step 1: Process data for training
             update_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
             
+            # Kiểm tra xem có sử dụng tham số tùy chỉnh không
+            custom_params = st.session_state.get('custom_training_params', None)
+            if custom_params:
+                update_log(f"🔧 Đang áp dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs")
+                # TODO: Áp dụng các tham số tùy chỉnh vào quá trình huấn luyện
+                # Nếu người dùng chọn khung thời gian khác
+                if custom_params['timeframe'] != config.TIMEFRAMES['primary']:
+                    update_log(f"Chuyển sang khung thời gian {custom_params['timeframe']} theo cài đặt tùy chỉnh")
+                    # Cần lấy dữ liệu cho khung thời gian được chọn
+                    try:
+                        if hasattr(st.session_state, 'data_collector'):
+                            update_log(f"Đang tải dữ liệu khung thời gian {custom_params['timeframe']}...")
+                            custom_data = st.session_state.data_collector.collect_historical_data(
+                                symbol=config.SYMBOL,
+                                timeframe=custom_params['timeframe'],
+                                limit=config.LOOKBACK_PERIODS
+                            )
+                            if custom_data is not None and not custom_data.empty:
+                                data = custom_data
+                                update_log(f"Đã tải {len(data)} nến dữ liệu {custom_params['timeframe']}")
+                            else:
+                                update_log(f"⚠️ Không thể tải dữ liệu cho khung thời gian {custom_params['timeframe']}, dùng dữ liệu mặc định")
+                    except Exception as e:
+                        update_log(f"❌ Lỗi khi tải dữ liệu tùy chỉnh: {str(e)}")
+                
+                # Cập nhật số epochs theo cài đặt
+                config.EPOCHS = custom_params['epochs']
+                update_log(f"Cập nhật số epochs huấn luyện: {config.EPOCHS}")
+                
+                # Cập nhật ngưỡng biến động giá
+                config.PRICE_MOVEMENT_THRESHOLD = custom_params['threshold'] / 100  # Chuyển % thành tỷ lệ thập phân
+                update_log(f"Cập nhật ngưỡng biến động giá: {custom_params['threshold']}%")
+                
             data = st.session_state.latest_data
             update_log(f"Nguồn dữ liệu: {'Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Mô phỏng (chế độ phát triển)'}")
             update_log(f"Số điểm dữ liệu: {len(data)} nến")
-            update_log(f"Khung thời gian: {config.TIMEFRAMES['primary']}")
+            update_log(f"Khung thời gian: {data.name if hasattr(data, 'name') else config.TIMEFRAMES['primary']}")
             update_log(f"Phạm vi ngày: {data.index.min()} đến {data.index.max()}")
             
             # Step 2: Preprocess data
@@ -2235,6 +2268,17 @@ elif st.session_state.selected_tab == "Models & Training":
                     "threshold": training_threshold,
                     "epochs": training_epochs
                 }
+                
+                # Hiển thị thông báo rõ ràng về huấn luyện
+                st.success(f"🚀 Đang bắt đầu huấn luyện với: {selected_timeframe}, {training_range} ngày, ngưỡng {training_threshold}%, {training_epochs} epochs")
+                
+                # Thêm log message
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                log_message = f"{timestamp} - 🚀 Bắt đầu huấn luyện với cài đặt tùy chỉnh: {selected_timeframe}, {training_range} ngày, ngưỡng {training_threshold}%, {training_epochs} epochs"
+                if 'log_messages' not in st.session_state:
+                    st.session_state.log_messages = []
+                st.session_state.log_messages.append(log_message)
+                
                 # Gọi hàm huấn luyện với cài đặt tùy chỉnh
                 train_models()
         
