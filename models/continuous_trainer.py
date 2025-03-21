@@ -319,6 +319,10 @@ class ContinuousTrainer:
         
         # Process each monthly chunk
         for i, (start_date, end_date) in enumerate(self.chunk_start_dates):
+            self.current_chunk = i + 1
+            chunk_progress = int((self.current_chunk / self.total_chunks) * 100)
+            log_msg = f"Đang xử lý đoạn dữ liệu {i+1}/{len(self.chunk_start_dates)}: từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
+            self._add_log(log_msg)
             logger.info(f"Processing chunk {i+1}/{len(self.chunk_start_dates)}: {start_date} to {end_date}")
             
             try:
@@ -333,11 +337,16 @@ class ContinuousTrainer:
                     # Process the data
                     processed_chunk = self.data_processor.process_data(raw_data)
                     all_processed_data.append(processed_chunk)
+                    self._add_log(f"✅ Đoạn {i+1}: Đã xử lý {len(processed_chunk)} điểm dữ liệu thành công")
                     logger.info(f"Chunk {i+1}: Processed {len(processed_chunk)} data points")
                 else:
+                    error_msg = f"⚠️ Đoạn {i+1}: Không có dữ liệu cho giai đoạn {start_date} đến {end_date}"
+                    self._add_log(error_msg)
                     logger.warning(f"Chunk {i+1}: No data collected for period {start_date} to {end_date}")
                     
             except Exception as e:
+                error_msg = f"❌ Lỗi xử lý đoạn {i+1}: {str(e)}"
+                self._add_log(error_msg)
                 logger.error(f"Error processing chunk {i+1}: {e}")
                 
         # Combine all processed chunks
@@ -350,6 +359,7 @@ class ContinuousTrainer:
             # Sort by time
             combined_data.sort_index(inplace=True)
             
+            self._add_log(f"📊 Tổng hợp dữ liệu: {len(combined_data)} điểm dữ liệu đã được xử lý")
             logger.info(f"Combined data: {len(combined_data)} data points")
             
             # Prepare data for different model types
@@ -357,10 +367,13 @@ class ContinuousTrainer:
             image_data = self.data_processor.prepare_cnn_data(combined_data)
             
             # Train all models
+            self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình với {len(combined_data)} điểm dữ liệu")
             models = self.model_trainer.train_all_models(sequence_data, image_data)
             
+            self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình")
             logger.info(f"Trained {len(models)} models with chunked data")
         else:
+            self._add_log("❌ Không có dữ liệu khả dụng sau khi xử lý tất cả các đoạn")
             logger.error("No processed data available after processing all chunks")
             
     def _train_with_all_data(self):
@@ -370,6 +383,8 @@ class ContinuousTrainer:
         try:
             # Collect all historical data
             raw_data = None
+            
+            self._add_log("🔄 Đang thu thập dữ liệu lịch sử...")
             
             if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
                 raw_data = self.data_collector.collect_historical_data(
@@ -384,17 +399,22 @@ class ContinuousTrainer:
                 
             if raw_data is not None and not raw_data.empty:
                 # Process the data
+                self._add_log(f"🔧 Đang xử lý {len(raw_data)} điểm dữ liệu lịch sử...")
                 processed_data = self.data_processor.process_data(raw_data)
                 
                 # Prepare data for different model types
+                self._add_log("📊 Đang chuẩn bị dữ liệu đầu vào cho các mô hình...")
                 sequence_data = self.data_processor.prepare_sequence_data(processed_data)
                 image_data = self.data_processor.prepare_cnn_data(processed_data)
                 
                 # Train all models
+                self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình với {len(processed_data)} điểm dữ liệu")
                 models = self.model_trainer.train_all_models(sequence_data, image_data)
                 
+                self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình")
                 logger.info(f"Trained {len(models)} models with {len(processed_data)} data points")
             else:
+                self._add_log("❌ Không thể thu thập dữ liệu lịch sử cho việc huấn luyện")
                 logger.error("No data collected for training")
                 
         except Exception as e:
