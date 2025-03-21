@@ -1,5 +1,6 @@
 """
 Main Streamlit application for ETHUSDT prediction dashboard.
+Enhanced with improved UI, advanced technical analysis, and multi-source data integration.
 """
 import streamlit as st
 import pandas as pd
@@ -15,9 +16,16 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import random
 import streamlit.components.v1 as components
+import traceback
+import base64
 
 from utils.data_collector import BinanceDataCollector, MockDataCollector
 from utils.data_processor import DataProcessor
+from dashboard.components.custom_style import (
+    load_custom_css, create_metric_card, create_price_card, 
+    create_prediction_card, create_gauge_chart, create_header,
+    create_section_header, create_stats_row
+)
 from utils.feature_engineering import FeatureEngineer
 from models.model_trainer import ModelTrainer
 
