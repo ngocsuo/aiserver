@@ -828,7 +828,7 @@ class TradingManager:
             timeframe (str, optional): Khung thời gian dự đoán. Nếu None, lấy từ config
         """
         symbol = config['symbol']
-        min_confidence = config['min_confidence'] / 100.0  # Chuyển % thành phân số
+        min_confidence = config['min_confidence']  # Đã chuyển % thành phân số khi nhận config
         
         # Xác định khung thời gian
         if timeframe is None:
@@ -854,6 +854,20 @@ class TradingManager:
         if trend == 'NEUTRAL':
             self.add_log(f"Xu hướng NEUTRAL, không mở vị thế", "info")
             return
+        
+        # Kiểm tra biến động giá tối thiểu (nếu được cấu hình)
+        min_price_movement = config.get('min_price_movement', 0)
+        if min_price_movement > 0 and 'target_price' in prediction and 'price' in prediction:
+            current_price = prediction['price']
+            target_price = prediction['target_price']
+            price_movement = abs(target_price - current_price)
+            
+            # Kiểm tra xem biến động giá có đạt ngưỡng tối thiểu không
+            if price_movement < min_price_movement:
+                self.add_log(f"Biến động giá dự đoán {price_movement:.2f} USDT thấp hơn ngưỡng {min_price_movement:.2f} USDT", "info")
+                return
+            else:
+                self.add_log(f"Biến động giá dự đoán đạt {price_movement:.2f} USDT (ngưỡng: {min_price_movement:.2f} USDT)")
         
         # Dự đoán hợp lệ và đáp ứng yêu cầu độ tin cậy
         self.add_log(f"Dự đoán hợp lệ trên khung {timeframe}: {trend} với độ tin cậy {confidence*100:.1f}%")
