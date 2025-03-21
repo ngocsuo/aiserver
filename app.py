@@ -186,9 +186,9 @@ def fetch_realtime_data():
         log_message = f"{timestamp} - 📡 Gửi yêu cầu đến {data_source_type} cho dữ liệu thời gian thực..."
         st.session_state.log_messages.append(log_message)
         
-        # Chỉ lấy dữ liệu 30 ngày gần nhất
+        # Chỉ lấy dữ liệu 3 ngày gần nhất để tải nhanh hơn
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
+        start_date = end_date - timedelta(days=config.DATA_RANGE_OPTIONS["realtime"])
         start_date_str = start_date.strftime("%Y-%m-%d")
         
         # Gọi hàm lấy dữ liệu với tham số ngày bắt đầu
@@ -544,10 +544,46 @@ def update_data_continuously():
     # Keep track of the number of updates to trigger periodic actions
     update_count = 0
     
+    # Hiển thị Binance server time
+    try:
+        from utils.data_collector import create_data_collector
+        data_collector = create_data_collector()
+        server_time = data_collector.client.get_server_time() if hasattr(data_collector, 'client') else None
+        server_time_ms = server_time['serverTime'] if server_time else None
+        binance_time = datetime.fromtimestamp(server_time_ms / 1000) if server_time_ms else None
+        
+        if 'binance_server_time' not in st.session_state:
+            st.session_state.binance_server_time = {}
+            
+        if binance_time:
+            st.session_state.binance_server_time = {
+                "time": binance_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+    except Exception as e:
+        print(f"Error getting Binance server time: {e}")
+    
     while st.session_state.thread_running:
         try:
             # Fetch latest data
             data_result = fetch_data()
+            
+            # Cập nhật Binance server time mỗi lần fetch dữ liệu
+            try:
+                server_time = data_collector.client.get_server_time() if hasattr(data_collector, 'client') else None
+                server_time_ms = server_time['serverTime'] if server_time else None
+                binance_time = datetime.fromtimestamp(server_time_ms / 1000) if server_time_ms else None
+                
+                if 'binance_server_time' not in st.session_state:
+                    st.session_state.binance_server_time = {}
+                    
+                if binance_time:
+                    st.session_state.binance_server_time = {
+                        "time": binance_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+            except Exception as e:
+                print(f"Error updating Binance server time: {e}")
             
             if data_result is not None:
                 # Update new data counter in continuous trainer

@@ -16,7 +16,7 @@ FORCE_MOCK_DATA = False  # Set to False to use real data with configured proxy
 # Trading Symbol and Timeframes
 SYMBOL = "ETHUSDT"
 TIMEFRAMES = {
-    "primary": "1m",   # Cập nhật từ 5m sang 1m theo yêu cầu
+    "primary": "5m",   # Sử dụng timeframe 5m
     "secondary": ["15m", "1h", "4h"]
 }
 
@@ -56,10 +56,10 @@ TECHNICAL_INDICATORS = {
 # Data Labeling Configuration
 PRICE_MOVEMENT_THRESHOLD = 0.003  # 0.3% move for labeling
 TARGET_PNL_THRESHOLD = 5  # $5 for alternative labeling
-PREDICTION_WINDOW = 60  # Số nến 1m (1 giờ) để dự đoán trong tương lai
+PREDICTION_WINDOW = 12   # Số nến 5m (1 giờ) để dự đoán trong tương lai
 
 # Model Configuration
-SEQUENCE_LENGTH = 120  # Số nến 1m cho mô hình dãy (tăng từ 60 nến 5m lên 120 nến 1m)
+SEQUENCE_LENGTH = 60    # Số nến 5m cho mô hình dãy
 TRAINING_SPLIT = 0.7  # 70% training data
 VALIDATION_SPLIT = 0.15  # 15% validation data
 TEST_SPLIT = 0.15  # 15% test data
@@ -75,7 +75,7 @@ TRAINING_SCHEDULE = {
     "minute": 30,         # Minute of hour to train
     "day_of_week": 1      # For weekly: day of week (0=Monday, 6=Sunday)
 }
-MINIMUM_NEW_DATA_POINTS = 1440  # Số nến 1-phút tối thiểu cần có để huấn luyện lại (= 24h)
+MINIMUM_NEW_DATA_POINTS = 288   # Số nến 5-phút tối thiểu cần có để huấn luyện lại (= 24h)
 
 # Chunked Training Configuration
 CHUNK_BY_MONTHS = True  # Enable chunked training by months
