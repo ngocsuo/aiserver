@@ -1412,6 +1412,43 @@ with st.sidebar:
                     st.progress(status['progress'])
                     st.caption(status.get('status', 'Đang tải...'))
         
+        # Bố trí các nút điều khiển trong sidebar
+        if st.session_state.initialized:
+            st.markdown("---")
+            st.subheader("🔧 Điều khiển")
+            
+            # Nút Tải dữ liệu
+            if st.button("🔄 Tải dữ liệu thời gian thực", type="primary", use_container_width=True):
+                with st.spinner("Đang tải dữ liệu thời gian thực..."):
+                    fetch_realtime_data()
+                    
+            # Nút Tạo dự đoán
+            if st.button("🔮 Tạo dự đoán mới", type="primary", use_container_width=True):
+                with st.spinner("Đang tạo dự đoán..."):
+                    prediction = make_prediction()
+                    # Cập nhật lại biến prediction để hiển thị dự đoán mới nhất
+                    if prediction and len(st.session_state.predictions) > 0:
+                        prediction = st.session_state.predictions[-1]
+                    st.rerun()  # Buộc cập nhật UI để hiển thị dự đoán mới
+                    
+            # Nút Huấn luyện
+            if not st.session_state.model_trained:
+                if st.button("🧠 Huấn luyện mô hình", use_container_width=True):
+                    with st.spinner("Đang huấn luyện mô hình..."):
+                        train_models()
+            else:
+                if st.button("🔄 Huấn luyện lại", use_container_width=True):
+                    with st.spinner("Đang huấn luyện lại mô hình..."):
+                        train_models()
+                    
+            # Nút bật/tắt tự động
+            if not st.session_state.thread_running:
+                if st.button("▶️ Bật tự động cập nhật", use_container_width=True):
+                    start_update_thread()
+            else:
+                if st.button("⏹️ Tắt tự động cập nhật", use_container_width=True):
+                    stop_update_thread()
+        
         # Các thông tin hệ thống
         st.markdown("---")
         
@@ -1419,10 +1456,6 @@ with st.sidebar:
         if 'binance_server_time' in st.session_state:
             st.caption(f"Binance Server Time: {st.session_state.binance_server_time.get('time', 'Chưa có')}")
             st.caption(f"Local Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                
-        # Nút Cập nhật luôn hiển thị ở cuối sidebar cho mọi tab
-        if st.button("🔄 Cập nhật Dữ liệu", use_container_width=True):
-            fetch_realtime_data()
     
     # Navigation đơn giản hơn
     st.markdown("---")
@@ -1641,47 +1674,8 @@ if st.session_state.selected_tab == "Live Dashboard":
             update_color = "green" if st.session_state.thread_running else "red"
             st.markdown(f"**Cập nhật tự động:** :{update_color}[{update_status}]")
         
-        # Bố trí các nút điều khiển tập trung ở bên trái
-        left_col, right_col = st.columns([1, 2])
-        
-        with left_col:
-            st.subheader("🔧 Điều khiển")
-            
-            # Nút Tải dữ liệu
-            if st.button("🔄 Tải dữ liệu thời gian thực", type="primary", use_container_width=True):
-                with st.spinner("Đang tải dữ liệu thời gian thực..."):
-                    fetch_realtime_data()
-                    
-            # Nút Tạo dự đoán
-            if st.button("🔮 Tạo dự đoán mới", type="primary", use_container_width=True):
-                with st.spinner("Đang tạo dự đoán..."):
-                    prediction = make_prediction()
-                    # Cập nhật lại biến prediction để hiển thị dự đoán mới nhất
-                    if prediction and len(st.session_state.predictions) > 0:
-                        prediction = st.session_state.predictions[-1]
-                    st.rerun()  # Buộc cập nhật UI để hiển thị dự đoán mới
-                    
-            # Nút Huấn luyện
-            if not st.session_state.model_trained:
-                if st.button("🧠 Huấn luyện mô hình", use_container_width=True):
-                    with st.spinner("Đang huấn luyện mô hình..."):
-                        train_models()
-            else:
-                if st.button("🔄 Huấn luyện lại", use_container_width=True):
-                    with st.spinner("Đang huấn luyện lại mô hình..."):
-                        train_models()
-                    
-            # Nút bật/tắt tự động
-            if not st.session_state.thread_running:
-                if st.button("▶️ Bật tự động cập nhật", use_container_width=True):
-                    start_update_thread()
-            else:
-                if st.button("⏹️ Tắt tự động cập nhật", use_container_width=True):
-                    stop_update_thread()
-                    
-        # Display prediction and chart in tabs - Default to chart first
-        with right_col:
-            tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History", "📋 Training Logs"])
+        # Sử dụng toàn màn hình cho chart và nội dung chính
+        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History", "📋 Training Logs"])
         
         with tabs[0]:
             # Main dashboard layout
