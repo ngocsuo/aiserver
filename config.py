@@ -25,17 +25,17 @@ LOOKBACK_PERIODS = 5000  # Number of candles to collect initially
 
 # Cấu hình thời gian dữ liệu
 DATA_RANGE_OPTIONS = {
-    "realtime": 30,         # 30 ngày dữ liệu cho biểu đồ thời gian thực
-    "training": 365,        # 12 tháng (365 ngày) dữ liệu cho huấn luyện mặc định
+    "realtime": 3,          # 3 ngày dữ liệu cho biểu đồ thời gian thực (giảm để load nhanh hơn)
+    "training": 90,         # 3 tháng (90 ngày) dữ liệu cho huấn luyện mặc định (giảm để training nhanh hơn)
     "max_history": 1200     # Tối đa khoảng 3-4 năm dữ liệu
 }
 
-# Tính ngày bắt đầu dữ liệu huấn luyện (12 tháng gần nhất)
+# Tính ngày bắt đầu dữ liệu huấn luyện (3 tháng gần nhất)
 from datetime import datetime, timedelta
 today = datetime.now()
 DEFAULT_TRAINING_START_DATE = (today - timedelta(days=DATA_RANGE_OPTIONS["training"])).strftime("%Y-%m-%d")
 
-# Sử dụng dữ liệu 12 tháng gần nhất thay vì từ 2022
+# Sử dụng dữ liệu 3 tháng gần nhất để tăng tốc độ trainng
 HISTORICAL_START_DATE = DEFAULT_TRAINING_START_DATE  # Start date for historical data training
 
 ENABLE_BACKTESTING = True  # Enable backtesting functionality
@@ -79,7 +79,7 @@ MINIMUM_NEW_DATA_POINTS = 1440  # Số nến 1-phút tối thiểu cần có đ�
 
 # Chunked Training Configuration
 CHUNK_BY_MONTHS = True  # Enable chunked training by months
-MAX_CHUNK_SIZE = 10000  # Maximum number of candles per chunk
+MAX_CHUNK_SIZE = 5000   # Giảm kích thước chunk từ 10000 xuống 5000 để tăng tốc độ training
 
 # Model Paths
 MODEL_DIR = "saved_models"
