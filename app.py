@@ -100,7 +100,7 @@ def initialize_system():
             # Start continuous training if enabled
             if config.CONTINUOUS_TRAINING:
                 continuous_trainer.start()
-                log_message = f"{timestamp} - Continuous training started with schedule: {config.TRAINING_SCHEDULE['frequency']}"
+                log_message = f"{timestamp} - 🚀 Huấn luyện liên tục đã bắt đầu với lịch trình: {config.TRAINING_SCHEDULE['frequency']}"
                 st.session_state.log_messages.append(log_message)
             
             st.session_state.initialized = True
@@ -437,7 +437,7 @@ def update_data_continuously():
                     
                     # Log training status
                     timestamp = datetime.now().strftime("%H:%M:%S")
-                    log_message = f"{timestamp} - Continuous training status: {training_status['new_data_points']} new data points"
+                    log_message = f"{timestamp} - 📊 Trạng thái huấn luyện: {training_status['new_data_points']} điểm dữ liệu mới"
                     if 'log_messages' in st.session_state:
                         st.session_state.log_messages.append(log_message)
             
@@ -448,7 +448,7 @@ def update_data_continuously():
             print(f"Error in update thread: {e}")
             if 'log_messages' in st.session_state:
                 timestamp = datetime.now().strftime("%H:%M:%S")
-                log_message = f"{timestamp} - ❌ ERROR in update thread: {str(e)}"
+                log_message = f"{timestamp} - ❌ LỖI trong luồng cập nhật: {str(e)}"
                 st.session_state.log_messages.append(log_message)
             time.sleep(60)  # Sleep longer on error
 
