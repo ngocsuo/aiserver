@@ -3609,9 +3609,87 @@ elif st.session_state.selected_tab == "Trading":
                 st.markdown("### ✅ Trạng thái: Bot giao dịch đang hoạt động")
                 
                 if hasattr(st.session_state, "trading_manager") and st.session_state.trading_manager is not None:
+                    # Hiển thị thống kê PNL theo ngày (múi giờ +7)
+                    if hasattr(st.session_state.trading_manager, "get_daily_pnl_summary"):
+                        st.subheader("📊 Thống kê PNL theo ngày (UTC+7)")
+                        
+                        # Lấy thông tin PNL theo ngày
+                        daily_pnl = st.session_state.trading_manager.get_daily_pnl_summary()
+                        
+                        if daily_pnl:
+                            # Tạo các metrics hiển thị
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
+                                pnl_value = daily_pnl.get('total_pnl', 0)
+                                if pnl_value > 0:
+                                    st.metric("Tổng PNL", f"+{pnl_value:.2f} USDT", delta=f"+{pnl_value:.2f}", delta_color="normal")
+                                else:
+                                    st.metric("Tổng PNL", f"{pnl_value:.2f} USDT", delta=f"{pnl_value:.2f}", delta_color="normal")
+                            
+                            with col2:
+                                win_count = daily_pnl.get('win_count', 0)
+                                loss_count = daily_pnl.get('loss_count', 0)
+                                total_trades = win_count + loss_count
+                                st.metric("Số lệnh", f"{total_trades}", help="Tổng số lệnh đã thực hiện trong ngày")
+                            
+                            with col3:
+                                win_rate = daily_pnl.get('win_rate', 0)
+                                st.metric("Tỷ lệ thắng", f"{win_rate:.1f}%", help="Tỷ lệ lệnh lãi trên tổng số lệnh")
+                            
+                            with col4:
+                                current_date = daily_pnl.get('date', 'N/A')
+                                st.metric("Ngày", f"{current_date}", help="Ngày hiện tại (UTC+7)")
+                            
+                            # Hiển thị danh sách các giao dịch trong ngày
+                            if 'trades' in daily_pnl and daily_pnl['trades']:
+                                st.subheader("Các giao dịch trong ngày")
+                                
+                                # Tạo DataFrame từ danh sách giao dịch
+                                import pandas as pd
+                                trades_data = daily_pnl['trades']
+                                trades_df = pd.DataFrame(trades_data)
+                                
+                                # Format DataFrame
+                                if len(trades_df) > 0:
+                                    if 'time' in trades_df.columns:
+                                        trades_df = trades_df[['time', 'symbol', 'side', 'pnl', 'pnl_percent']]
+                                        trades_df.columns = ['Thời gian', 'Symbol', 'Hướng', 'PNL (USDT)', 'PNL (%)']
+                                        
+                                        # Định dạng các cột số
+                                        trades_df['PNL (USDT)'] = trades_df['PNL (USDT)'].map('{:.2f}'.format)
+                                        trades_df['PNL (%)'] = trades_df['PNL (%)'].map('{:.2f}%'.format)
+                                        
+                                        # Đảo ngược để hiển thị mới nhất lên đầu
+                                        trades_df = trades_df.iloc[::-1].reset_index(drop=True)
+                                        
+                                        # Hiển thị bảng với màu sắc
+                                        def highlight_pnl(val):
+                                            try:
+                                                # Xác định xem PNL dương hay âm
+                                                value = float(val.replace('%', ''))
+                                                if value > 0:
+                                                    return 'background-color: rgba(0, 255, 0, 0.2)'
+                                                elif value < 0:
+                                                    return 'background-color: rgba(255, 0, 0, 0.2)'
+                                                else:
+                                                    return ''
+                                            except:
+                                                return ''
+                                                
+                                        # Áp dụng định dạng có điều kiện
+                                        styled_df = trades_df.style.applymap(highlight_pnl, subset=['PNL (%)'])
+                                        st.dataframe(styled_df, use_container_width=True)
+                                    else:
+                                        st.dataframe(trades_df, use_container_width=True)
+                                else:
+                                    st.info("Chưa có giao dịch nào được thực hiện trong ngày hôm nay")
+                            else:
+                                st.info("Chưa có giao dịch nào được thực hiện trong ngày hôm nay")
+                                
                     # Hiển thị các logs giao dịch
                     if hasattr(st.session_state.trading_manager, "trading_logs") and st.session_state.trading_manager.trading_logs:
-                        st.subheader("Nhật ký giao dịch")
+                        st.subheader("📝 Nhật ký giao dịch")
                         logs = st.session_state.trading_manager.trading_logs[-10:]  # Chỉ hiển thị 10 logs gần nhất
                         logs_reversed = logs[::-1]  # Đảo ngược để hiển thị mới nhất trước
                         
