@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import random
 
-from utils.data_collector import BinanceDataCollector
+from utils.data_collector import BinanceDataCollector, MockDataCollector
 from utils.data_processor import DataProcessor
 from utils.feature_engineering import FeatureEngineer
 from models.model_trainer import ModelTrainer
@@ -53,6 +53,14 @@ def initialize_system():
         try:
             # Initialize data collector
             st.session_state.data_collector = BinanceDataCollector()
+            
+            # Store data source type for display
+            if isinstance(st.session_state.data_collector, MockDataCollector):
+                st.session_state.data_source = "Simulated Data (Mock)"
+                st.session_state.data_source_color = "orange"
+            else:
+                st.session_state.data_source = "Binance API (Real Data)"
+                st.session_state.data_source_color = "green"
             
             # Initialize data processor
             st.session_state.data_processor = DataProcessor()
@@ -710,6 +718,11 @@ def display_system_status(data_status, thread_status, prediction_count):
         st.write("**Data Collection**")
         status_color = "green" if data_status["status"] == "Data fetched successfully" else "red"
         st.markdown(f"Status: :{status_color}[{data_status['status']}]")
+        
+        # Display data source information
+        if 'data_source' in st.session_state and 'data_source_color' in st.session_state:
+            st.markdown(f"Source: :{st.session_state.data_source_color}[{st.session_state.data_source}]")
+        
         if data_status["last_update"]:
             st.write(f"Last update: {data_status['last_update']}")
     

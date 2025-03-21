@@ -592,6 +592,7 @@ class BinanceDataCollector:
             logger.error(f"Error fetching open interest: {e}")
             raise
 
-# In production mode, we use the real Binance API collector
-# To use mock data collector instead, uncomment this line:
-# BinanceDataCollector = MockDataCollector
+# In production mode, we would use the real Binance API collector
+# However, due to API restrictions on Replit, we'll use Mock data for now
+# When deploying to a server without these restrictions, comment this line:
+BinanceDataCollector = MockDataCollector
