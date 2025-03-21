@@ -420,29 +420,18 @@ class BinanceDataCollector:
             # hoặc sử dụng thiết lập từ config
             proxy_settings = None
             
-            # Nếu proxy được truyền trực tiếp vào constructor
-            if self.proxy:
-                proxy_settings = self.proxy
-                logger.info(f"Using proxy settings from constructor")
             # Không sử dụng proxy trong mọi trường hợp
             proxy_settings = None
-            logger.info("Connecting directly without proxy")
+            logger.info("Using direct connection (proxy disabled)")
             
             # Khởi tạo client với hoặc không có proxy
-            if proxy_settings:
-                self.client = Client(
-                    config.BINANCE_API_KEY, 
-                    config.BINANCE_API_SECRET,
-                    {"proxies": proxy_settings, "timeout": 120}  # Tăng timeout lên 120 giây
-                )
-            else:
-                # Sử dụng kết nối trực tiếp khi không cấu hình proxy
-                logger.info("Using direct connection (proxy disabled)")
-                self.client = Client(
-                    config.BINANCE_API_KEY, 
-                    config.BINANCE_API_SECRET,
-                    {"timeout": 30}
-                )
+            # Sử dụng kết nối trực tiếp không dùng proxy
+            logger.info("Using direct connection (proxy disabled)")
+            self.client = Client(
+                config.BINANCE_API_KEY, 
+                config.BINANCE_API_SECRET,
+                {"timeout": 30}
+            )
             
             # Test connection with timeout
             import socket
@@ -924,28 +913,9 @@ def create_data_collector():
     if config.USE_REAL_API and config.BINANCE_API_KEY and config.BINANCE_API_SECRET:
         logger.info("Attempting to use Binance API data collector")
         try:
-            # Tạo proxy settings nếu được cấu hình
-            proxy_settings = None
-            if config.USE_PROXY:
-                host = config.PROXY_HOST
-                port = config.PROXY_PORT
-                username = config.PROXY_USERNAME
-                password = config.PROXY_PASSWORD
-                
-                if username and password:
-                    proxy_auth = f"{username}:{password}@{host}:{port}"
-                    proxy_settings = {
-                        'http': f'http://{proxy_auth}',
-                        'https': f'https://{proxy_auth}'
-                    }
-                else:
-                    proxy_settings = {
-                        'http': f'http://{host}:{port}',
-                        'https': f'https://{host}:{port}'
-                    }
-            
-            # Try to create a real data collector with proxy settings if available
-            collector = BinanceDataCollector(proxy=proxy_settings)
+            # Kết nối trực tiếp không dùng proxy
+            logger.info("Connecting directly without proxy")
+            collector = BinanceDataCollector(proxy=None)
             
             # Check if connection was successful
             if collector.connection_status["connected"]:
