@@ -185,12 +185,7 @@ if 'initialized' not in st.session_state:
         "use_real_api": config.USE_REAL_API,
         "update_interval": config.UPDATE_INTERVAL,
         "auto_training": config.CONTINUOUS_TRAINING,
-        "lookback_periods": config.LOOKBACK_PERIODS,
-        "use_proxy": config.USE_PROXY,
-        "proxy_host": "",
-        "proxy_port": "",
-        "proxy_username": "",
-        "proxy_password": ""
+        "lookback_periods": config.LOOKBACK_PERIODS
     }
 
 # Hàm lưu trạng thái giao dịch vào tập tin
@@ -2733,12 +2728,7 @@ elif st.session_state.selected_tab == "Cài đặt":
                                 "use_real_api": config.USE_REAL_API,
                                 "update_interval": config.UPDATE_INTERVAL,
                                 "auto_training": config.CONTINUOUS_TRAINING,
-                                "lookback_periods": config.LOOKBACK_PERIODS,
-                                "use_proxy": False,  # Đặt proxy về False để tránh lỗi kết nối
-                                "proxy_host": "",
-                                "proxy_port": "",
-                                "proxy_username": "",
-                                "proxy_password": ""
+                                "lookback_periods": config.LOOKBACK_PERIODS
                             }
                             
                         # Xóa dữ liệu đã lưu trong continuous_trainer

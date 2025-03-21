@@ -885,12 +885,8 @@ def create_data_collector():
                 logger.warning(f"Could not connect to Binance API: {error_msg}")
                 
                 if "Geographic restriction" in collector.connection_status.get("error", ""):
-                    logger.error("Geographic restriction detected. Consider using a VPN or a different proxy.")
-                    raise Exception("Hạn chế địa lý phát hiện. Vui lòng thử với proxy hoặc VPN khác.")
-                
-                if "ProxyError" in error_msg or "proxy" in error_msg.lower():
-                    logger.error("Proxy connection failed. Try with a different proxy or direct connection.")
-                    raise Exception("Kết nối proxy thất bại. Vui lòng thử với proxy khác hoặc kết nối trực tiếp.")
+                    logger.error("Geographic restriction detected. This will work when deployed on your server.")
+                    raise Exception("Hạn chế địa lý phát hiện. Hệ thống sẽ hoạt động bình thường khi triển khai trên server riêng của bạn.")
                 
                 # Không dùng mock data nữa, yêu cầu API keys
                 logger.error("Không thể kết nối đến Binance API. Vui lòng kiểm tra API keys và kết nối internet.")
