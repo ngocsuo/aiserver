@@ -134,6 +134,28 @@ if 'initialized' not in st.session_state:
     st.session_state.chart_auto_refresh = True
     st.session_state.auto_initialize_triggered = False
     st.session_state.pending_toast = None # Cho phép hiển thị toast từ thread riêng
+    
+    # Khởi tạo thiết lập dự đoán và lưu vào session state
+    st.session_state.prediction_settings = {
+        "timeframe": config.DEFAULT_TIMEFRAME,
+        "horizon": config.DEFAULT_PREDICTION_HORIZON
+    }
+    
+    # Khởi tạo thiết lập huấn luyện và lưu vào session state
+    st.session_state.training_settings = {
+        "historical_start_date": config.HISTORICAL_START_DATE,
+        "training_interval": config.TRAINING_SCHEDULE["interval_minutes"],
+        "validation_split": config.VALIDATION_SPLIT,
+        "test_split": config.TEST_SPLIT
+    }
+    
+    # Khởi tạo thiết lập hệ thống và lưu vào session state
+    st.session_state.system_settings = {
+        "use_real_api": config.USE_REAL_API,
+        "update_interval": config.UPDATE_INTERVAL,
+        "auto_training": config.CONTINUOUS_TRAINING,
+        "lookback_periods": config.LOOKBACK_PERIODS
+    }
 
 # Kiểm tra và hiển thị toast từ thread riêng
 if hasattr(st.session_state, 'pending_toast') and st.session_state.pending_toast is not None:
@@ -2166,6 +2188,21 @@ elif st.session_state.selected_tab == "Cài đặt":
                     help="Thời gian dự đoán trong tương lai"
                 )
             
+            # Khởi tạo giá trị từ session state (nếu đã có)
+            if "prediction_settings" in st.session_state:
+                settings = st.session_state.prediction_settings
+                # Cập nhật giá trị hiện tại của selectbox để đồng bộ với session state
+                if selected_timeframe != settings["timeframe"]:
+                    selected_timeframe = settings["timeframe"]
+                
+                # Cần điều chỉnh horizon tương ứng với timeframe
+                if selected_timeframe == "1m":
+                    if settings["horizon"] in prediction_horizons:
+                        selected_horizon = settings["horizon"]
+                else:  # 5m
+                    if settings["horizon"] in prediction_horizons:
+                        selected_horizon = settings["horizon"]
+            
             # Áp dụng thiết lập mới
             col1, col2 = st.columns(2)
             with col1:
@@ -2181,13 +2218,6 @@ elif st.session_state.selected_tab == "Cài đặt":
             if "prediction_settings" in st.session_state:
                 settings = st.session_state.prediction_settings
                 st.info(f"Thiết lập hiện tại: Khung thời gian {settings['timeframe']}, dự đoán cho {settings['horizon']}")
-            else:
-                # Thiết lập mặc định
-                st.session_state.prediction_settings = {
-                    "timeframe": config.DEFAULT_TIMEFRAME,
-                    "horizon": config.DEFAULT_PREDICTION_HORIZON
-                }
-                st.info(f"Thiết lập mặc định: Khung thời gian {config.DEFAULT_TIMEFRAME}, dự đoán cho {config.DEFAULT_PREDICTION_HORIZON}")
         
         with settings_tab2:
             st.subheader("🧠 Cài đặt huấn luyện")
