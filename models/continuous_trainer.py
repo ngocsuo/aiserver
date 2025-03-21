@@ -58,10 +58,18 @@ class ContinuousTrainer:
         Returns:
             list: List of (start_date, end_date) tuples for monthly chunks
         """
-        if not hasattr(config, 'HISTORICAL_START_DATE') or not config.HISTORICAL_START_DATE:
+        if hasattr(config, 'DEFAULT_TRAINING_START_DATE') and config.DEFAULT_TRAINING_START_DATE:
+            # Sử dụng dữ liệu 12 tháng gần nhất cho huấn luyện
+            start = datetime.strptime(config.DEFAULT_TRAINING_START_DATE, "%Y-%m-%d")
+            logger.info(f"Using 12-month data for training: starting from {config.DEFAULT_TRAINING_START_DATE}")
+            self._add_log(f"🔍 Sử dụng dữ liệu 12 tháng gần nhất cho huấn luyện (từ {config.DEFAULT_TRAINING_START_DATE})")
+        elif hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+            # Sử dụng ngày bắt đầu lịch sử cũ nếu không có cài đặt mới
+            start = datetime.strptime(config.HISTORICAL_START_DATE, "%Y-%m-%d")
+            logger.info(f"Using historical data from {config.HISTORICAL_START_DATE}")
+        else:
             return []
             
-        start = datetime.strptime(config.HISTORICAL_START_DATE, "%Y-%m-%d")
         end = datetime.now()
         
         chunks = []

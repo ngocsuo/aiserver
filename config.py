@@ -22,7 +22,22 @@ TIMEFRAMES = {
 
 # Data Collection Configuration
 LOOKBACK_PERIODS = 5000  # Number of candles to collect initially
-HISTORICAL_START_DATE = "2022-01-01"  # Start date for historical data training
+
+# Cấu hình thời gian dữ liệu
+DATA_RANGE_OPTIONS = {
+    "realtime": 30,         # 30 ngày dữ liệu cho biểu đồ thời gian thực
+    "training": 365,        # 12 tháng (365 ngày) dữ liệu cho huấn luyện mặc định
+    "max_history": 1200     # Tối đa khoảng 3-4 năm dữ liệu
+}
+
+# Tính ngày bắt đầu dữ liệu huấn luyện (12 tháng gần nhất)
+from datetime import datetime, timedelta
+today = datetime.now()
+DEFAULT_TRAINING_START_DATE = (today - timedelta(days=DATA_RANGE_OPTIONS["training"])).strftime("%Y-%m-%d")
+
+# Sử dụng dữ liệu 12 tháng gần nhất thay vì từ 2022
+HISTORICAL_START_DATE = DEFAULT_TRAINING_START_DATE  # Start date for historical data training
+
 ENABLE_BACKTESTING = True  # Enable backtesting functionality
 BACKTEST_PERIOD_START = "2022-01-01"  # Start date for backtesting
 BACKTEST_PERIOD_END = "2022-12-31"   # End date for backtesting
