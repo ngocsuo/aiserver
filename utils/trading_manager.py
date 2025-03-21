@@ -227,23 +227,17 @@ class TradingManager:
             # Thiết lập chế độ margin nếu cần (xử lý lỗi No need to change margin type)
             if is_isolated:
                 try:
-                    # Kiểm tra loại margin hiện tại trước khi thay đổi
-                    position_info = self.client.futures_position_information(symbol=symbol)
-                    current_margin_type = None
-                    
-                    for position in position_info:
-                        if position['symbol'] == symbol:
-                            current_margin_type = position['marginType']
-                            break
-                    
-                    # Chỉ thay đổi nếu cần thiết
-                    if current_margin_type and current_margin_type != 'isolated':
+                    # Thực hiện việc đổi margin type trong khối try-except
+                    # Sẽ bỏ qua nếu gặp lỗi "No need to change margin type"
+                    try:
                         self.client.futures_change_margin_type(symbol=symbol, marginType='ISOLATED')
                         self.add_log(f"Đã chuyển sang chế độ margin cô lập cho {symbol}")
-                except BinanceAPIException as e:
-                    # Bỏ qua lỗi No need to change margin type
-                    if "No need to change margin type" not in str(e):
-                        self.add_log(f"Lỗi khi thiết lập chế độ margin: {e}", "warning")
+                    except BinanceAPIException as e:
+                        # Bỏ qua lỗi No need to change margin type
+                        if "No need to change margin type" not in str(e):
+                            self.add_log(f"Lỗi khi thiết lập chế độ margin: {e}", "warning")
+                except Exception as e:
+                    self.add_log(f"Lỗi khi thiết lập chế độ margin: {str(e)}", "warning")
             
             # Tạo lệnh
             order = self.client.futures_create_order(
