@@ -113,6 +113,267 @@ class TechnicalIndicators:
                 obv.iloc[i] = obv.iloc[i-1]
                 
         return obv
+    
+    @staticmethod
+    def SUPERTREND(high, low, close, period=14, multiplier=3.0):
+        """
+        SuperTrend indicator
+        
+        Args:
+            high (pd.Series): High prices
+            low (pd.Series): Low prices
+            close (pd.Series): Close prices
+            period (int): ATR period
+            multiplier (float): ATR multiplier
+        
+        Returns:
+            pd.Series: SuperTrend line
+            pd.Series: SuperTrend direction (1 for bullish, -1 for bearish)
+        """
+        # Calculate ATR
+        atr = TechnicalIndicators.ATR(high, low, close, timeperiod=period)
+        
+        # Calculate Basic Upper and Lower Bands
+        hl2 = (high + low) / 2
+        
+        # Initialize Supertrend columns
+        supertrend = pd.Series(0.0, index=close.index)
+        final_upperband = pd.Series(0.0, index=close.index)
+        final_lowerband = pd.Series(0.0, index=close.index)
+        supertrend_direction = pd.Series(1, index=close.index)
+        
+        # Initialize first values
+        for i in range(period, len(close)):
+            final_upperband.iloc[i] = hl2.iloc[i] + (multiplier * atr.iloc[i])
+            final_lowerband.iloc[i] = hl2.iloc[i] - (multiplier * atr.iloc[i])
+            
+            # Check for supertrend direction and value
+            if close.iloc[i] <= final_upperband.iloc[i]:
+                supertrend_direction.iloc[i] = -1
+            else:
+                supertrend_direction.iloc[i] = 1
+                
+            if supertrend_direction.iloc[i] == 1:
+                supertrend.iloc[i] = final_lowerband.iloc[i]
+            else:
+                supertrend.iloc[i] = final_upperband.iloc[i]
+                
+        return supertrend, supertrend_direction
+    
+    @staticmethod
+    def ICHIMOKU(high, low, close, tenkan_period=9, kijun_period=26, senkou_b_period=52, displacement=26):
+        """
+        Ichimoku Cloud indicator
+        
+        Args:
+            high (pd.Series): High prices
+            low (pd.Series): Low prices
+            close (pd.Series): Close prices
+            tenkan_period (int): Tenkan-sen (Conversion Line) period
+            kijun_period (int): Kijun-sen (Base Line) period
+            senkou_b_period (int): Senkou Span B period
+            displacement (int): Displacement for Senkou Span
+            
+        Returns:
+            dict: Ichimoku cloud components
+        """
+        # Calculate Tenkan-sen (Conversion Line): (highest high + lowest low)/2 for the past tenkan_period
+        tenkan_sen = pd.Series((high.rolling(window=tenkan_period).max() + 
+                             low.rolling(window=tenkan_period).min()) / 2, index=close.index)
+        
+        # Calculate Kijun-sen (Base Line): (highest high + lowest low)/2 for the past kijun_period
+        kijun_sen = pd.Series((high.rolling(window=kijun_period).max() + 
+                            low.rolling(window=kijun_period).min()) / 2, index=close.index)
+        
+        # Calculate Senkou Span A (Leading Span A): (Conversion Line + Base Line)/2 (displaced forward by displacement)
+        senkou_span_a = pd.Series((tenkan_sen + kijun_sen) / 2, index=close.index).shift(displacement)
+        
+        # Calculate Senkou Span B (Leading Span B): (highest high + lowest low)/2 for the past senkou_b_period (displaced forward)
+        senkou_span_b = pd.Series((high.rolling(window=senkou_b_period).max() + 
+                                low.rolling(window=senkou_b_period).min()) / 2, 
+                               index=close.index).shift(displacement)
+        
+        # Calculate Chikou Span (Lagging Span): Current closing price (displaced backwards by displacement)
+        chikou_span = pd.Series(close, index=close.index).shift(-displacement)
+        
+        return {
+            'tenkan_sen': tenkan_sen,
+            'kijun_sen': kijun_sen,
+            'senkou_span_a': senkou_span_a,
+            'senkou_span_b': senkou_span_b,
+            'chikou_span': chikou_span
+        }
+    
+    @staticmethod
+    def ADX(high, low, close, timeperiod=14):
+        """
+        Average Directional Index (ADX)
+        
+        Args:
+            high (pd.Series): High prices
+            low (pd.Series): Low prices
+            close (pd.Series): Close prices
+            timeperiod (int): Period for calculations
+            
+        Returns:
+            tuple: (ADX, +DI, -DI)
+        """
+        # Get ATR first
+        atr = TechnicalIndicators.ATR(high, low, close, timeperiod=timeperiod)
+        
+        # Calculate +DM and -DM
+        high_diff = high.diff()
+        low_diff = low.diff().abs()
+        
+        # +DM
+        plus_dm = high_diff.where((high_diff > low_diff) & (high_diff > 0), 0)
+        
+        # -DM
+        minus_dm = low_diff.where((low_diff > high_diff) & (low_diff > 0), 0)
+        
+        # Calculate +DI and -DI
+        plus_di = 100 * (plus_dm.rolling(window=timeperiod).sum() / atr.rolling(window=timeperiod).sum())
+        minus_di = 100 * (minus_dm.rolling(window=timeperiod).sum() / atr.rolling(window=timeperiod).sum())
+        
+        # Calculate DX
+        dx = 100 * ((plus_di - minus_di).abs() / (plus_di + minus_di).abs())
+        
+        # Calculate ADX
+        adx = dx.rolling(window=timeperiod).mean()
+        
+        return adx, plus_di, minus_di
+    
+    @staticmethod
+    def PIVOT_POINTS(high, low, close, method='standard'):
+        """
+        Calculate Pivot Points
+        
+        Args:
+            high (pd.Series): High prices
+            low (pd.Series): Low prices
+            close (pd.Series): Close prices
+            method (str): Pivot point calculation method ('standard', 'fibonacci', 'woodie', 'camarilla')
+            
+        Returns:
+            dict: Pivot point levels (P, S1, S2, S3, R1, R2, R3)
+        """
+        result = {}
+        
+        # Standard calculation uses previous day's high, low, and close
+        prev_high = high.shift(1)
+        prev_low = low.shift(1)
+        prev_close = close.shift(1)
+        
+        # Default initialization to avoid "possibly unbound" errors
+        p = pd.Series(0.0, index=close.index)
+        r1 = pd.Series(0.0, index=close.index)
+        s1 = pd.Series(0.0, index=close.index)
+        r2 = pd.Series(0.0, index=close.index)
+        s2 = pd.Series(0.0, index=close.index)
+        r3 = pd.Series(0.0, index=close.index)
+        s3 = pd.Series(0.0, index=close.index)
+        
+        if method == 'standard':
+            p = (prev_high + prev_low + prev_close) / 3
+            r1 = (2 * p) - prev_low
+            s1 = (2 * p) - prev_high
+            r2 = p + (prev_high - prev_low)
+            s2 = p - (prev_high - prev_low)
+            r3 = p + 2 * (prev_high - prev_low)
+            s3 = p - 2 * (prev_high - prev_low)
+            
+        elif method == 'fibonacci':
+            p = (prev_high + prev_low + prev_close) / 3
+            r1 = p + 0.382 * (prev_high - prev_low)
+            s1 = p - 0.382 * (prev_high - prev_low)
+            r2 = p + 0.618 * (prev_high - prev_low)
+            s2 = p - 0.618 * (prev_high - prev_low)
+            r3 = p + 1.0 * (prev_high - prev_low)
+            s3 = p - 1.0 * (prev_high - prev_low)
+            
+        elif method == 'woodie':
+            p = (prev_high + prev_low + 2 * close) / 4  # Uses current close
+            r1 = (2 * p) - prev_low
+            s1 = (2 * p) - prev_high
+            r2 = p + (prev_high - prev_low)
+            s2 = p - (prev_high - prev_low)
+            r3 = r1 + (prev_high - prev_low)
+            s3 = s1 - (prev_high - prev_low)
+            
+        elif method == 'camarilla':
+            p = (prev_high + prev_low + prev_close) / 3
+            r1 = prev_close + (prev_high - prev_low) * 1.1 / 12
+            s1 = prev_close - (prev_high - prev_low) * 1.1 / 12
+            r2 = prev_close + (prev_high - prev_low) * 1.1 / 6
+            s2 = prev_close - (prev_high - prev_low) * 1.1 / 6
+            r3 = prev_close + (prev_high - prev_low) * 1.1 / 4
+            s3 = prev_close - (prev_high - prev_low) * 1.1 / 4
+        
+        result['pivot'] = p
+        result['r1'] = r1
+        result['s1'] = s1
+        result['r2'] = r2
+        result['s2'] = s2
+        result['r3'] = r3
+        result['s3'] = s3
+        
+        return result
+    
+    @staticmethod
+    def VOLUME_PROFILE(high, low, close, volume, divisions=10):
+        """
+        Calculate Volume Profile (simplified version)
+        
+        Args:
+            high (pd.Series): High prices
+            low (pd.Series): Low prices
+            close (pd.Series): Close prices
+            volume (pd.Series): Volume data
+            divisions (int): Number of price divisions
+            
+        Returns:
+            pd.DataFrame: Volume profile data
+        """
+        # Find price range
+        price_range = high.max() - low.min()
+        division_size = price_range / divisions
+        
+        # Create price levels
+        price_levels = [low.min() + (i * division_size) for i in range(divisions+1)]
+        
+        # Initialize volume at each price level
+        volume_at_price = {level: 0 for level in price_levels[:-1]}
+        
+        # Assign volume to price levels
+        for i in range(len(close)):
+            for level_idx in range(len(price_levels)-1):
+                lower = price_levels[level_idx]
+                upper = price_levels[level_idx+1]
+                
+                # If price traded within this level
+                if low.iloc[i] <= upper and high.iloc[i] >= lower:
+                    # Roughly estimate the portion of volume at this price level
+                    # This is a simplification - in reality would need more precise calculation
+                    overlap = min(high.iloc[i], upper) - max(low.iloc[i], lower)
+                    price_range_candle = high.iloc[i] - low.iloc[i]
+                    
+                    if price_range_candle > 0:
+                        volume_portion = overlap / price_range_candle
+                    else:
+                        volume_portion = 1 if close.iloc[i] >= lower and close.iloc[i] < upper else 0
+                        
+                    volume_at_price[lower] += volume.iloc[i] * volume_portion
+        
+        # Convert to DataFrame
+        volume_profile = pd.DataFrame({
+            'price_level': list(volume_at_price.keys()),
+            'volume': list(volume_at_price.values())
+        })
+        
+        # Find POC (Point of Control) - level with highest volume
+        poc_level = volume_profile.loc[volume_profile['volume'].idxmax(), 'price_level']
+        
+        return volume_profile, poc_level
 
 class FeatureEngineer:
     def __init__(self):
@@ -280,6 +541,152 @@ class FeatureEngineer:
             
             # OBV (On Balance Volume)
             df_indicators['obv'] = ti.OBV(df_indicators['close'], df_indicators['volume'])
+            
+            # --- Begin Advanced Technical Indicators ---
+            
+            # SuperTrend
+            if 'supertrend' in config.TECHNICAL_INDICATORS:
+                st_config = config.TECHNICAL_INDICATORS['supertrend']
+                supertrend, direction = ti.SUPERTREND(
+                    df_indicators['high'],
+                    df_indicators['low'],
+                    df_indicators['close'],
+                    period=st_config['period'],
+                    multiplier=st_config['multiplier']
+                )
+                df_indicators['supertrend'] = supertrend
+                df_indicators['supertrend_direction'] = direction
+                # Calculate if price is above or below supertrend
+                df_indicators['supertrend_position'] = (df_indicators['close'] > df_indicators['supertrend']).astype(int)
+            
+            # Ichimoku Cloud
+            if 'ichimoku' in config.TECHNICAL_INDICATORS:
+                ichi_config = config.TECHNICAL_INDICATORS['ichimoku']
+                ichimoku = ti.ICHIMOKU(
+                    df_indicators['high'],
+                    df_indicators['low'],
+                    df_indicators['close'],
+                    tenkan_period=ichi_config['tenkan_period'],
+                    kijun_period=ichi_config['kijun_period'],
+                    senkou_b_period=ichi_config['senkou_b_period'],
+                    displacement=ichi_config['displacement']
+                )
+                
+                df_indicators['ichimoku_tenkan'] = ichimoku['tenkan_sen']
+                df_indicators['ichimoku_kijun'] = ichimoku['kijun_sen']
+                df_indicators['ichimoku_senkou_a'] = ichimoku['senkou_span_a']
+                df_indicators['ichimoku_senkou_b'] = ichimoku['senkou_span_b']
+                df_indicators['ichimoku_chikou'] = ichimoku['chikou_span']
+                
+                # Calculate cloud strength
+                df_indicators['ichimoku_cloud_strength'] = ichimoku['senkou_span_a'] - ichimoku['senkou_span_b']
+                
+                # Tenkan/Kijun Cross
+                df_indicators['ichimoku_tk_cross'] = np.sign(
+                    ichimoku['tenkan_sen'] - ichimoku['kijun_sen']
+                ).diff().fillna(0)
+                
+                # Price relative to cloud
+                df_indicators['ichimoku_cloud_position'] = np.where(
+                    df_indicators['close'] > df_indicators['ichimoku_senkou_a'],
+                    np.where(
+                        df_indicators['close'] > df_indicators['ichimoku_senkou_b'],
+                        2,  # Above both spans (strong bullish)
+                        1   # Between spans
+                    ),
+                    np.where(
+                        df_indicators['close'] < df_indicators['ichimoku_senkou_b'],
+                        -2, # Below both spans (strong bearish)
+                        -1  # Between spans
+                    )
+                )
+            
+            # ADX (Average Directional Index)
+            if 'adx' in config.TECHNICAL_INDICATORS:
+                adx_window = config.TECHNICAL_INDICATORS['adx']['window']
+                adx, plus_di, minus_di = ti.ADX(
+                    df_indicators['high'],
+                    df_indicators['low'],
+                    df_indicators['close'],
+                    timeperiod=adx_window
+                )
+                df_indicators['adx'] = adx
+                df_indicators['plus_di'] = plus_di
+                df_indicators['minus_di'] = minus_di
+                
+                # Trend strength indicator (ADX above 25 is considered strong trend)
+                df_indicators['trend_strength'] = (adx > 25).astype(int)
+                
+                # Trend direction indicator
+                df_indicators['adx_trend_direction'] = np.sign(plus_di - minus_di)
+                
+                # DI Crossovers
+                df_indicators['di_cross'] = np.sign(plus_di - minus_di).diff().fillna(0)
+            
+            # Pivot Points
+            if 'pivot_points' in config.TECHNICAL_INDICATORS:
+                pp_config = config.TECHNICAL_INDICATORS['pivot_points']
+                
+                # Check if we have enough data for daily pivots
+                if len(df_indicators) >= 2:  # Need at least previous day's data
+                    pivot_points = ti.PIVOT_POINTS(
+                        df_indicators['high'],
+                        df_indicators['low'],
+                        df_indicators['close'],
+                        method=pp_config['method']
+                    )
+                    
+                    # Add pivot points to dataframe
+                    df_indicators['pivot'] = pivot_points['pivot']
+                    df_indicators['pivot_r1'] = pivot_points['r1']
+                    df_indicators['pivot_s1'] = pivot_points['s1']
+                    df_indicators['pivot_r2'] = pivot_points['r2']
+                    df_indicators['pivot_s2'] = pivot_points['s2']
+                    df_indicators['pivot_r3'] = pivot_points['r3']
+                    df_indicators['pivot_s3'] = pivot_points['s3']
+                    
+                    # Calculate distance from current price to nearest pivot level
+                    pivot_levels = [
+                        df_indicators['pivot'],
+                        df_indicators['pivot_r1'],
+                        df_indicators['pivot_s1'],
+                        df_indicators['pivot_r2'],
+                        df_indicators['pivot_s2'],
+                        df_indicators['pivot_r3'],
+                        df_indicators['pivot_s3']
+                    ]
+                    
+                    # Find closest pivot level
+                    closest_distance = float('inf')
+                    for level in pivot_levels:
+                        distance = abs(df_indicators['close'] - level)
+                        closest_distance = np.minimum(closest_distance, distance)
+                    
+                    df_indicators['pivot_distance'] = closest_distance / df_indicators['close']  # Normalized distance
+            
+            # Volume Profile - This is computationally expensive, so only calculate for a reasonable subset
+            if 'volume_profile' in config.TECHNICAL_INDICATORS and len(df_indicators) <= 1000:
+                vp_config = config.TECHNICAL_INDICATORS['volume_profile']
+                
+                try:
+                    # Calculate Volume Profile for the entire dataset
+                    volume_profile, poc_level = ti.VOLUME_PROFILE(
+                        df_indicators['high'],
+                        df_indicators['low'],
+                        df_indicators['close'],
+                        df_indicators['volume'],
+                        divisions=vp_config['divisions']
+                    )
+                    
+                    # Add Point of Control to dataframe
+                    df_indicators['volume_poc'] = poc_level
+                    
+                    # Calculate price distance from POC
+                    df_indicators['poc_distance'] = (df_indicators['close'] - poc_level) / df_indicators['close']
+                except Exception as e:
+                    logger.warning(f"Error calculating Volume Profile: {e}")
+            
+            # --- End Advanced Technical Indicators ---
             
             # Drop rows with NaN values created by technical indicators
             df_indicators.dropna(inplace=True)

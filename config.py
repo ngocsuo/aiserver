@@ -78,7 +78,18 @@ TECHNICAL_INDICATORS = {
     "macd": {"fast": 12, "slow": 26, "signal": 9},
     "bbands": {"window": 20, "std_dev": 2},
     "atr": {"window": 14},
-    "vwap": {"window": 14}
+    "vwap": {"window": 14},
+    # Advanced indicators added
+    "supertrend": {"period": 10, "multiplier": 3.0},
+    "ichimoku": {
+        "tenkan_period": 9, 
+        "kijun_period": 26, 
+        "senkou_b_period": 52, 
+        "displacement": 26
+    },
+    "adx": {"window": 14},
+    "pivot_points": {"method": "fibonacci"},
+    "volume_profile": {"divisions": 10}
 }
 
 # Data Labeling Configuration
