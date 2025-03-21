@@ -1126,7 +1126,11 @@ def display_system_status(data_status, thread_status, prediction_count):
             
             # Show last training time if available
             if training_status['last_training_time']:
-                st.write(f"Last trained: {training_status['last_training_time'].strftime('%Y-%m-%d %H:%M')}")
+                # Kiểm tra nếu last_training_time là đối tượng datetime hoặc string
+                if isinstance(training_status['last_training_time'], datetime):
+                    st.write(f"Last trained: {training_status['last_training_time'].strftime('%Y-%m-%d %H:%M')}")
+                else:
+                    st.write(f"Last trained: {training_status['last_training_time']}")
         
         # Auto-Update Thread Status
         st.write("**Auto-Update Thread**")
