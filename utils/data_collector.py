@@ -436,13 +436,13 @@ class BinanceDataCollector:
                     proxy_auth = f"{username}:{password}@{host}:{port}"
                     proxy_settings = {
                         'http': f'http://{proxy_auth}',
-                        'https': f'http://{proxy_auth}'  # Sử dụng http cho cả https để tránh lỗi SSL
+                        'https': f'https://{proxy_auth}'
                     }
                     logger.info(f"Attempting connection via authenticated proxy ({host}:{port})")
                 else:
                     proxy_settings = {
                         'http': f'http://{host}:{port}',
-                        'https': f'http://{host}:{port}'  # Sử dụng http cho cả https để tránh lỗi SSL
+                        'https': f'https://{host}:{port}'
                     }
                     logger.info(f"Attempting connection via proxy ({host}:{port})")
             
