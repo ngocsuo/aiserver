@@ -429,6 +429,130 @@ class DecisionSupport:
             market_filter (MarketFilter): Bộ lọc thị trường
         """
         self.market_filter = market_filter
+        self.default_risk_percent = 2.0  # Mặc định rủi ro 2% vốn cho mỗi giao dịch
+        self.default_leverage = 1.0  # Đòn bẩy mặc định
+        self.min_risk_reward_ratio = 1.5  # Tỷ lệ R/R tối thiểu để giao dịch có giá trị
+        self.data_collector = None  # Bộ sưu tập dữ liệu để lấy khung thời gian khác khi cần
+        
+    def set_data_collector(self, data_collector):
+        """
+        Thiết lập bộ sưu tập dữ liệu để phân tích đa khung thời gian
+        
+        Args:
+            data_collector: Data collector instance
+        """
+        self.data_collector = data_collector
+        
+    def analyze_higher_timeframe(self, symbol=config.SYMBOL, primary_tf="5m", higher_tf="1h"):
+        """
+        Phân tích xu hướng ở khung thời gian cao hơn để xác nhận tín hiệu
+        
+        Args:
+            symbol (str): Symbol giao dịch
+            primary_tf (str): Khung thời gian chính
+            higher_tf (str): Khung thời gian cao hơn để phân tích
+            
+        Returns:
+            dict: Kết quả phân tích ở khung thời gian cao hơn
+        """
+        if not self.data_collector:
+            return {"error": "Không có data collector để lấy dữ liệu khung thời gian cao hơn"}
+        
+        try:
+            # Lấy dữ liệu ở khung thời gian cao hơn
+            higher_data = self.data_collector.collect_historical_data(
+                symbol=symbol,
+                timeframe=higher_tf,
+                limit=100  # Đủ để phân tích xu hướng
+            )
+            
+            # Tính các chỉ báo xu hướng
+            higher_data['ma20'] = higher_data['close'].rolling(window=20).mean()
+            higher_data['ma50'] = higher_data['close'].rolling(window=50).mean()
+            higher_data['ma200'] = higher_data['close'].rolling(window=200).mean()
+            
+            # Tính RSI
+            delta = higher_data['close'].diff()
+            gain = delta.where(delta > 0, 0)
+            loss = -delta.where(delta < 0, 0)
+            avg_gain = gain.rolling(window=14).mean()
+            avg_loss = loss.rolling(window=14).mean()
+            rs = avg_gain / avg_loss
+            higher_data['rsi'] = 100 - (100 / (1 + rs))
+            
+            # Lấy dữ liệu gần nhất
+            latest = higher_data.iloc[-1]
+            
+            # Xác định xu hướng
+            price_above_ma20 = latest['close'] > latest['ma20']
+            price_above_ma50 = latest['close'] > latest['ma50']
+            price_above_ma200 = latest['close'] > latest['ma200']
+            ma20_above_ma50 = latest['ma20'] > latest['ma50']
+            
+            # Đánh giá xu hướng
+            if price_above_ma20 and price_above_ma50 and price_above_ma200 and ma20_above_ma50:
+                trend = "STRONG_BULLISH"
+            elif price_above_ma20 and price_above_ma50 and ma20_above_ma50:
+                trend = "BULLISH"
+            elif not price_above_ma20 and not price_above_ma50 and not price_above_ma200 and not ma20_above_ma50:
+                trend = "STRONG_BEARISH"
+            elif not price_above_ma20 and not price_above_ma50 and not ma20_above_ma50:
+                trend = "BEARISH"
+            else:
+                trend = "MIXED"
+            
+            # Phân tích RSI
+            rsi = latest['rsi']
+            rsi_signal = "NEUTRAL"
+            if rsi > 70:
+                rsi_signal = "OVERBOUGHT"
+            elif rsi < 30:
+                rsi_signal = "OVERSOLD"
+            
+            return {
+                "timeframe": higher_tf,
+                "trend": trend,
+                "rsi": round(rsi, 1),
+                "rsi_signal": rsi_signal,
+                "price_vs_ma20": price_above_ma20,
+                "price_vs_ma50": price_above_ma50,
+                "price_vs_ma200": price_above_ma200,
+            }
+        
+        except Exception as e:
+            logger.error(f"Lỗi khi phân tích khung thời gian cao hơn: {e}")
+            return {"error": f"Lỗi phân tích: {str(e)}"}
+    
+    def calculate_fibonacci_levels(self, high, low, trend="UP"):
+        """
+        Tính toán các mức Fibonacci Retracement/Extension
+        
+        Args:
+            high (float): Mức giá cao
+            low (float): Mức giá thấp
+            trend (str): Xu hướng ("UP" hoặc "DOWN")
+            
+        Returns:
+            dict: Các mức Fibonacci
+        """
+        # Fibonacci Retracement levels
+        diff = high - low
+        fib_levels = {
+            "0.0": low if trend == "UP" else high,
+            "0.236": low + 0.236 * diff if trend == "UP" else high - 0.236 * diff,
+            "0.382": low + 0.382 * diff if trend == "UP" else high - 0.382 * diff,
+            "0.5": low + 0.5 * diff if trend == "UP" else high - 0.5 * diff,
+            "0.618": low + 0.618 * diff if trend == "UP" else high - 0.618 * diff,
+            "0.786": low + 0.786 * diff if trend == "UP" else high - 0.786 * diff,
+            "1.0": high if trend == "UP" else low,
+            # Fibonacci Extension levels
+            "1.272": high + 0.272 * diff if trend == "UP" else low - 0.272 * diff,
+            "1.618": high + 0.618 * diff if trend == "UP" else low - 0.618 * diff,
+            "2.0": high + diff if trend == "UP" else low - diff,
+            "2.618": high + 1.618 * diff if trend == "UP" else low - 1.618 * diff
+        }
+        
+        return {level: round(value, 2) for level, value in fib_levels.items()}
     
     def analyze_trade_setup(self, prediction, data):
         """
