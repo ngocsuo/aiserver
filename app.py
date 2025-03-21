@@ -1360,11 +1360,26 @@ def display_system_status(data_status, thread_status, prediction_count):
     if 'continuous_trainer' in st.session_state and st.session_state.continuous_trainer is not None:
         training_status = st.session_state.continuous_trainer.get_training_status()
         
+        # Ghi log để kiểm tra
+        st.write(f"Trạng thái training: {training_status}")
+        
         # Cập nhật trực tiếp trạng thái vào session_state
-        if 'last_training_time' in training_status and training_status['last_training_time']:
+        if 'models_trained' in training_status and training_status['models_trained']:
             # Cập nhật trực tiếp các biến trạng thái
             st.session_state.model_trained = True
             st.session_state.historical_data_ready = True
+            
+            # Hiển thị thông tin
+            st.success("Đã tải dữ liệu lịch sử và huấn luyện mô hình thành công!")
+        elif 'last_training_time' in training_status and training_status['last_training_time']:
+            # Cập nhật trực tiếp các biến trạng thái
+            st.session_state.model_trained = True
+            st.session_state.historical_data_ready = True
+            
+            # Hiển thị thông tin
+            st.success("Đã tải dữ liệu lịch sử và huấn luyện mô hình thành công!") 
+        else:
+            st.warning("Chưa tải dữ liệu lịch sử hoặc huấn luyện mô hình.")
     
     # Display in columns
     col1, col2, col3 = st.columns(3)
