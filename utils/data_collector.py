@@ -222,7 +222,30 @@ class MockDataCollector:
             for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
                 # If we don't have data yet, collect historical data
                 if self.data[tf] is None:
-                    self.data[tf] = self.collect_historical_data(symbol=symbol, timeframe=tf)
+                    # Check if we should use historical data from a historical date
+                    if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+                        # Calculate number of candles needed from start date to now
+                        start_date = datetime.strptime(config.HISTORICAL_START_DATE, "%Y-%m-%d")
+                        days_diff = (datetime.now() - start_date).days
+                        
+                        # Calculate candles based on timeframe
+                        if tf == "5m":
+                            # 288 candles per day for 5m
+                            num_candles = days_diff * 288
+                        elif tf == "30m":
+                            # 48 candles per day for 30m
+                            num_candles = days_diff * 48
+                        elif tf == "4h":
+                            # 6 candles per day for 4h
+                            num_candles = days_diff * 6
+                        else:
+                            # Default to lookback periods
+                            num_candles = config.LOOKBACK_PERIODS
+                            
+                        logger.info(f"Generating mock data for {symbol} {tf} from {config.HISTORICAL_START_DATE} ({num_candles} candles)")
+                        self.data[tf] = self.generate_historical_data(timeframe=tf, num_candles=num_candles)
+                    else:
+                        self.data[tf] = self.collect_historical_data(symbol=symbol, timeframe=tf)
                 else:
                     # We have existing data, just update with recent candles
                     # Generate 1 new candle
@@ -491,7 +514,7 @@ class BinanceDataCollector:
         return df
             
     def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.TIMEFRAMES["primary"], 
-                              limit=config.LOOKBACK_PERIODS):
+                              limit=config.LOOKBACK_PERIODS, start_date=None):
         """
         Collect historical OHLCV data from Binance.
         
@@ -499,19 +522,35 @@ class BinanceDataCollector:
             symbol (str): Trading pair symbol
             timeframe (str): Candle timeframe
             limit (int): Number of candles to collect
+            start_date (str, optional): Start date for historical data in format "YYYY-MM-DD"
             
         Returns:
             pd.DataFrame: DataFrame with OHLCV data
         """
         try:
-            logger.info(f"Fetching {limit} {timeframe} candles for {symbol} from Binance")
-            
-            # Get klines from Binance
-            klines = self.client.get_historical_klines(
-                symbol=symbol,
-                interval=timeframe,
-                limit=limit
-            )
+            # If start_date is provided, use it instead of limit
+            if start_date is not None:
+                start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000)
+                end_timestamp = int(datetime.now().timestamp() * 1000)
+                
+                logger.info(f"Fetching {timeframe} candles for {symbol} from {start_date} to now")
+                
+                # Get klines from Binance with start_date
+                klines = self.client.get_historical_klines(
+                    symbol=symbol,
+                    interval=timeframe,
+                    start_str=start_timestamp,
+                    end_str=end_timestamp
+                )
+            else:
+                logger.info(f"Fetching {limit} {timeframe} candles for {symbol} from Binance")
+                
+                # Get klines from Binance with limit
+                klines = self.client.get_historical_klines(
+                    symbol=symbol,
+                    interval=timeframe,
+                    limit=limit
+                )
             
             # Convert to DataFrame
             df = self._convert_klines_to_dataframe(klines)
@@ -553,7 +592,16 @@ class BinanceDataCollector:
             for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
                 # If we don't have data yet, collect historical data
                 if self.data[tf] is None:
-                    self.data[tf] = self.collect_historical_data(symbol=symbol, timeframe=tf)
+                    # Check if we should use historical data from the configured start date
+                    if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+                        self.data[tf] = self.collect_historical_data(
+                            symbol=symbol, 
+                            timeframe=tf,
+                            start_date=config.HISTORICAL_START_DATE
+                        )
+                        logger.info(f"Loaded historical data for {symbol} {tf} from {config.HISTORICAL_START_DATE}")
+                    else:
+                        self.data[tf] = self.collect_historical_data(symbol=symbol, timeframe=tf)
                 else:
                     # We have existing data, just update with recent candles
                     # Determine how many candles to fetch based on the last timestamp

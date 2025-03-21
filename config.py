@@ -22,6 +22,10 @@ TIMEFRAMES = {
 
 # Data Collection Configuration
 LOOKBACK_PERIODS = 5000  # Number of candles to collect initially
+HISTORICAL_START_DATE = "2022-01-01"  # Start date for historical data training
+ENABLE_BACKTESTING = True  # Enable backtesting functionality
+BACKTEST_PERIOD_START = "2022-01-01"  # Start date for backtesting
+BACKTEST_PERIOD_END = "2022-12-31"   # End date for backtesting
 UPDATE_INTERVAL = 60  # Seconds between data updates
 
 # Feature Engineering Parameters
