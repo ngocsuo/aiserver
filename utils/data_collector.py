@@ -386,17 +386,13 @@ class BinanceDataCollector:
     """
     A data collector that fetches real OHLCV data from Binance Futures API.
     """
-    def __init__(self, proxy=None):
+    def __init__(self):
         """
         Initialize the Binance data collector.
-        
-        Args:
-            proxy (dict, optional): Dictionary with proxy settings {'http': 'http://...', 'https': 'https://...'}
         """
         # Track last update time
         self.last_update = None
         self.client = None
-        self.proxy = proxy
         self.connection_status = {
             "connected": False,
             "error": None,
@@ -416,17 +412,8 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
                 
-            # Sử dụng cấu hình proxy được truyền vào constructor (nếu có)
-            # hoặc sử dụng thiết lập từ config
-            proxy_settings = None
-            
-            # Không sử dụng proxy trong mọi trường hợp
-            proxy_settings = None
-            logger.info("Using direct connection (proxy disabled)")
-            
-            # Khởi tạo client với hoặc không có proxy
-            # Sử dụng kết nối trực tiếp không dùng proxy
-            logger.info("Using direct connection (proxy disabled)")
+            # Kết nối trực tiếp không sử dụng proxy
+            logger.info("Using direct connection to Binance API")
             self.client = Client(
                 config.BINANCE_API_KEY, 
                 config.BINANCE_API_SECRET,
@@ -871,9 +858,9 @@ def create_data_collector():
     if config.USE_REAL_API and config.BINANCE_API_KEY and config.BINANCE_API_SECRET:
         logger.info("Attempting to use Binance API data collector")
         try:
-            # Kết nối trực tiếp không dùng proxy
-            logger.info("Connecting directly without proxy")
-            collector = BinanceDataCollector(proxy=None)
+            # Kết nối trực tiếp tới Binance API
+            logger.info("Connecting directly to Binance API")
+            collector = BinanceDataCollector()
             
             # Check if connection was successful
             if collector.connection_status["connected"]:

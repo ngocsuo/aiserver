@@ -98,11 +98,10 @@ class TradingManager:
                 self.status = "Lỗi: Thiếu API keys"
                 return False
             
-            # Kết nối trực tiếp không sử dụng proxy
-            proxy_settings = None
-            logger.info("TradingManager kết nối trực tiếp, không sử dụng proxy")
+            # Kết nối trực tiếp tới Binance API
+            logger.info("TradingManager kết nối trực tiếp tới Binance API")
             
-            # Tạo kết nối trực tiếp
+            # Tạo kết nối
             self.client = Client(
                 self.api_key, 
                 self.api_secret,
