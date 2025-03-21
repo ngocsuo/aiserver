@@ -2734,7 +2734,8 @@ elif st.session_state.selected_tab == "Cài đặt":
                             if hasattr(st.session_state, 'historical_data'):
                                 st.session_state.historical_data = None
                                 
-                            if hasattr(st.session_state, 'data_collector'):
+                            if hasattr(st.session_state, 'data_collector') and hasattr(st.session_state.data_collector, 'data'):
+                                # Đảm bảo data collector có thuộc tính data trước khi truy cập
                                 st.session_state.data_collector.data = {tf: None for tf in config.ALL_TIMEFRAMES}
                                 
                             st.success("✅ Đã xóa dữ liệu đã tải thành công!")
@@ -2748,7 +2749,8 @@ elif st.session_state.selected_tab == "Cài đặt":
                             st.session_state.model_trained = False
                             
                             # Xóa dữ liệu huấn luyện và mô hình
-                            if hasattr(st.session_state, 'prediction_engine'):
+                            if hasattr(st.session_state, 'prediction_engine') and hasattr(st.session_state.prediction_engine, 'models'):
+                                # Đảm bảo prediction engine có thuộc tính models trước khi truy cập
                                 st.session_state.prediction_engine.models = {}
                                 
                             if hasattr(st.session_state, 'continuous_trainer'):
@@ -2769,6 +2771,9 @@ elif st.session_state.selected_tab == "Cài đặt":
                 # Nút khởi động lại toàn bộ hệ thống - xóa tất cả dữ liệu và khởi động lại
                 if st.button("🔄 Xóa tất cả dữ liệu và khởi động lại hệ thống", use_container_width=True, type="primary"):
                     try:
+                        # Đặt lại trạng thái proxy về mặc định là False
+                        config.USE_PROXY = False
+                        
                         # Xóa dữ liệu đã tải
                         if hasattr(st.session_state, 'latest_data'):
                             st.session_state.latest_data = None
@@ -2776,14 +2781,30 @@ elif st.session_state.selected_tab == "Cài đặt":
                         if hasattr(st.session_state, 'historical_data'):
                             st.session_state.historical_data = None
                             
-                        if hasattr(st.session_state, 'data_collector'):
+                        if hasattr(st.session_state, 'data_collector') and hasattr(st.session_state.data_collector, 'data'):
+                            # Đảm bảo data collector có thuộc tính data trước khi truy cập
                             st.session_state.data_collector.data = {tf: None for tf in config.ALL_TIMEFRAMES}
                         
                         # Xóa mô hình đã huấn luyện
                         st.session_state.model_trained = False
                         
-                        if hasattr(st.session_state, 'prediction_engine'):
+                        if hasattr(st.session_state, 'prediction_engine') and hasattr(st.session_state.prediction_engine, 'models'):
+                            # Đảm bảo prediction engine có thuộc tính models trước khi truy cập
                             st.session_state.prediction_engine.models = {}
+                        
+                        # Đặt lại tất cả session state
+                        if hasattr(st.session_state, 'system_settings'):
+                            st.session_state.system_settings = {
+                                "use_real_api": config.USE_REAL_API,
+                                "update_interval": config.UPDATE_INTERVAL,
+                                "auto_training": config.CONTINUOUS_TRAINING,
+                                "lookback_periods": config.LOOKBACK_PERIODS,
+                                "use_proxy": False,  # Đặt proxy về False để tránh lỗi kết nối
+                                "proxy_host": "",
+                                "proxy_port": "",
+                                "proxy_username": "",
+                                "proxy_password": ""
+                            }
                             
                         # Xóa dữ liệu đã lưu trong continuous_trainer
                         cached_data_dir = os.path.join("saved_models", "cached_data")

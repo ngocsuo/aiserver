@@ -464,11 +464,10 @@ class BinanceDataCollector:
             
             # Test connection with timeout
             import socket
-            original_timeout = socket.getdefaulttimeout()
-            socket.setdefaulttimeout(10)  # 10 second timeout for proxy connections
-            
-            # Test connection with better error handling
             import requests.exceptions
+            
+            original_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(15)  # Tăng timeout lên 15 giây để giảm lỗi timeout
             
             try:
                 self.client.ping()
