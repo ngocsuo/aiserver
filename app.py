@@ -231,7 +231,7 @@ def train_models():
         progress_bar.progress(80)
         update_log("Training CNN model...")
         cnn_model, cnn_history = st.session_state.model_trainer.train_cnn(image_data)
-        update_log(f"CNN model trained with accuracy: {cnn_history.history.get('val_accuracy', [-1])[-1]:.4f}")
+        update_log(f"CNN model trained with accuracy: {cnn_history.get('val_accuracy', [-1])[-1]:.4f}")
         
         progress_bar.progress(85)
         update_log("Training Historical Similarity model...")
