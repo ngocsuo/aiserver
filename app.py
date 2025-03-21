@@ -3535,11 +3535,28 @@ elif st.session_state.selected_tab == "Trading":
             
             st.caption("Chỉ vào lệnh khi độ tin cậy của dự đoán vượt quá ngưỡng này")
             
+            # Biến động giá tối thiểu để vào lệnh
+            if "min_price_movement" not in st.session_state.trading_settings:
+                st.session_state.trading_settings["min_price_movement"] = config.TRADING_SETTINGS["default_min_price_movement"]
+            
+            min_price_movement = st.number_input(
+                "Biến động giá dự đoán tối thiểu (USDT)",
+                min_value=0.0,
+                max_value=50.0,
+                value=float(st.session_state.trading_settings.get("min_price_movement", config.TRADING_SETTINGS["default_min_price_movement"])),
+                step=0.5,
+                key="min_price_movement",
+                help="Chỉ vào lệnh khi chênh lệch giữa giá hiện tại và giá dự đoán vượt quá ngưỡng này. Đặt 0 để bỏ qua điều kiện này."
+            )
+            
+            st.caption("Giá trị 0 = giao dịch không phụ thuộc vào biến động giá. Giá trị 6 = chỉ giao dịch khi chênh lệch giữa giá hiện tại và giá dự đoán > 6 USDT.")
+            
             # Lưu các thiết lập vốn và đòn bẩy
             if st.button("💾 Lưu cài đặt vốn và đòn bẩy", use_container_width=True):
                 st.session_state.trading_settings["account_percent"] = account_percent
                 st.session_state.trading_settings["leverage"] = leverage
                 st.session_state.trading_settings["min_confidence"] = min_confidence
+                st.session_state.trading_settings["min_price_movement"] = min_price_movement
                 # Lưu trạng thái giao dịch để khôi phục khi F5
                 save_trading_state()
                 st.success("Đã lưu cài đặt vốn và đòn bẩy")
@@ -3654,6 +3671,7 @@ elif st.session_state.selected_tab == "Trading":
                     "account_percent": st.session_state.trading_settings["account_percent"],
                     "leverage": st.session_state.trading_settings["leverage"],
                     "min_confidence": st.session_state.trading_settings["min_confidence"] / 100.0,
+                    "min_price_movement": st.session_state.trading_settings.get("min_price_movement", config.TRADING_SETTINGS["default_min_price_movement"]),
                     "timeframe": selected_timeframe,
                 }
                 

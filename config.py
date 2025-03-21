@@ -47,6 +47,8 @@ PREDICTION_SETTINGS = {
 TRADING_SETTINGS = {
     "available_timeframes": ["1m", "5m"],  # Các khung thời gian có thể sử dụng cho bot
     "default_timeframe": "5m",             # Khung thời gian giao dịch mặc định
+    "min_price_movement": 0.0,             # Biến động giá tối thiểu (USDT) để vào lệnh
+    "default_min_price_movement": 6.0,     # Giá trị mặc định cho biến động giá tối thiểu
     "update_interval": {
         "1m": 30,                          # Cập nhật dự đoán mỗi 30 giây cho khung 1m
         "5m": 60                           # Cập nhật dự đoán mỗi 60 giây cho khung 5m
