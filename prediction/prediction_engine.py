@@ -163,6 +163,44 @@ class PredictionEngine:
         if self.is_prediction_valid():
             return self.last_prediction
         return None
+        
+    def _get_latest_data(self):
+        """
+        Lấy dữ liệu mới nhất từ Binance cho dự đoán.
+        Sử dụng bởi TradingManager để cập nhật dự đoán liên tục.
+        
+        Returns:
+            pd.DataFrame: Dữ liệu giá mới nhất
+        """
+        try:
+            from utils.data_collector import create_data_collector
+            
+            # Tạo data collector
+            data_collector = create_data_collector()
+            
+            # Lấy dữ liệu mới nhất cho khung thời gian chính
+            primary_timeframe = config.PRIMARY_TIMEFRAME
+            symbol = config.SYMBOL
+            lookback = config.LOOKBACK_PERIODS
+            
+            # Lấy dữ liệu mới nhất từ Binance
+            data = data_collector.collect_historical_data(
+                symbol=symbol,
+                timeframe=primary_timeframe,
+                limit=lookback
+            )
+            
+            # Đảm bảo dữ liệu không rỗng
+            if data is None or len(data) < config.SEQUENCE_LENGTH:
+                logger.error(f"Không đủ dữ liệu để dự đoán (cần ít nhất {config.SEQUENCE_LENGTH} nến)")
+                return None
+                
+            logger.info(f"Đã lấy {len(data)} nến {primary_timeframe} mới nhất cho {symbol}")
+            return data
+            
+        except Exception as e:
+            logger.error(f"Lỗi khi lấy dữ liệu mới nhất: {str(e)}")
+            return None
     
     def predict(self, data, use_cache=True):
         """
