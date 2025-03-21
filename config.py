@@ -8,6 +8,13 @@ from datetime import datetime
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
+# Proxy Configuration
+USE_PROXY = os.environ.get("USE_PROXY", "True").lower() in ("true", "1", "yes")
+PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
+PROXY_PORT = os.environ.get("PROXY_PORT", "15989")
+PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "S6lnXxjtieCIA38a")
+PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "XXjY9RleeBfS8AFX")
+
 # Feature flags
 USE_REAL_API = True  # Set to True to use real Binance API instead of mock data
 DEBUG_MODE = True     # Enable additional logging and debug information

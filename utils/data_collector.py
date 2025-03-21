@@ -408,16 +408,13 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
                 
-            # Initialize Binance client with API keys and user-provided proxy
-            # Format: hostname:port:username:password
-            proxy_str = "mb105.raiproxy.com:15989:S6lnXxjtieCIA38a:XXjY9RleeBfS8AFX"
-            proxy_parts = proxy_str.split(':')
-            
-            if len(proxy_parts) >= 4:
-                host = proxy_parts[0]
-                port = proxy_parts[1]
-                username = proxy_parts[2]
-                password = proxy_parts[3]
+            # Initialize Binance client with API keys based on proxy configuration
+            if config.USE_PROXY:
+                # Format proxy settings based on configuration
+                host = config.PROXY_HOST
+                port = config.PROXY_PORT
+                username = config.PROXY_USERNAME
+                password = config.PROXY_PASSWORD
                 
                 proxy_auth = f"{username}:{password}@{host}:{port}"
                 proxy_settings = {
