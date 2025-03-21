@@ -1255,6 +1255,135 @@ if st.session_state.selected_tab == "Live Dashboard":
                     st.info("No predictions match your filters")
             else:
                 st.info("No prediction history available yet. Generate predictions to see history.")
+                
+        with tabs[3]:
+            # Training Logs Tab
+            st.subheader("Huấn luyện AI - Nhật ký")
+            
+            # Create container for training logs
+            log_col1, log_col2 = st.columns([3, 1])
+            
+            with log_col1:
+                # Create a data processor log viewer
+                st.write("### Nhật ký xử lý dữ liệu & huấn luyện")
+                
+                # Fetch latest logs from continuous trainer
+                if hasattr(st.session_state, 'continuous_trainer'):
+                    trainer_status = st.session_state.continuous_trainer.get_training_status()
+                    
+                    # Display status information
+                    if trainer_status:
+                        st.write(f"**Trạng thái:** {trainer_status.get('status', 'Unknown')}")
+                        st.write(f"**Lần huấn luyện cuối:** {trainer_status.get('last_training_time', 'Chưa có')}")
+                        st.write(f"**Dữ liệu mới từ lần huấn luyện trước:** {trainer_status.get('new_data_points', 0)} điểm dữ liệu")
+                        
+                        if trainer_status.get('is_training', False):
+                            st.warning("Đang trong quá trình huấn luyện...")
+                            st.progress(trainer_status.get('progress', 0))
+                
+                # Create a scrollable log area with stylized appearance
+                st.markdown("""
+                <style>
+                .training-log-container {
+                    height: 400px;
+                    overflow-y: auto;
+                    background-color: #111;
+                    color: #0f0;
+                    padding: 10px;
+                    border-radius: 5px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 0.9em;
+                    line-height: 1.5;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                # Filter logs for training-related entries
+                training_logs = []
+                
+                # Show continuous trainer logs
+                if hasattr(st.session_state, 'continuous_trainer') and hasattr(st.session_state.continuous_trainer, 'log_messages'):
+                    training_logs.extend(st.session_state.continuous_trainer.log_messages)
+                
+                # Also show general logs that contain training information
+                if 'log_messages' in st.session_state:
+                    for log in st.session_state.log_messages:
+                        if any(keyword in log for keyword in ['training', 'Train', 'model', 'AI', 'huấn luyện', 'dữ liệu']):
+                            training_logs.append(log)
+                
+                # Get system logs via popen for comprehensive information
+                import subprocess
+                
+                try:
+                    # Get recent logs for relevant components
+                    grep_cmd = "grep -E 'feature_engineering|data_processor|model_trainer|continuous_trainer' /tmp/streamlit_app.log 2>/dev/null | tail -n 200"
+                    process = subprocess.Popen(grep_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    output, _ = process.communicate()
+                    
+                    if output:
+                        system_logs = output.decode('utf-8').split('\n')
+                        training_logs.extend(system_logs)
+                except Exception as e:
+                    st.error(f"Error reading system logs: {e}")
+                
+                # Display the logs
+                if training_logs:
+                    # Format the logs with color highlighting
+                    formatted_logs = []
+                    for log in training_logs:
+                        if "ERROR" in log or "error" in log:
+                            formatted_logs.append(f'<span style="color: red;">{log}</span>')
+                        elif "WARNING" in log or "warning" in log:
+                            formatted_logs.append(f'<span style="color: yellow;">{log}</span>')
+                        elif "SUCCESS" in log or "success" in log:
+                            formatted_logs.append(f'<span style="color: lime;">{log}</span>')
+                        elif "INFO" in log or "info" in log:
+                            formatted_logs.append(f'<span style="color: #0f9;">{log}</span>')
+                        else:
+                            formatted_logs.append(log)
+                    
+                    log_html = "<div class='training-log-container'>"
+                    for log in formatted_logs:
+                        log_html += f"{log}<br>"
+                    log_html += "</div>"
+                    
+                    st.markdown(log_html, unsafe_allow_html=True)
+                else:
+                    st.info("Chưa có nhật ký huấn luyện nào được ghi lại.")
+                
+                # Add refresh button
+                if st.button("🔄 Làm mới nhật ký"):
+                    st.experimental_rerun()
+            
+            with log_col2:
+                # Training Status and Statistics
+                st.write("### Thống kê huấn luyện")
+                
+                # Add visual indicators for training phases
+                phases = {
+                    "Thu thập dữ liệu": "In Progress" if hasattr(st.session_state, 'data_collector') else "Not Started",
+                    "Xử lý dữ liệu": "Completed" if hasattr(st.session_state, 'data_processor') else "Not Started",
+                    "Huấn luyện mô hình": "Completed" if st.session_state.model_trained else "Not Started",
+                    "Dự đoán": "Completed" if st.session_state.predictions else "Not Started"
+                }
+                
+                for phase, status in phases.items():
+                    if status == "Completed":
+                        st.success(f"✅ {phase}")
+                    elif status == "In Progress":
+                        st.warning(f"⏳ {phase}")
+                    else:
+                        st.error(f"❌ {phase}")
+                
+                # Model Training Controls
+                st.write("### Điều khiển huấn luyện")
+                
+                if st.button("🧠 Huấn luyện ngay", key="force_training_btn"):
+                    if hasattr(st.session_state, 'continuous_trainer'):
+                        st.session_state.continuous_trainer.schedule_training(force=True)
+                        st.success("Đã lên lịch huấn luyện mô hình!")
+                    else:
+                        st.error("Chưa khởi tạo bộ huấn luyện liên tục")
 
 elif st.session_state.selected_tab == "Models & Training":
     st.title("AI Models & Training")

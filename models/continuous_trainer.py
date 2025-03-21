@@ -39,7 +39,16 @@ class ContinuousTrainer:
         self.training_history = []
         self.new_data_count = 0
         
+        # Log storage for UI display
+        self.log_messages = []
+        
+        # Training progress tracking
+        self.current_progress = 0
+        self.total_chunks = 0
+        self.current_chunk = 0
+        
         self.chunk_start_dates = self._generate_monthly_chunks()
+        self._add_log("Continuous trainer initialized with schedule: " + config.TRAINING_SCHEDULE['frequency'])
         
     def _generate_monthly_chunks(self):
         """
@@ -131,6 +140,15 @@ class ContinuousTrainer:
             logger.info("Training scheduled according to configured frequency")
             self.training_queue.put("TRAIN")
             
+    def _add_log(self, message):
+        """Add a log message to the internal log storage for UI display"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_entry = f"{timestamp} - {message}"
+        self.log_messages.append(log_entry)
+        # Keep only the most recent 500 messages
+        if len(self.log_messages) > 500:
+            self.log_messages = self.log_messages[-500:]
+            
     def get_training_status(self):
         """
         Get the current training status.
@@ -138,13 +156,21 @@ class ContinuousTrainer:
         Returns:
             dict: Training status information
         """
+        # Calculate progress percentage if training is in progress
+        progress = 0
+        if self.training_in_progress and self.total_chunks > 0:
+            progress = min(100, int((self.current_chunk / self.total_chunks) * 100))
+            
         return {
             "enabled": config.CONTINUOUS_TRAINING,
             "in_progress": self.training_in_progress,
-            "last_training_time": self.last_training_time,
+            "last_training_time": self.last_training_time.strftime("%Y-%m-%d %H:%M:%S") if self.last_training_time else None,
             "training_history": self.training_history[-10:],  # Last 10 training events
             "new_data_points": self.new_data_count,
             "schedule": config.TRAINING_SCHEDULE,
+            "is_training": self.training_in_progress,
+            "progress": progress,
+            "status": "Training in progress" if self.training_in_progress else "Idle"
         }
         
     def _is_training_scheduled(self):
@@ -284,8 +310,12 @@ class ContinuousTrainer:
     def _train_by_monthly_chunks(self):
         """Train models using monthly data chunks to manage memory usage."""
         logger.info(f"Training with {len(self.chunk_start_dates)} monthly chunks")
+        self._add_log(f"Bắt đầu huấn luyện với {len(self.chunk_start_dates)} đoạn dữ liệu tháng")
         
         all_processed_data = []
+        # Set total chunks for progress tracking
+        self.total_chunks = len(self.chunk_start_dates)
+        self.current_chunk = 0
         
         # Process each monthly chunk
         for i, (start_date, end_date) in enumerate(self.chunk_start_dates):
