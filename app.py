@@ -93,6 +93,16 @@ def initialize_system():
             # Initialize prediction engine
             st.session_state.prediction_engine = PredictionEngine()
             
+            # Initialize continuous trainer
+            continuous_trainer = get_continuous_trainer()
+            st.session_state.continuous_trainer = continuous_trainer
+            
+            # Start continuous training if enabled
+            if config.CONTINUOUS_TRAINING:
+                continuous_trainer.start()
+                log_message = f"{timestamp} - Continuous training started with schedule: {config.TRAINING_SCHEDULE['frequency']}"
+                st.session_state.log_messages.append(log_message)
+            
             st.session_state.initialized = True
             
             # Update status
@@ -100,6 +110,19 @@ def initialize_system():
                 "status": "Initialized", 
                 "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
+            
+            # Initialize continuous training status
+            if config.CONTINUOUS_TRAINING:
+                st.session_state.continuous_training_status = {
+                    "enabled": True,
+                    "schedule": config.TRAINING_SCHEDULE,
+                    "last_training": None
+                }
+            else:
+                st.session_state.continuous_training_status = {
+                    "enabled": False
+                }
+                
         except Exception as e:
             st.error(f"Error initializing system: {e}")
 
@@ -904,10 +927,37 @@ def display_system_status(data_status, thread_status, prediction_count):
             st.write(f"Last update: {data_status['last_update']}")
     
     with col2:
+        # AI Models Status
         st.write("**AI Models**")
         model_status_color = "green" if st.session_state.model_trained else "red"
         st.markdown(f"Status: :{model_status_color}[{'Trained' if st.session_state.model_trained else 'Not Trained'}]")
         
+        # Continuous Training Status
+        if config.CONTINUOUS_TRAINING and 'continuous_trainer' in st.session_state:
+            st.write("**Continuous Training**")
+            
+            # Get current training status
+            training_status = st.session_state.continuous_trainer.get_training_status()
+            
+            # Check if training is in progress
+            if training_status['in_progress']:
+                st.markdown(f"Status: :blue[Training in progress]")
+            else:
+                status_color = "green" if training_status['enabled'] else "red"
+                st.markdown(f"Status: :{status_color}[{'Enabled' if training_status['enabled'] else 'Disabled'}]")
+            
+            # Display schedule info
+            schedule = training_status['schedule']
+            st.write(f"Schedule: {schedule['frequency'].capitalize()}")
+            
+            # Show new data points
+            st.write(f"New data points: {training_status['new_data_points']}")
+            
+            # Show last training time if available
+            if training_status['last_training_time']:
+                st.write(f"Last trained: {training_status['last_training_time'].strftime('%Y-%m-%d %H:%M')}")
+        
+        # Auto-Update Thread Status
         st.write("**Auto-Update Thread**")
         thread_status_color = "green" if thread_status else "red"
         st.markdown(f"Status: :{thread_status_color}[{'Running' if thread_status else 'Stopped'}]")
@@ -915,6 +965,17 @@ def display_system_status(data_status, thread_status, prediction_count):
     with col3:
         st.write("**Predictions**")
         st.write(f"Total predictions: {prediction_count}")
+        
+        # Display API connection status if available
+        if 'api_status' in st.session_state:
+            st.write("**API Connection**")
+            api_status = st.session_state.api_status
+            status_color = "green" if api_status.get('connected', False) else "red"
+            st.markdown(f"Status: :{status_color}[{api_status.get('message', 'Unknown')}]")
+            
+            # Display any error message if available
+            if 'error' in api_status:
+                st.error(f"Error: {api_status['error']}")
         if prediction_count > 0:
             trends = [p["trend"] for p in st.session_state.predictions[-20:]]
             long_pct = trends.count("LONG") / len(trends) * 100
