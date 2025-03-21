@@ -8,14 +8,8 @@ from datetime import datetime
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
-# Proxy Configuration
-USE_PROXY = True  # Bật proxy vì địa chỉ IP hiện tại bị Binance chặn
-PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
-PROXY_PORT = os.environ.get("PROXY_PORT", "39817")
-PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "1Xrce7oXNaV2jT5K")
-PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "jPhw396rF9nNFQfB")
-# Cấu hình proxy URL loại (http, socks5, https)
-PROXY_TYPE = "http"  # Sử dụng HTTP như đã chỉ định
+# Proxy Configuration đã bị xóa
+USE_PROXY = False  # Tắt proxy, kết nối trực tiếp đến Binance
 
 # Feature flags
 USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data

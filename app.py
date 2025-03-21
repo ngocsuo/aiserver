@@ -187,10 +187,10 @@ if 'initialized' not in st.session_state:
         "auto_training": config.CONTINUOUS_TRAINING,
         "lookback_periods": config.LOOKBACK_PERIODS,
         "use_proxy": config.USE_PROXY,
-        "proxy_host": config.PROXY_HOST,
-        "proxy_port": config.PROXY_PORT,
-        "proxy_username": config.PROXY_USERNAME,
-        "proxy_password": config.PROXY_PASSWORD
+        "proxy_host": "",
+        "proxy_port": "",
+        "proxy_username": "",
+        "proxy_password": ""
     }
 
 # Hàm lưu trạng thái giao dịch vào tập tin
@@ -2634,11 +2634,11 @@ elif st.session_state.selected_tab == "Cài đặt":
                     col1, col2 = st.columns(2)
                     with col1:
                         proxy_host = st.text_input("Địa chỉ Proxy", 
-                                                 value=st.session_state.system_settings.get("proxy_host", config.PROXY_HOST),
+                                                 value=st.session_state.system_settings.get("proxy_host", ""),
                                                  help="Địa chỉ máy chủ proxy (ví dụ: 123.45.67.89)")
                         
                         proxy_username = st.text_input("Tên đăng nhập Proxy",
-                                                     value=st.session_state.system_settings.get("proxy_username", config.PROXY_USERNAME),
+                                                     value=st.session_state.system_settings.get("proxy_username", ""),
                                                      help="Tên đăng nhập cho proxy (nếu yêu cầu xác thực)")
                     with col2:
                         proxy_port = st.text_input("Cổng Proxy",
