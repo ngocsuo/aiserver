@@ -406,13 +406,21 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
                 
-            # Initialize Binance client with API keys and proxy
-            # Use proxy for API requests to bypass geographic restrictions
-            proxy_settings = {
-                'http': 'http://118.68.96.73:11065',
-                'https': 'http://118.68.96.73:11065'
-            }
-            self.client = Client(config.BINANCE_API_KEY, config.BINANCE_API_SECRET, {"proxies": proxy_settings})
+            # Initialize Binance client with API keys
+            # Try direct connection without proxy first
+            try:
+                logger.info("Attempting direct connection to Binance API")
+                self.client = Client(
+                    config.BINANCE_API_KEY, 
+                    config.BINANCE_API_SECRET,
+                    {"timeout": 30}  # Increase timeout for slower connections
+                )
+                
+                # Set environment variables to bypass system proxy
+                os.environ['NO_PROXY'] = 'api.binance.com,*.binance.com'
+            except Exception as direct_conn_error:
+                logger.warning(f"Direct connection failed: {direct_conn_error}")
+                logger.info("Attempting connection using environment API keys")
             
             # Test connection with timeout
             import socket
