@@ -184,12 +184,23 @@ class ContinuousTrainer:
         
         check_interval = 60  # Check schedule every minute
         
+        # Immediately schedule the first training to process historical data
+        self.schedule_training(force=True)
+        
+        # Keep training continuously
+        continuous_training_interval = 30 * 60  # 30 minutes between continuous training cycles
+        last_continuous_training = time.time()
+        
         while not self.stop_training.is_set():
             try:
-                # Check if training is scheduled for now
-                if self._is_training_scheduled():
-                    self.schedule_training()
-                    
+                # For continuous training, don't wait for scheduled time
+                current_time = time.time()
+                if current_time - last_continuous_training >= continuous_training_interval:
+                    # Start a new training cycle after the interval
+                    logger.info(f"Starting continuous training cycle after {continuous_training_interval//60} minutes")
+                    self.schedule_training(force=True)
+                    last_continuous_training = current_time
+                
                 # Check if there's a training job in the queue
                 try:
                     # Non-blocking queue check with timeout

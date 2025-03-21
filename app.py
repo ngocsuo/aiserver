@@ -1054,8 +1054,21 @@ if st.session_state.selected_tab == "Live Dashboard":
                 st.session_state.log_messages.append(f"{timestamp} - System initialization started")
                 st.rerun()
     else:
-        # Status badges at the top
-        status_col1, status_col2, status_col3, status_col4 = st.columns(4)
+        # Initialize system if not done yet - load data immediately
+        if st.session_state.latest_data is None:
+            with st.spinner("Đang tải dữ liệu thời gian thực..."):
+                fetch_data()
+        
+        # Get latest prediction or make a new one if none exists
+        if not st.session_state.predictions:
+            with st.spinner("Đang tạo dự đoán ban đầu..."):
+                prediction = make_prediction()
+        else:
+            prediction = st.session_state.predictions[-1]
+        
+        # Status badges at the top - more compact
+        status_container = st.container()
+        status_col1, status_col2, status_col3, status_col4 = status_container.columns(4)
         
         with status_col1:
             source_color = "green" if not isinstance(st.session_state.data_collector, MockDataCollector) else "orange"
@@ -1077,8 +1090,12 @@ if st.session_state.selected_tab == "Live Dashboard":
             update_color = "green" if st.session_state.thread_running else "red"
             st.markdown(f"**Auto Updates:** :{update_color}[{update_status}]")
         
-        # Quick action buttons
-        action_col1, action_col2, action_col3, action_col4 = st.columns(4)
+        # Display prediction and chart in tabs - Default to chart first
+        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History"])
+        
+        # Quick action buttons - moved below tabs to prioritize chart display
+        action_container = st.container()
+        action_col1, action_col2, action_col3, action_col4 = action_container.columns(4)
         
         with action_col1:
             if st.button("🔄 Fetch Data", use_container_width=True):
@@ -1107,19 +1124,6 @@ if st.session_state.selected_tab == "Live Dashboard":
             else:
                 if st.button("⏹️ Stop Auto Updates", use_container_width=True):
                     stop_update_thread()
-        
-        # Initialize system if not done yet
-        if st.session_state.latest_data is None:
-            fetch_data()
-        
-        # Get latest prediction or make a new one if none exists
-        if not st.session_state.predictions:
-            prediction = make_prediction()
-        else:
-            prediction = st.session_state.predictions[-1]
-        
-        # Display prediction and chart in tabs
-        tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History"])
         
         with tabs[0]:
             # Main dashboard layout
@@ -1573,3 +1577,9 @@ elif st.session_state.selected_tab == "API Guide":
 # Initialize on startup
 if not st.session_state.initialized:
     initialize_system()
+    # Fetch data immediately after initialization to show real-time chart
+    if st.session_state.initialized:
+        with st.spinner("Đang tải dữ liệu thời gian thực..."):
+            fetch_data()
+            # Generate an initial prediction
+            make_prediction()
