@@ -105,6 +105,7 @@ class ContinuousTrainer:
         )
         self.training_thread.start()
         
+        self._add_log("🚀 Quá trình huấn luyện liên tục đã được khởi động")
         logger.info("Continuous training manager started")
         
     def stop(self):
@@ -117,11 +118,14 @@ class ContinuousTrainer:
         self.stop_training.set()
         
         # Wait for the thread to finish
+        self._add_log("⏱️ Đang dừng quá trình huấn luyện liên tục...")
         self.training_thread.join(timeout=5.0)
         
         if self.training_thread.is_alive():
+            self._add_log("⚠️ Không thể dừng tiến trình huấn luyện sạch sẽ")
             logger.warning("Training thread did not stop cleanly")
         else:
+            self._add_log("✅ Đã dừng quá trình huấn luyện liên tục")
             logger.info("Continuous training manager stopped")
             
         self.training_thread = None
@@ -134,9 +138,11 @@ class ContinuousTrainer:
             force (bool): If True, force training regardless of schedule
         """
         if force:
+            self._add_log("🔄 Đã lên lịch huấn luyện thủ công")
             logger.info("Forced training scheduled")
             self.training_queue.put("FORCE_TRAIN")
         else:
+            self._add_log("🔄 Đã lên lịch huấn luyện theo thời gian đã cấu hình")
             logger.info("Training scheduled according to configured frequency")
             self.training_queue.put("TRAIN")
             
@@ -223,7 +229,9 @@ class ContinuousTrainer:
                 current_time = time.time()
                 if current_time - last_continuous_training >= continuous_training_interval:
                     # Start a new training cycle after the interval
-                    logger.info(f"Starting continuous training cycle after {continuous_training_interval//60} minutes")
+                    mins = continuous_training_interval//60
+                    self._add_log(f"🕒 Bắt đầu huấn luyện định kỳ sau {mins} phút")
+                    logger.info(f"Starting continuous training cycle after {mins} minutes")
                     self.schedule_training(force=True)
                     last_continuous_training = current_time
                 
@@ -299,6 +307,16 @@ class ContinuousTrainer:
             
             # Reset new data counter
             self.new_data_count = 0
+            
+            # Log completion with duration
+            mins = int(duration // 60)
+            secs = int(duration % 60)
+            time_str = f"{mins} phút {secs} giây" if mins > 0 else f"{secs} giây"
+            self._add_log(f"✅ Quá trình huấn luyện hoàn tất trong {time_str}")
+            
+            # Calculate next training time
+            next_time = end_time + timedelta(seconds=30*60)  # 30 minutes
+            self._add_log(f"⏱️ Đợt huấn luyện tiếp theo dự kiến: {next_time.strftime('%H:%M:%S')}")
             
             logger.info(f"Training process completed in {duration:.1f} seconds")
             
@@ -418,6 +436,7 @@ class ContinuousTrainer:
                 logger.error("No data collected for training")
                 
         except Exception as e:
+            self._add_log(f"❌ Lỗi huấn luyện: {str(e)}")
             logger.error(f"Error training with all data: {e}")
             
     def increment_new_data_count(self, count=1):
