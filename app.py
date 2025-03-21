@@ -550,11 +550,17 @@ def plot_technical_indicators(df):
     if df is None or df.empty:
         return go.Figure()
     
-    # Calculate simple indicators
-    df['sma_9'] = df['close'].rolling(window=9).mean()
-    df['sma_21'] = df['close'].rolling(window=21).mean()
-    df['upper_band'] = df['sma_21'] + (df['close'].rolling(window=21).std() * 2)
-    df['lower_band'] = df['sma_21'] - (df['close'].rolling(window=21).std() * 2)
+    # Make a copy first to avoid SettingWithCopyWarning
+    df_copy = df.copy()
+    
+    # Calculate simple indicators on the copy
+    df_copy.loc[:, 'sma_9'] = df_copy['close'].rolling(window=9).mean()
+    df_copy.loc[:, 'sma_21'] = df_copy['close'].rolling(window=21).mean()
+    df_copy.loc[:, 'upper_band'] = df_copy['sma_21'] + (df_copy['close'].rolling(window=21).std() * 2)
+    df_copy.loc[:, 'lower_band'] = df_copy['sma_21'] - (df_copy['close'].rolling(window=21).std() * 2)
+    
+    # Use the copied dataframe for the rest of the function
+    df = df_copy
     
     # Create subplots
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
@@ -1084,7 +1090,8 @@ if st.session_state.selected_tab == "Live Dashboard":
                             color = 'green' if val == 'LONG' else 'red' if val == 'SHORT' else 'gray'
                             return f'background-color: {color}; color: white'
                         
-                        styled_df = recent_preds.style.applymap(style_trend, subset=['trend'])
+                        # Use Styler.map instead of deprecated applymap
+                        styled_df = recent_preds.style.map(style_trend, subset=['trend'])
                         st.dataframe(styled_df, use_container_width=True)
                 else:
                     st.info("No predictions match your filters")
