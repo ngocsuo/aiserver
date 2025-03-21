@@ -140,21 +140,18 @@ class DataProcessor:
                 
             logger.info(f"Data split into {len(chunks)} chunks for parallel processing using {workers} workers")
             
-            # Xử lý song song
-            partial_preprocess = partial(
-                self._process_chunk, 
-                add_basic=True, 
-                add_technical=True,
-                add_labels=True,
-                normalize=True
-            )
-            
+            # Xử lý tuần tự thay vì song song để tránh lỗi pickle với ProcessPoolExecutor
             processed_chunks = []
+            for chunk in chunks:
+                processed_chunk = self._process_chunk(
+                    chunk,
+                    add_basic=True, 
+                    add_technical=True,
+                    add_labels=True,
+                    normalize=True
+                )
+                processed_chunks.append(processed_chunk)
             
-            # Sử dụng ProcessPoolExecutor cho xử lý song song
-            with ProcessPoolExecutor(max_workers=workers) as executor:
-                processed_chunks = list(executor.map(partial_preprocess, chunks))
-                
             # Kết hợp các phần đã xử lý
             if processed_chunks:
                 # Loại bỏ các phần chồng lấn
@@ -173,17 +170,12 @@ class DataProcessor:
                 # Tối ưu hóa bộ nhớ
                 processed_data = self._optimize_dataframe(processed_data)
                 
-                logger.info(f"Parallel processing complete: {len(processed_data)} samples with {len(processed_data.columns)} features")
+                logger.info(f"Sequential processing complete: {len(processed_data)} samples with {len(processed_data.columns)} features")
                 self.processed_data = processed_data
                 return processed_data
             else:
                 logger.error("No data processed")
                 return None
-            
-            self.processed_data = processed_data
-            
-            logger.info(f"Data processing complete: {len(processed_data)} samples with {len(processed_data.columns)} features")
-            return processed_data
             
         except Exception as e:
             logger.error(f"Error processing data: {e}")
