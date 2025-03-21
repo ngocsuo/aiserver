@@ -314,7 +314,7 @@ def make_prediction():
     
     try:
         # Always fetch the latest data first
-        st.info("Fetching the latest ETHUSDT data...")
+        st.info("Đang tải dữ liệu ETHUSDT mới nhất...")
         fetch_result = fetch_data()
         
         if fetch_result is None or st.session_state.latest_data is None:
@@ -337,7 +337,7 @@ def make_prediction():
             log_message = f"{timestamp} - 🤖 Đang sử dụng mô hình AI đã huấn luyện để dự đoán..."
             st.session_state.log_messages.append(log_message)
             
-            st.info("Using trained AI models to generate prediction...")
+            st.info("Đang sử dụng mô hình AI đã huấn luyện để tạo dự đoán...")
             # Use the prediction engine to generate prediction
             prediction = st.session_state.prediction_engine.predict(latest_data)
         else:
@@ -356,7 +356,7 @@ def make_prediction():
         
         # Add success log
         timestamp = datetime.now().strftime("%H:%M:%S")
-        log_message = f"{timestamp} - ✅ Prediction generated: {prediction['trend']} with {prediction['confidence']:.2f} confidence"
+        log_message = f"{timestamp} - ✅ Dự đoán đã tạo: {prediction['trend']} với độ tin cậy {prediction['confidence']:.2f}"
         st.session_state.log_messages.append(log_message)
         
         return prediction
