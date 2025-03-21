@@ -134,16 +134,25 @@ def train_models():
 
 def make_prediction():
     """Generate a prediction using the trained models"""
-    if not st.session_state.initialized or st.session_state.latest_data is None:
-        st.warning("System not initialized or no data available")
+    if not st.session_state.initialized:
+        st.warning("System not initialized yet")
         return None
     
     try:
+        # Always fetch the latest data first
+        st.info("Fetching the latest ETHUSDT data...")
+        fetch_result = fetch_data()
+        
+        if fetch_result is None or st.session_state.latest_data is None:
+            st.warning("Failed to fetch the latest data")
+            return None
+        
         # Use trained models if available, otherwise use fallback
         if st.session_state.model_trained:
             # Get the latest data
             latest_data = st.session_state.latest_data
             
+            st.info("Using trained AI models to generate prediction...")
             # Use the prediction engine to generate prediction
             prediction = st.session_state.prediction_engine.predict(latest_data)
         else:
