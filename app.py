@@ -3432,6 +3432,8 @@ def render_main_interface():
             # Biểu đồ tự động cập nhật
             st.write("---")
             st.subheader("Biểu đồ")
+            if "chart_auto_refresh" not in st.session_state:
+                st.session_state.chart_auto_refresh = True
             st.checkbox("Tự động cập nhật biểu đồ", value=st.session_state.chart_auto_refresh, key="chart_auto_refresh")
             
         with sidebar_tabs[1]:
