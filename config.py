@@ -11,7 +11,7 @@ BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 # Feature flags
 USE_REAL_API = True  # Set to True to use real Binance API instead of mock data
 DEBUG_MODE = True     # Enable additional logging and debug information
-FORCE_MOCK_DATA = True  # Temporarily enable mock data due to connection issues
+FORCE_MOCK_DATA = False  # Set to False to use real data with configured proxy
 
 # Trading Symbol and Timeframes
 SYMBOL = "ETHUSDT"

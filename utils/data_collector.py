@@ -7,6 +7,8 @@ import numpy as np
 from datetime import datetime, timedelta
 import logging
 import random
+import os
+import requests
 
 # Import Binance client for real API access
 from binance.client import Client
@@ -406,21 +408,37 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
                 
-            # Initialize Binance client with API keys
-            # Try direct connection without proxy first
-            try:
-                logger.info("Attempting direct connection to Binance API")
+            # Initialize Binance client with API keys and user-provided proxy
+            # Format: hostname:port:username:password
+            proxy_str = "mb105.raiproxy.com:15989:S6lnXxjtieCIA38a:XXjY9RleeBfS8AFX"
+            proxy_parts = proxy_str.split(':')
+            
+            if len(proxy_parts) >= 4:
+                host = proxy_parts[0]
+                port = proxy_parts[1]
+                username = proxy_parts[2]
+                password = proxy_parts[3]
+                
+                proxy_auth = f"{username}:{password}@{host}:{port}"
+                proxy_settings = {
+                    'http': f'http://{proxy_auth}',
+                    'https': f'http://{proxy_auth}'
+                }
+                
+                logger.info(f"Attempting connection via authenticated proxy ({host}:{port})")
                 self.client = Client(
                     config.BINANCE_API_KEY, 
                     config.BINANCE_API_SECRET,
-                    {"timeout": 30}  # Increase timeout for slower connections
+                    {"proxies": proxy_settings, "timeout": 60}
                 )
-                
-                # Set environment variables to bypass system proxy
-                os.environ['NO_PROXY'] = 'api.binance.com,*.binance.com'
-            except Exception as direct_conn_error:
-                logger.warning(f"Direct connection failed: {direct_conn_error}")
-                logger.info("Attempting connection using environment API keys")
+            else:
+                # Fallback to direct connection if proxy format is invalid
+                logger.warning("Invalid proxy format, attempting direct connection")
+                self.client = Client(
+                    config.BINANCE_API_KEY, 
+                    config.BINANCE_API_SECRET,
+                    {"timeout": 30}
+                )
             
             # Test connection with timeout
             import socket
