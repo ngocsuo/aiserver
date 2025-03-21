@@ -428,9 +428,13 @@ def train_models():
         st.warning("Hệ thống chưa được khởi tạo hoặc không có dữ liệu")
         show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
         return False
-        
+    
     # Thông báo cho người dùng
-    show_toast("Quá trình huấn luyện bắt đầu trong nền. Bạn có thể tiếp tục sử dụng ứng dụng.", "info", duration=5000)
+    progress_placeholder = st.empty()
+    progress_placeholder.info("Quá trình huấn luyện bắt đầu trong nền. Bạn có thể tiếp tục sử dụng ứng dụng.")
+    
+    # Progress bar
+    progress_bar = st.progress(0)
     
     # Add log message
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -438,6 +442,39 @@ def train_models():
     if 'log_messages' not in st.session_state:
         st.session_state.log_messages = []
     st.session_state.log_messages.append(log_message)
+    
+    # Kiểm tra xem có thông số tùy chỉnh không
+    custom_params = st.session_state.get('custom_training_params', None)
+    if custom_params:
+        log_message = f"{timestamp} - 🔧 Sử dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs"
+        st.session_state.log_messages.append(log_message)
+        show_toast(f"Huấn luyện với cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['epochs']} epochs", "info")
+    
+    # Hàm cập nhật log riêng
+    def update_log(message):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - {message}"
+        st.session_state.log_messages.append(log_message)
+        # Cập nhật thông báo hiển thị cho người dùng
+        if "Step" in message or "Bước" in message:
+            progress_placeholder.info(message)
+            # Cập nhật progress bar
+            if "1/5" in message:
+                progress_bar.progress(10)
+            elif "2/5" in message:
+                progress_bar.progress(30)
+            elif "3/5" in message:
+                progress_bar.progress(50)
+            elif "4/5" in message:
+                progress_bar.progress(70)
+            elif "5/5" in message:
+                progress_bar.progress(90)
+            elif "success" in message.lower() or "hoàn tất" in message.lower() or "thành công" in message.lower():
+                progress_bar.progress(100)
+                progress_placeholder.success("Huấn luyện mô hình thành công!")
+                
+        if "Error" in message or "ERROR" in message or "Lỗi" in message:
+            show_toast(message, "error", 5000)
     
     # Tạo hàm huấn luyện chạy ngầm trong thread
     def train_models_background():
@@ -1375,19 +1412,13 @@ with st.sidebar:
                     st.progress(status['progress'])
                     st.caption(status.get('status', 'Đang tải...'))
         
-        # Điều khiển trực tiếp vào các nút điều hướng
+        # Các thông tin hệ thống
         st.markdown("---")
         
-        # Hiển thị các nút điều khiển trong tab hiện tại
-        if st.session_state.selected_tab == "Live Dashboard":
-            st.markdown("### 🛠️ Điều khiển Dashboard")
-            if st.button("🔮 Tạo Dự đoán Mới", type="primary", use_container_width=True):
-                make_prediction()
-                
-        elif st.session_state.selected_tab == "Models & Training":
-            st.markdown("### 🧠 Điều khiển Huấn luyện")
-            if st.button("🧠 Huấn luyện Mô hình", type="primary", use_container_width=True):
-                train_models()
+        # Hiển thị Binance server time
+        if 'binance_server_time' in st.session_state:
+            st.caption(f"Binance Server Time: {st.session_state.binance_server_time.get('time', 'Chưa có')}")
+            st.caption(f"Local Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 
         # Nút Cập nhật luôn hiển thị ở cuối sidebar cho mọi tab
         if st.button("🔄 Cập nhật Dữ liệu", use_container_width=True):
@@ -2146,33 +2177,92 @@ elif st.session_state.selected_tab == "Models & Training":
     st.title("AI Models & Training")
     
     if not st.session_state.initialized:
-        st.warning("Please initialize the system first")
+        st.warning("Vui lòng khởi tạo hệ thống trước")
     else:
-        # Data control section
-        st.header("Data Preparation")
+        # Phần điều khiển và cài đặt
+        left_col, right_col = st.columns([1, 2])
         
-        # Display status of available data
-        if st.session_state.latest_data is not None:
-            st.success(f"Data available: {len(st.session_state.latest_data)} candles")
+        with left_col:
+            st.subheader("🛠️ Điều khiển")
             
-            # Show data preview
-            with st.expander("Preview Raw Data"):
-                st.dataframe(st.session_state.latest_data.tail(10))
-        else:
-            st.warning("No data available. Click 'Fetch Data' in the sidebar.")
-        
-        # Show training controls
-        st.header("Model Training")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("Train All Models", key="train_all_btn", help="Start the training process for all AI models using the fetched data"):
+            # Hiển thị nút huấn luyện
+            if not st.session_state.model_trained:
+                if st.button("🧠 Huấn luyện mô hình", type="primary", use_container_width=True):
+                    train_models()
+            else:
+                if st.button("🔄 Huấn luyện lại mô hình", type="primary", use_container_width=True):
+                    train_models()
+            
+            # Thêm cài đặt huấn luyện
+            st.subheader("⚙️ Cài đặt huấn luyện")
+            
+            # Chọn khung thời gian
+            selected_timeframe = st.selectbox(
+                "Khung thời gian huấn luyện", 
+                options=["1m", "5m", "15m", "1h", "4h"],
+                index=1,  # 5m là mặc định
+                key="training_timeframe"
+            )
+            
+            # Chọn phạm vi huấn luyện
+            training_range = st.selectbox(
+                "Phạm vi dữ liệu", 
+                options=["1 tháng gần nhất", "3 tháng gần nhất", "6 tháng gần nhất", "12 tháng gần nhất"],
+                index=1,  # 3 tháng là mặc định
+                key="training_range"
+            )
+            
+            # Chọn tham số kỹ thuật
+            training_threshold = st.slider(
+                "Ngưỡng biến động giá (%)", 
+                min_value=0.1, 
+                max_value=2.0, 
+                value=0.5, 
+                step=0.1,
+                key="training_threshold"
+            )
+            
+            # Chọn số epochs huấn luyện
+            training_epochs = st.slider(
+                "Epochs huấn luyện", 
+                min_value=5, 
+                max_value=50, 
+                value=20, 
+                step=5,
+                key="training_epochs"
+            )
+            
+            # Nút huấn luyện với cài đặt
+            if st.button("🚀 Huấn luyện với cài đặt này", use_container_width=True, key="train_custom_btn"):
+                # Lưu các cài đặt huấn luyện vào session state
+                st.session_state.custom_training_params = {
+                    "timeframe": selected_timeframe,
+                    "range": training_range,
+                    "threshold": training_threshold,
+                    "epochs": training_epochs
+                }
+                # Gọi hàm huấn luyện với cài đặt tùy chỉnh
                 train_models()
         
-        with col2:
+        with right_col:
+            # Hiển thị thông tin dữ liệu
+            st.subheader("📊 Thông tin dữ liệu")
+            
+            # Display status of available data
+            if st.session_state.latest_data is not None:
+                st.success(f"Dữ liệu có sẵn: {len(st.session_state.latest_data)} nến")
+                
+                # Show data preview
+                with st.expander("Xem trước dữ liệu thô"):
+                    st.dataframe(st.session_state.latest_data.tail(10))
+            else:
+                st.warning("Không có dữ liệu. Nhấn 'Tải dữ liệu thời gian thực' ở bên trái.")
+            
+            # Hiển thị thông tin huấn luyện
+            st.subheader("🧠 Thông tin huấn luyện")
+            
             if st.session_state.model_trained:
-                st.success("Models trained and ready for prediction")
+                st.success("Các mô hình đã được huấn luyện và sẵn sàng dự đoán")
                 if hasattr(st.session_state, 'training_info'):
                     st.caption(f"Last trained: {st.session_state.training_info.get('training_time', 'Unknown')}")
             else:
