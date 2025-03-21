@@ -135,6 +135,7 @@ if 'initialized' not in st.session_state:
     st.session_state.data_processor = None
     st.session_state.model_trainer = None
     st.session_state.prediction_engine = None
+    st.session_state.trading_manager = None
     st.session_state.predictions = []
     st.session_state.latest_data = None
     st.session_state.model_trained = False
@@ -147,6 +148,22 @@ if 'initialized' not in st.session_state:
     st.session_state.chart_last_update_time = datetime.now()
     st.session_state.auto_initialize_triggered = False
     st.session_state.pending_toast = None # Cho phép hiển thị toast từ thread riêng
+    
+    # Thiết lập giao dịch
+    st.session_state.trading_settings = {
+        "api_key": "",
+        "api_secret": "",
+        "symbol": config.SYMBOL,
+        "take_profit_type": "percent",  # "percent" hoặc "usdt"
+        "take_profit_value": 3.0,       # 3% hoặc 3 USDT
+        "stop_loss_type": "percent",    # "percent" hoặc "usdt"
+        "stop_loss_value": 2.0,         # 2% hoặc 2 USDT
+        "account_percent": 10.0,        # 10% tài khoản
+        "leverage": 5,                  # Đòn bẩy x5
+        "min_confidence": 70.0,         # Độ tin cậy tối thiểu 70%
+        "is_trading": False,            # Trạng thái giao dịch
+        "position_info": None,          # Thông tin vị thế hiện tại
+    }
     
     # Khởi tạo thiết lập dự đoán và lưu vào session state
     st.session_state.prediction_settings = {
@@ -238,6 +255,16 @@ def initialize_system():
             # Initialize continuous trainer
             continuous_trainer = get_continuous_trainer()
             st.session_state.continuous_trainer = continuous_trainer
+            
+            # Initialize trading manager with API keys from environment
+            api_key = os.environ.get('BINANCE_API_KEY')
+            api_secret = os.environ.get('BINANCE_API_SECRET')
+            st.session_state.trading_manager = TradingManager(api_key, api_secret)
+            
+            # Cập nhật trading settings
+            if api_key and api_secret:
+                st.session_state.trading_settings["api_key"] = api_key
+                st.session_state.trading_settings["api_secret"] = api_secret
             
             # Initialize status tracking
             st.session_state.initialized = True
@@ -3317,6 +3344,300 @@ FORCE_MOCK_DATA = False  # Set to False to allow real API usage
                 st.code(f"Models directory: {config.MODEL_DIR}\nVersion: {config.MODEL_VERSION}")
             else:
                 st.warning("Models are not trained yet")
+
+elif st.session_state.selected_tab == "Trading":
+    st.title("💰 Giao dịch tự động với ETHUSDT")
+    
+    if not st.session_state.initialized:
+        st.warning("Vui lòng khởi tạo hệ thống trước khi sử dụng chức năng giao dịch")
+        if st.button("🚀 Khởi tạo hệ thống"):
+            initialize_system()
+            st.rerun()
+    else:
+        st.write("Thiết lập giao dịch tự động dựa trên dự đoán AI")
+        
+        # Nếu không có dự đoán, cần tạo dự đoán
+        if not st.session_state.predictions:
+            with st.spinner("Đang tạo dự đoán ban đầu..."):
+                prediction = make_prediction()
+        else:
+            prediction = st.session_state.predictions[-1]
+        
+        # Hiển thị thông tin dự đoán hiện tại
+        with st.container():
+            st.subheader("Dự đoán hiện tại")
+            display_current_prediction(prediction)
+        
+        # Phần nhập API Binance
+        with st.expander("🔑 Cài đặt API Binance", expanded=True):
+            api_key = st.text_input("API Key Binance", value=st.session_state.trading_settings["api_key"], 
+                                 type="password", key="api_key_input", 
+                                 help="API Key được tạo từ tài khoản Binance của bạn")
+            
+            api_secret = st.text_input("API Secret Binance", value=st.session_state.trading_settings["api_secret"], 
+                                   type="password", key="api_secret_input",
+                                   help="API Secret được tạo từ tài khoản Binance của bạn")
+            
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                if st.button("💾 Lưu API Keys", use_container_width=True):
+                    st.session_state.trading_settings["api_key"] = api_key
+                    st.session_state.trading_settings["api_secret"] = api_secret
+                    st.success("Đã lưu API Keys")
+            
+            with col2:
+                if st.button("🔄 Kiểm tra kết nối", use_container_width=True):
+                    if not api_key or not api_secret:
+                        st.error("Vui lòng nhập API Key và API Secret")
+                    else:
+                        with st.spinner("Đang kiểm tra kết nối..."):
+                            if not hasattr(st.session_state, "trading_manager") or st.session_state.trading_manager is None:
+                                st.session_state.trading_manager = TradingManager()
+                            
+                            # Kết nối với API
+                            result = st.session_state.trading_manager.connect(api_key, api_secret)
+                            if result:
+                                st.success("Kết nối thành công đến Binance API")
+                                
+                                # Lấy số dư
+                                balance = st.session_state.trading_manager.get_futures_account_balance()
+                                if balance is not None:
+                                    st.info(f"Số dư tài khoản Futures: {balance:.2f} USDT")
+                            else:
+                                st.error("Kết nối thất bại. Vui lòng kiểm tra lại API keys")
+        
+        # Phần cài đặt Take Profit và Stop Loss
+        with st.expander("💵 Cài đặt TP/SL", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Take Profit (TP)")
+                tp_type = st.radio("Loại TP", ["Phần trăm (%)", "USDT"], 
+                               index=0 if st.session_state.trading_settings["take_profit_type"] == "percent" else 1,
+                               key="tp_type")
+                
+                tp_value = st.number_input("Giá trị TP", 
+                                      min_value=0.1, max_value=100.0 if tp_type == "Phần trăm (%)" else 1000.0,
+                                      value=float(st.session_state.trading_settings["take_profit_value"]),
+                                      step=0.1, key="tp_value")
+            
+            with col2:
+                st.subheader("Stop Loss (SL)")
+                sl_type = st.radio("Loại SL", ["Phần trăm (%)", "USDT"], 
+                               index=0 if st.session_state.trading_settings["stop_loss_type"] == "percent" else 1,
+                               key="sl_type")
+                
+                sl_value = st.number_input("Giá trị SL", 
+                                      min_value=0.1, max_value=100.0 if sl_type == "Phần trăm (%)" else 1000.0,
+                                      value=float(st.session_state.trading_settings["stop_loss_value"]),
+                                      step=0.1, key="sl_value")
+            
+            # Lưu các thiết lập TP/SL
+            if st.button("💾 Lưu cài đặt TP/SL", use_container_width=True):
+                st.session_state.trading_settings["take_profit_type"] = "percent" if tp_type == "Phần trăm (%)" else "usdt"
+                st.session_state.trading_settings["take_profit_value"] = tp_value
+                st.session_state.trading_settings["stop_loss_type"] = "percent" if sl_type == "Phần trăm (%)" else "usdt"
+                st.session_state.trading_settings["stop_loss_value"] = sl_value
+                st.success("Đã lưu cài đặt TP/SL")
+        
+        # Phần cài đặt vốn và đòn bẩy
+        with st.expander("📊 Cài đặt vốn và đòn bẩy", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                account_percent = st.slider("Phần trăm tài khoản sử dụng (%)", 
+                                       min_value=1.0, max_value=100.0, 
+                                       value=float(st.session_state.trading_settings["account_percent"]),
+                                       step=1.0, key="account_percent")
+                
+                st.caption("Phần trăm số dư tài khoản Futures sẽ được sử dụng cho mỗi giao dịch")
+            
+            with col2:
+                leverage_options = [1, 2, 3, 5, 10, 20, 50, 75, 100, 125]
+                default_index = leverage_options.index(st.session_state.trading_settings["leverage"]) if st.session_state.trading_settings["leverage"] in leverage_options else 2
+                
+                leverage = st.select_slider("Đòn bẩy", 
+                                      options=leverage_options,
+                                      value=leverage_options[default_index], 
+                                      key="leverage")
+                
+                st.caption("Đòn bẩy sẽ được áp dụng cho giao dịch. Cẩn thận với đòn bẩy cao!")
+            
+            # Độ tin cậy tối thiểu để vào lệnh
+            min_confidence = st.slider("Độ tin cậy tối thiểu để vào lệnh (%)", 
+                                  min_value=50.0, max_value=99.0, 
+                                  value=float(st.session_state.trading_settings["min_confidence"]),
+                                  step=1.0, key="min_confidence")
+            
+            st.caption("Chỉ vào lệnh khi độ tin cậy của dự đoán vượt quá ngưỡng này")
+            
+            # Lưu các thiết lập vốn và đòn bẩy
+            if st.button("💾 Lưu cài đặt vốn và đòn bẩy", use_container_width=True):
+                st.session_state.trading_settings["account_percent"] = account_percent
+                st.session_state.trading_settings["leverage"] = leverage
+                st.session_state.trading_settings["min_confidence"] = min_confidence
+                st.success("Đã lưu cài đặt vốn và đòn bẩy")
+        
+        # Hiển thị thông tin vị thế hiện tại nếu có
+        if hasattr(st.session_state, "trading_manager") and st.session_state.trading_manager is not None:
+            with st.container():
+                st.subheader("Thông tin vị thế hiện tại")
+                
+                # Lấy thông tin vị thế nếu đã kết nối API
+                if st.session_state.trading_manager.client is not None:
+                    with st.spinner("Đang tải thông tin vị thế..."):
+                        pnl_info = st.session_state.trading_manager.get_position_pnl()
+                        
+                        if pnl_info is not None:
+                            if pnl_info.get("has_position", False):
+                                # Hiển thị thông tin vị thế
+                                position_details = f"""
+                                - **Symbol**: {pnl_info.get('symbol', 'N/A')}
+                                - **Khối lượng**: {pnl_info.get('position_amount', 0)}
+                                - **Giá vào lệnh**: {pnl_info.get('entry_price', 0):.2f} USDT
+                                - **Giá hiện tại**: {pnl_info.get('current_price', 0):.2f} USDT
+                                - **Đòn bẩy**: {pnl_info.get('leverage', 1)}x
+                                - **Lợi nhuận**: {pnl_info.get('pnl', 0):.2f} USDT ({pnl_info.get('pnl_percent', 0):.2f}%)
+                                - **Giá thanh lý**: {pnl_info.get('liquidation_price', 'N/A')}
+                                """
+                                
+                                # Hiển thị PNL với màu sắc dựa trên giá trị
+                                pnl_value = pnl_info.get('pnl', 0)
+                                pnl_percent = pnl_info.get('pnl_percent', 0)
+                                
+                                if pnl_value > 0:
+                                    st.markdown(f"### 💰 Lợi nhuận: +{pnl_value:.2f} USDT (+{pnl_percent:.2f}%)")
+                                    st.success(position_details)
+                                elif pnl_value < 0:
+                                    st.markdown(f"### 📉 Lỗ: {pnl_value:.2f} USDT ({pnl_percent:.2f}%)")
+                                    st.error(position_details)
+                                else:
+                                    st.markdown(f"### ⚖️ Vị thế: {pnl_value:.2f} USDT ({pnl_percent:.2f}%)")
+                                    st.info(position_details)
+                                
+                                # Nút đóng vị thế
+                                if st.button("📤 Đóng vị thế", type="primary"):
+                                    with st.spinner("Đang đóng vị thế..."):
+                                        result = st.session_state.trading_manager.close_position()
+                                        if result:
+                                            st.success("Đã đóng vị thế thành công")
+                                            st.rerun()
+                                        else:
+                                            st.error("Không thể đóng vị thế. Kiểm tra logs để biết thêm chi tiết.")
+                            else:
+                                st.info("Không có vị thế nào đang mở")
+                        else:
+                            st.warning("Không thể lấy thông tin vị thế. Vui lòng kiểm tra kết nối API.")
+                else:
+                    st.warning("Vui lòng kết nối API Binance để xem thông tin vị thế")
+        
+        # Phần bắt đầu giao dịch tự động
+        with st.container():
+            st.subheader("Bắt đầu giao dịch tự động")
+            
+            # Kiểm tra xem đã có API keys và các thiết lập cần thiết chưa
+            can_start_trading = (st.session_state.trading_settings["api_key"] and 
+                               st.session_state.trading_settings["api_secret"] and
+                               hasattr(st.session_state, "trading_manager") and 
+                               st.session_state.trading_manager is not None and
+                               st.session_state.trading_manager.client is not None)
+            
+            if not can_start_trading:
+                st.warning("Vui lòng cấu hình API Binance và kiểm tra kết nối trước khi bắt đầu giao dịch")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                start_button = st.button("▶️ Bắt đầu giao dịch tự động", 
+                                    use_container_width=True, 
+                                    disabled=not can_start_trading or st.session_state.trading_settings.get("is_trading", False),
+                                    type="primary" if not st.session_state.trading_settings.get("is_trading", False) else "secondary")
+            
+            with col2:
+                stop_button = st.button("⏹️ Dừng giao dịch tự động", 
+                                   use_container_width=True,
+                                   disabled=not st.session_state.trading_settings.get("is_trading", False),
+                                   type="primary" if st.session_state.trading_settings.get("is_trading", False) else "secondary")
+            
+            # Xử lý sự kiện khi nhấn nút bắt đầu
+            if start_button and can_start_trading:
+                # Thiết lập cấu hình giao dịch
+                trading_config = {
+                    "symbol": st.session_state.trading_settings["symbol"],
+                    "take_profit_type": st.session_state.trading_settings["take_profit_type"],
+                    "take_profit_value": st.session_state.trading_settings["take_profit_value"],
+                    "stop_loss_type": st.session_state.trading_settings["stop_loss_type"],
+                    "stop_loss_value": st.session_state.trading_settings["stop_loss_value"],
+                    "account_percent": st.session_state.trading_settings["account_percent"],
+                    "leverage": st.session_state.trading_settings["leverage"],
+                    "min_confidence": st.session_state.trading_settings["min_confidence"] / 100.0,
+                }
+                
+                # Kiểm tra lại kết nối
+                if not st.session_state.trading_manager.client:
+                    st.session_state.trading_manager.connect(
+                        st.session_state.trading_settings["api_key"],
+                        st.session_state.trading_settings["api_secret"]
+                    )
+                
+                # Bắt đầu bot giao dịch
+                result = st.session_state.trading_manager.start_trading_bot(
+                    trading_config, st.session_state.prediction_engine
+                )
+                
+                if result:
+                    st.session_state.trading_settings["is_trading"] = True
+                    st.success("Bot giao dịch tự động đã bắt đầu")
+                    st.rerun()
+                else:
+                    st.error("Không thể bắt đầu bot giao dịch. Kiểm tra logs để biết thêm chi tiết.")
+            
+            # Xử lý sự kiện khi nhấn nút dừng
+            if stop_button and st.session_state.trading_settings.get("is_trading", False):
+                if hasattr(st.session_state, "trading_manager") and st.session_state.trading_manager is not None:
+                    result = st.session_state.trading_manager.stop_trading_bot()
+                    if result:
+                        st.session_state.trading_settings["is_trading"] = False
+                        st.success("Bot giao dịch tự động đã dừng")
+                        st.rerun()
+                    else:
+                        st.error("Không thể dừng bot giao dịch. Kiểm tra logs để biết thêm chi tiết.")
+            
+            # Hiển thị trạng thái giao dịch
+            if st.session_state.trading_settings.get("is_trading", False):
+                st.markdown("### ✅ Trạng thái: Bot giao dịch đang hoạt động")
+                
+                if hasattr(st.session_state, "trading_manager") and st.session_state.trading_manager is not None:
+                    # Hiển thị các logs giao dịch
+                    if hasattr(st.session_state.trading_manager, "trading_logs") and st.session_state.trading_manager.trading_logs:
+                        st.subheader("Nhật ký giao dịch")
+                        logs = st.session_state.trading_manager.trading_logs[-10:]  # Chỉ hiển thị 10 logs gần nhất
+                        logs_reversed = logs[::-1]  # Đảo ngược để hiển thị mới nhất trước
+                        
+                        for log in logs_reversed:
+                            timestamp = log.get("timestamp", "")
+                            message = log.get("message", "")
+                            level = log.get("level", "info")
+                            
+                            if level == "error":
+                                st.error(f"{timestamp}: {message}")
+                            elif level == "warning":
+                                st.warning(f"{timestamp}: {message}")
+                            else:
+                                st.info(f"{timestamp}: {message}")
+            else:
+                st.markdown("### ⏸️ Trạng thái: Bot giao dịch đang dừng")
+        
+        # Hiển thị lưu ý quan trọng
+        with st.expander("⚠️ Lưu ý quan trọng", expanded=True):
+            st.warning("""
+            - Giao dịch tiền điện tử luôn có rủi ro cao, bạn có thể mất tất cả vốn đầu tư.
+            - Hệ thống AI dự đoán không bảo đảm lợi nhuận và có thể sai trong nhiều trường hợp.
+            - Hãy bắt đầu với số vốn nhỏ khi sử dụng tính năng giao dịch tự động lần đầu.
+            - Kiểm tra cẩn thận các thiết lập TP/SL và đòn bẩy trước khi bắt đầu.
+            - Chỉ sử dụng đòn bẩy cao nếu bạn hiểu rõ rủi ro liên quan.
+            """)
 
 elif st.session_state.selected_tab == "API Guide":
     st.title("REST API Documentation")
