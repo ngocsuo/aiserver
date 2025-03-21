@@ -146,6 +146,10 @@ def initialize_system():
     if st.session_state.initialized:
         return
 
+    # Đảm bảo biến thread_running được khởi tạo trước khi sử dụng
+    if 'thread_running' not in st.session_state:
+        st.session_state.thread_running = False
+        
     with st.spinner("Đang khởi tạo hệ thống dự đoán ETHUSDT..."):
         try:
             # Initialize data collector with factory function
