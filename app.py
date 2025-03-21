@@ -143,8 +143,8 @@ if 'initialized' not in st.session_state:
     
     # Khởi tạo thiết lập huấn luyện và lưu vào session state
     st.session_state.training_settings = {
-        "historical_start_date": config.HISTORICAL_START_DATE,
-        "training_interval": config.TRAINING_SCHEDULE["interval_minutes"],
+        "start_date": config.HISTORICAL_START_DATE,
+        "training_frequency": "30 phút",
         "validation_split": config.VALIDATION_SPLIT,
         "test_split": config.TEST_SPLIT
     }
