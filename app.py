@@ -186,10 +186,26 @@ def fetch_realtime_data():
         log_message = f"{timestamp} - 📡 Gửi yêu cầu đến {data_source_type} cho dữ liệu thời gian thực..."
         st.session_state.log_messages.append(log_message)
         
-        # Chỉ lấy dữ liệu gần đây nhất, không phải toàn bộ lịch sử
-        data = st.session_state.data_collector.update_data()
+        # Chỉ lấy dữ liệu 30 ngày gần nhất
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=30)
+        start_date_str = start_date.strftime("%Y-%m-%d")
         
-        st.session_state.latest_data = data.get(config.TIMEFRAMES["primary"])
+        # Gọi hàm lấy dữ liệu với tham số ngày bắt đầu
+        latest_data = st.session_state.data_collector.collect_historical_data(
+            start_date=start_date_str,
+            end_date=None
+        )
+        
+        st.session_state.latest_data = latest_data
+        
+        # Ghi vào log thông tin khoảng thời gian
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - ℹ️ Dải thời gian: {start_date_str} đến {end_date.strftime('%Y-%m-%d')}"
+        st.session_state.log_messages.append(log_message)
+        
+        # Tạo dict chứa dữ liệu để tương thích với code cũ
+        data = {config.TIMEFRAMES["primary"]: latest_data}
         
         # Add success log
         timestamp = datetime.now().strftime("%H:%M:%S")
