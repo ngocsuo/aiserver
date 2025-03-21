@@ -44,6 +44,9 @@ if 'initialized' not in st.session_state:
     st.session_state.selected_tab = "Live Dashboard"
     st.session_state.update_thread = None
     st.session_state.thread_running = False
+    st.session_state.last_update_time = None
+    st.session_state.chart_auto_refresh = True
+    st.session_state.auto_initialize_triggered = False
 
 def initialize_system():
     """Initialize the prediction system"""
@@ -1160,44 +1163,51 @@ def display_system_status(data_status, thread_status, prediction_count):
             st.write(f"Recent trend distribution:")
             st.write(f"LONG: {long_pct:.1f}% | NEUTRAL: {neutral_pct:.1f}% | SHORT: {short_pct:.1f}%")
 
-# Sidebar
+# Sidebar with modern design
 with st.sidebar:
-    st.title("ETHUSDT AI Prediction System")
-    st.write("AI-driven trading signal generator")
+    st.title("🚀 ETHUSDT AI Prediction")
+    st.markdown("<div style='margin-bottom: 20px;'>Dự đoán thông minh với AI</div>", unsafe_allow_html=True)
     
-    # Initialize button
-    if not st.session_state.initialized:
-        if st.button("Initialize System"):
-            initialize_system()
+    # Hiển thị trạng thái hệ thống với thiết kế hiện đại
+    if st.session_state.initialized:
+        st.success("🟢 Hệ thống đã sẵn sàng")
     else:
-        st.success("System initialized")
+        st.info("⏳ Đang khởi tạo hệ thống...")
     
-    # Navigation
-    st.subheader("Navigation")
+    # Navigation với thiết kế hiện đại
+    st.markdown("### 📊 Điều hướng")
     tabs = ["Live Dashboard", "Models & Training", "System Status", "API Guide"]
-    selected_tab = st.radio("Select View", tabs, index=tabs.index(st.session_state.selected_tab))
+    selected_tab = st.radio("Chọn chế độ xem", tabs, index=tabs.index(st.session_state.selected_tab))
     st.session_state.selected_tab = selected_tab
     
-    # Data controls
+    # Data controls với thiết kế hiện đại
     if st.session_state.initialized:
-        st.subheader("Data Controls")
+        st.markdown("### 🔄 Điều khiển dữ liệu")
+        
+        # Thêm tùy chọn tự động cập nhật biểu đồ mỗi 10 giây
+        st.session_state.chart_auto_refresh = st.toggle("Tự động cập nhật biểu đồ (10s)", value=True)
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("Fetch Data"):
+            if st.button("🔄 Tải lại"):
                 fetch_data()
                 
         with col2:
             if not st.session_state.thread_running:
-                if st.button("Auto Update"):
+                if st.button("▶️ Auto"):
                     start_update_thread()
             else:
-                if st.button("Stop Updates"):
+                if st.button("⏹️ Dừng"):
                     stop_update_thread()
         
-        # Model controls
-        st.subheader("Model Controls")
-        if st.button("Train Models"):
+        # Hiển thị thời gian cập nhật cuối
+        if 'data_fetch_status' in st.session_state and st.session_state.data_fetch_status.get('last_update'):
+            st.caption(f"Cập nhật cuối: {st.session_state.data_fetch_status['last_update']}")
+        
+        # Model controls với thiết kế hiện đại
+        st.markdown("### 🧠 Mô hình AI")
+        if st.button("🔬 Huấn luyện"):
             train_models()
         
         # Prediction button
@@ -1209,6 +1219,11 @@ with st.sidebar:
         # Show last update time
         if st.session_state.data_fetch_status["last_update"]:
             st.caption(f"Last update: {st.session_state.data_fetch_status['last_update']}")
+
+# Tự động khởi tạo hệ thống khi tải trang (sau khi tất cả các function đã được định nghĩa)
+if not st.session_state.initialized and not st.session_state.auto_initialize_triggered:
+    st.session_state.auto_initialize_triggered = True
+    initialize_system()
 
 # Main content
 if st.session_state.selected_tab == "Live Dashboard":
@@ -1323,21 +1338,46 @@ if st.session_state.selected_tab == "Live Dashboard":
                 # Candlestick chart
                 if st.session_state.latest_data is not None:
                     st.subheader("ETHUSDT Price Chart")
+                    
+                    # Thêm số đếm thời gian cho tự động cập nhật
+                    if 'chart_last_update_time' not in st.session_state:
+                        st.session_state.chart_last_update_time = datetime.now()
+                    
+                    # Thêm tự động cập nhật biểu đồ mỗi 10 giây
+                    if st.session_state.chart_auto_refresh:
+                        current_time = datetime.now()
+                        time_diff = (current_time - st.session_state.chart_last_update_time).total_seconds()
+                        
+                        if time_diff >= 10:  # Cập nhật mỗi 10 giây
+                            fetch_data()
+                            st.session_state.chart_last_update_time = current_time
+                    
+                    # Hiển thị thời gian tự động cập nhật biểu đồ tiếp theo
+                    if st.session_state.chart_auto_refresh:
+                        time_left = max(0, 10 - (datetime.now() - st.session_state.chart_last_update_time).total_seconds())
+                        refresh_status = f"⏱️ Tự động cập nhật sau: {int(time_left)}s"
+                        st.caption(refresh_status)
+                    
                     # Add timeframe selector
-                    timeframe = st.selectbox("Select Chart Timeframe", ['Last 50 candles', 'Last 100 candles', 'Last 200 candles', 'All data'])
+                    timeframe = st.selectbox("Chọn khung thời gian", ['50 nến gần nhất', '100 nến gần nhất', '200 nến gần nhất', 'Tất cả dữ liệu'])
                     
                     # Convert selection to number of candles
-                    if timeframe == 'Last 50 candles':
+                    if timeframe == '50 nến gần nhất':
                         candles = 50
-                    elif timeframe == 'Last 100 candles':
+                    elif timeframe == '100 nến gần nhất':
                         candles = 100
-                    elif timeframe == 'Last 200 candles':
+                    elif timeframe == '200 nến gần nhất':
                         candles = 200
                     else:
                         candles = len(st.session_state.latest_data)
                     
+                    # Hiển thị biểu đồ
                     chart = plot_candlestick_chart(st.session_state.latest_data.iloc[-candles:])
                     st.plotly_chart(chart, use_container_width=True)
+                    
+                    # Hiển thị thông tin thời điểm cập nhật cuối
+                    last_update = st.session_state.data_fetch_status.get('last_update', 'Unknown')
+                    st.caption(f"📊 Dữ liệu cập nhật: {last_update}")
             
             with pred_col:
                 # Current prediction with enhanced styling
