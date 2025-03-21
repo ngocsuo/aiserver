@@ -283,8 +283,11 @@ class PredictionEngine:
                 data=data  # Pass the actual data for technical analysis
             )
             
+            # Enhance prediction with detailed technical analysis
+            enhanced_prediction = self._enhance_technical_reasoning(prediction, data)
+            
             # Store for caching
-            self.last_prediction = prediction
+            self.last_prediction = enhanced_prediction
             
             # Lấy thời gian từ Binance nếu có thể
             try:
@@ -305,9 +308,9 @@ class PredictionEngine:
             
             self.prediction_count += 1
             
-            logger.info(f"Prediction generated: {prediction['trend']} with confidence {prediction['confidence']:.2f}")
+            logger.info(f"Prediction generated: {enhanced_prediction['trend']} with confidence {enhanced_prediction['confidence']:.2f}")
             
-            return prediction
+            return enhanced_prediction
             
         except Exception as e:
             logger.error(f"Error generating prediction: {e}")
@@ -511,6 +514,242 @@ class PredictionEngine:
         
         return prediction
     
+    def _detect_candlestick_patterns(self, data):
+        """Phát hiện mẫu nến phổ biến"""
+        patterns = []
+        if data is None or len(data) < 5:
+            return patterns
+            
+        last_candles = data.iloc[-5:].copy()
+        
+        # Doji
+        last_candle = last_candles.iloc[-1]
+        body_size = abs(last_candle['close'] - last_candle['open'])
+        if body_size < (last_candle['high'] - last_candle['low']) * 0.1:
+            patterns.append({"name": "Doji", "bullish": None, "strength": 0.6})
+        
+        # Hammer
+        if (last_candle['low'] < min(last_candle['open'], last_candle['close'])) and \
+           (min(last_candle['open'], last_candle['close']) - last_candle['low']) > 2 * body_size and \
+           (last_candle['high'] - max(last_candle['open'], last_candle['close'])) < 0.5 * body_size:
+            patterns.append({"name": "Hammer", "bullish": True, "strength": 0.7})
+        
+        # Engulfing
+        if len(last_candles) >= 2:
+            prev_candle = last_candles.iloc[-2]
+            prev_body_size = abs(prev_candle['close'] - prev_candle['open'])
+            
+            # Bullish Engulfing
+            if (prev_candle['close'] < prev_candle['open']) and \
+               (last_candle['close'] > last_candle['open']) and \
+               (last_candle['open'] <= prev_candle['close']) and \
+               (last_candle['close'] >= prev_candle['open']) and \
+               (body_size > prev_body_size):
+                patterns.append({"name": "Bullish Engulfing", "bullish": True, "strength": 0.8})
+                
+            # Bearish Engulfing
+            if (prev_candle['close'] > prev_candle['open']) and \
+               (last_candle['close'] < last_candle['open']) and \
+               (last_candle['open'] >= prev_candle['close']) and \
+               (last_candle['close'] <= prev_candle['open']) and \
+               (body_size > prev_body_size):
+                patterns.append({"name": "Bearish Engulfing", "bullish": False, "strength": 0.8})
+        
+        # Morning Star (bullish reversal)
+        if len(last_candles) >= 3:
+            first_candle = last_candles.iloc[-3]
+            middle_candle = last_candles.iloc[-2]
+            last_candle = last_candles.iloc[-1]
+            
+            first_body_size = abs(first_candle['close'] - first_candle['open'])
+            middle_body_size = abs(middle_candle['close'] - middle_candle['open'])
+            last_body_size = abs(last_candle['close'] - last_candle['open'])
+            
+            if (first_candle['close'] < first_candle['open']) and \
+               (middle_body_size < first_body_size * 0.5) and \
+               (last_candle['close'] > last_candle['open']) and \
+               (last_candle['close'] > (first_candle['open'] + first_candle['close']) / 2):
+                patterns.append({"name": "Morning Star", "bullish": True, "strength": 0.9})
+                
+        # Evening Star (bearish reversal)
+        if len(last_candles) >= 3:
+            first_candle = last_candles.iloc[-3]
+            middle_candle = last_candles.iloc[-2]
+            last_candle = last_candles.iloc[-1]
+            
+            first_body_size = abs(first_candle['close'] - first_candle['open'])
+            middle_body_size = abs(middle_candle['close'] - middle_candle['open'])
+            last_body_size = abs(last_candle['close'] - last_candle['open'])
+            
+            if (first_candle['close'] > first_candle['open']) and \
+               (middle_body_size < first_body_size * 0.5) and \
+               (last_candle['close'] < last_candle['open']) and \
+               (last_candle['close'] < (first_candle['open'] + first_candle['close']) / 2):
+                patterns.append({"name": "Evening Star", "bullish": False, "strength": 0.9})
+                
+        return patterns
+    
+    def _calculate_support_resistance(self, data):
+        """Tính toán các mức hỗ trợ/kháng cự"""
+        if data is None or len(data) < 20:
+            return {"support": [], "resistance": []}
+            
+        # Tính toán các mức swing high/low đơn giản
+        prices = data['close'].values
+        window = 5
+        
+        supports = []
+        resistances = []
+        
+        for i in range(window, len(prices) - window):
+            # Kiểm tra xem có phải là swing low?
+            if all(prices[i] <= prices[i-j] for j in range(1, window+1)) and \
+               all(prices[i] <= prices[i+j] for j in range(1, window+1)):
+                supports.append({"price": prices[i], "index": i})
+                
+            # Kiểm tra xem có phải là swing high?
+            if all(prices[i] >= prices[i-j] for j in range(1, window+1)) and \
+               all(prices[i] >= prices[i+j] for j in range(1, window+1)):
+                resistances.append({"price": prices[i], "index": i})
+        
+        # Chỉ giữ lại các mức gần nhất
+        supports = sorted(supports, key=lambda x: x["index"], reverse=True)[:3]
+        resistances = sorted(resistances, key=lambda x: x["index"], reverse=True)[:3]
+        
+        # Chỉ lấy giá trị
+        support_levels = [round(s["price"], 2) for s in supports]
+        resistance_levels = [round(r["price"], 2) for r in resistances]
+        
+        return {
+            "support": support_levels,
+            "resistance": resistance_levels
+        }
+        
+    def _analyze_price_position(self, data):
+        """Phân tích vị trí giá hiện tại so với các đường MA"""
+        try:
+            ma20 = data['close'].rolling(window=20).mean().iloc[-1]
+            ma50 = data['close'].rolling(window=50).mean().iloc[-1]
+            ma200 = data['close'].rolling(window=200).mean().iloc[-1] if len(data) > 200 else None
+            
+            current_price = data['close'].iloc[-1]
+            
+            result = {
+                'above_ma20': current_price > ma20,
+                'above_ma50': current_price > ma50,
+                'ma20_trend': 'UP' if ma20 > data['close'].rolling(window=20).mean().iloc[-2] else 'DOWN',
+                'price_to_ma20_percent': round((current_price / ma20 - 1) * 100, 2)
+            }
+            
+            if ma200 is not None:
+                result['above_ma200'] = current_price > ma200
+                
+            return result
+        except Exception as e:
+            logger.warning(f"Error analyzing price position: {e}")
+            return {}
+            
+    def _analyze_momentum(self, data):
+        """Phân tích động lượng dựa trên RSI và MACD"""
+        try:
+            # RSI
+            delta = data['close'].diff()
+            gain = delta.where(delta > 0, 0)
+            loss = -delta.where(delta < 0, 0)
+            
+            avg_gain = gain.rolling(window=14).mean()
+            avg_loss = loss.rolling(window=14).mean()
+            
+            rs = avg_gain / avg_loss
+            rsi = 100 - (100 / (1 + rs))
+            
+            # MACD
+            ema12 = data['close'].ewm(span=12).mean()
+            ema26 = data['close'].ewm(span=26).mean()
+            macd_line = ema12 - ema26
+            signal_line = macd_line.ewm(span=9).mean()
+            macd_histogram = macd_line - signal_line
+            
+            return {
+                'rsi': round(rsi.iloc[-1], 2),
+                'rsi_trend': 'OVERBOUGHT' if rsi.iloc[-1] > 70 else 'OVERSOLD' if rsi.iloc[-1] < 30 else 'NEUTRAL',
+                'macd_line': round(macd_line.iloc[-1], 6),
+                'signal_line': round(signal_line.iloc[-1], 6),
+                'macd_histogram': round(macd_histogram.iloc[-1], 6),
+                'macd_trend': 'BULLISH' if macd_histogram.iloc[-1] > 0 else 'BEARISH'
+            }
+        except Exception as e:
+            logger.warning(f"Error analyzing momentum: {e}")
+            return {}
+            
+    def _analyze_volume(self, data):
+        """Phân tích khối lượng giao dịch"""
+        try:
+            avg_volume = data['volume'].rolling(window=20).mean().iloc[-1]
+            current_volume = data['volume'].iloc[-1]
+            
+            return {
+                'current_volume': current_volume,
+                'avg_volume_20': avg_volume,
+                'volume_ratio': round(current_volume / avg_volume, 2),
+                'increasing_volume': current_volume > avg_volume,
+                'volume_trend': 'HIGH' if current_volume > avg_volume * 1.5 else 
+                                'LOW' if current_volume < avg_volume * 0.5 else 'NORMAL'
+            }
+        except Exception as e:
+            logger.warning(f"Error analyzing volume: {e}")
+            return {}
+            
+    def _enhance_technical_reasoning(self, prediction, data):
+        """Cải thiện phân tích kỹ thuật trong dự đoán"""
+        if data is None or data.empty:
+            return prediction
+        
+        # Phát hiện mẫu nến
+        candle_patterns = self._detect_candlestick_patterns(data)
+        if candle_patterns:
+            prediction['candle_patterns'] = candle_patterns
+        
+        # Tính toán mức hỗ trợ/kháng cự
+        sr_levels = self._calculate_support_resistance(data)
+        prediction['support_resistance'] = sr_levels
+        
+        # Tính toán tỷ lệ R/R (Risk/Reward)
+        current_price = data['close'].iloc[-1]
+        if prediction['trend'] == 'LONG':
+            nearest_resistance = min([r for r in sr_levels['resistance'] if r > current_price], 
+                                  default=current_price * 1.02)
+            nearest_support = max([s for s in sr_levels['support'] if s < current_price], 
+                               default=current_price * 0.99)
+            
+            risk = current_price - nearest_support
+            reward = nearest_resistance - current_price
+            rr_ratio = round(reward / risk, 2) if risk > 0 else 0
+            
+        elif prediction['trend'] == 'SHORT':
+            nearest_resistance = min([r for r in sr_levels['resistance'] if r > current_price], 
+                                  default=current_price * 1.01)
+            nearest_support = max([s for s in sr_levels['support'] if s < current_price], 
+                               default=current_price * 0.98)
+            
+            risk = nearest_resistance - current_price
+            reward = current_price - nearest_support
+            rr_ratio = round(reward / risk, 2) if risk > 0 else 0
+        else:
+            rr_ratio = 0
+        
+        prediction['risk_reward_ratio'] = rr_ratio
+        
+        # Phân tích chi tiết thêm
+        prediction['detailed_analysis'] = {
+            'current_price': current_price,
+            'price_position': self._analyze_price_position(data),
+            'momentum': self._analyze_momentum(data),
+            'volume_analysis': self._analyze_volume(data)
+        }
+        
+        return prediction
+
     def _generate_technical_reason(self, prediction, data=None):
         """
         Generate technical reasoning for the prediction based on actual indicators.
