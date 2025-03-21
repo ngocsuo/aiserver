@@ -3443,6 +3443,8 @@ elif st.session_state.selected_tab == "Trading":
                 if st.button("💾 Lưu API Keys", use_container_width=True):
                     st.session_state.trading_settings["api_key"] = api_key
                     st.session_state.trading_settings["api_secret"] = api_secret
+                    # Lưu trạng thái giao dịch để khôi phục khi F5
+                    save_trading_state()
                     st.success("Đã lưu API Keys")
             
             with col2:
@@ -3498,6 +3500,8 @@ elif st.session_state.selected_tab == "Trading":
                 st.session_state.trading_settings["take_profit_value"] = tp_value
                 st.session_state.trading_settings["stop_loss_type"] = "percent" if sl_type == "Phần trăm (%)" else "usdt"
                 st.session_state.trading_settings["stop_loss_value"] = sl_value
+                # Lưu trạng thái giao dịch để khôi phục khi F5
+                save_trading_state()
                 st.success("Đã lưu cài đặt TP/SL")
         
         # Phần cài đặt vốn và đòn bẩy
@@ -3536,6 +3540,8 @@ elif st.session_state.selected_tab == "Trading":
                 st.session_state.trading_settings["account_percent"] = account_percent
                 st.session_state.trading_settings["leverage"] = leverage
                 st.session_state.trading_settings["min_confidence"] = min_confidence
+                # Lưu trạng thái giao dịch để khôi phục khi F5
+                save_trading_state()
                 st.success("Đã lưu cài đặt vốn và đòn bẩy")
         
         # Hiển thị thông tin vị thế hiện tại nếu có
@@ -3580,6 +3586,8 @@ elif st.session_state.selected_tab == "Trading":
                                     with st.spinner("Đang đóng vị thế..."):
                                         result = st.session_state.trading_manager.close_position()
                                         if result:
+                                            # Lưu trạng thái giao dịch để khôi phục khi F5
+                                            save_trading_state()
                                             st.success("Đã đóng vị thế thành công")
                                             st.rerun()
                                         else:
@@ -3647,6 +3655,8 @@ elif st.session_state.selected_tab == "Trading":
                 
                 if result:
                     st.session_state.trading_settings["is_trading"] = True
+                    # Lưu trạng thái giao dịch để khôi phục khi F5
+                    save_trading_state()
                     st.success("Bot giao dịch tự động đã bắt đầu")
                     st.rerun()
                 else:
@@ -3658,6 +3668,8 @@ elif st.session_state.selected_tab == "Trading":
                     result = st.session_state.trading_manager.stop_trading_bot()
                     if result:
                         st.session_state.trading_settings["is_trading"] = False
+                        # Lưu trạng thái giao dịch để khôi phục khi F5
+                        save_trading_state()
                         st.success("Bot giao dịch tự động đã dừng")
                         st.rerun()
                     else:
