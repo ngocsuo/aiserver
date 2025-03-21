@@ -97,33 +97,40 @@ class TradingManager:
                 self.status = "Lỗi: Thiếu API keys"
                 return False
             
-            # Thiết lập proxy để vượt qua hạn chế IP của Binance
-            proxy_str = "mb105.raiproxy.com:15989:S6lnXxjtieCIA38a:XXjY9RleeBfS8AFX"
-            proxy_parts = proxy_str.split(':')
-            
-            if len(proxy_parts) >= 4:
-                host = proxy_parts[0]
-                port = proxy_parts[1]
-                username = proxy_parts[2]
-                password = proxy_parts[3]
+            # Thiết lập proxy sử dụng cấu hình từ config.py
+            if config.USE_PROXY:
+                host = config.PROXY_HOST
+                port = config.PROXY_PORT
+                username = config.PROXY_USERNAME
+                password = config.PROXY_PASSWORD
                 
-                proxy_auth = f"{username}:{password}@{host}:{port}"
-                proxy_settings = {
-                    'http': f'http://{proxy_auth}',
-                    'https': f'http://{proxy_auth}'
-                }
-                
-                logger.info(f"Kết nối qua proxy xác thực ({host}:{port})")
+                # Định dạng proxy giống với curl command
+                if username and password:
+                    proxy_url = f"http://{username}:{password}@{host}:{port}"
+                    
+                    proxy_settings = {
+                        'http': proxy_url,
+                        'https': proxy_url
+                    }
+                    
+                    logger.info(f"TradingManager kết nối qua proxy xác thực ({host}:{port})")
+                else:
+                    proxy_url = f"http://{host}:{port}"
+                    proxy_settings = {
+                        'http': proxy_url,
+                        'https': proxy_url
+                    }
+                    logger.info(f"TradingManager kết nối qua proxy không xác thực ({host}:{port})")
                 
                 # Tạo kết nối với proxy
                 self.client = Client(
                     self.api_key, 
                     self.api_secret,
-                    {"proxies": proxy_settings, "timeout": 60}
+                    {"proxies": proxy_settings, "timeout": 120}  # Tăng timeout lên 120 giây
                 )
             else:
-                # Fallback to direct connection if proxy format is invalid
-                logger.warning("Định dạng proxy không hợp lệ, thử kết nối trực tiếp")
+                # Kết nối trực tiếp khi không sử dụng proxy
+                logger.warning("Không sử dụng proxy, TradingManager kết nối trực tiếp")
                 self.client = Client(self.api_key, self.api_secret)
             
             # Kiểm tra kết nối
