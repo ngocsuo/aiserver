@@ -41,7 +41,7 @@ HISTORICAL_START_DATE = DEFAULT_TRAINING_START_DATE  # Start date for historical
 ENABLE_BACKTESTING = True  # Enable backtesting functionality
 BACKTEST_PERIOD_START = "2022-01-01"  # Start date for backtesting
 BACKTEST_PERIOD_END = "2022-12-31"   # End date for backtesting
-UPDATE_INTERVAL = 60  # Seconds between data updates
+UPDATE_INTERVAL = 10  # Seconds between data updates (giảm xuống để cập nhật thường xuyên hơn)
 
 # Feature Engineering Parameters
 TECHNICAL_INDICATORS = {

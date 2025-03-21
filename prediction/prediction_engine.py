@@ -125,10 +125,33 @@ class PredictionEngine:
             return False
         
         # Check if prediction is expired
-        now = datetime.now()
+        # Lấy thời gian từ Binance nếu có thể, để đảm bảo dự đoán theo thời gian thực của thị trường
+        try:
+            # Sử dụng data_collector đã tạo
+            from utils.data_collector import create_data_collector
+            collector = create_data_collector()
+            
+            # Lấy thời gian từ Binance
+            server_time = collector.client.get_server_time()
+            server_time_ms = server_time['serverTime']
+            now = datetime.fromtimestamp(server_time_ms / 1000)
+            logger.info(f"Using Binance server time for prediction validity check: {now}")
+        except Exception as e:
+            # Nếu không lấy được thời gian từ Binance, sử dụng thời gian local
+            now = datetime.now()
+            logger.warning(f"Unable to get Binance server time, using local time: {now}. Error: {e}")
+        
         valid_until = self.last_prediction_time + timedelta(minutes=config.VALIDITY_MINUTES)
         
-        return now < valid_until
+        # Ghi log thông tin về tính hợp lệ
+        is_valid = now < valid_until
+        if is_valid:
+            remaining_minutes = (valid_until - now).total_seconds() / 60
+            logger.info(f"Prediction still valid for {remaining_minutes:.1f} more minutes")
+        else:
+            logger.info(f"Prediction expired. Made {(now - self.last_prediction_time).total_seconds() / 60:.1f} minutes ago")
+            
+        return is_valid
     
     def get_cached_prediction(self):
         """
@@ -170,7 +193,24 @@ class PredictionEngine:
                 
                 # Store for caching
                 self.last_prediction = prediction
-                self.last_prediction_time = datetime.now()
+                
+                # Lấy thời gian từ Binance nếu có thể
+                try:
+                    # Sử dụng data_collector đã tạo
+                    from utils.data_collector import create_data_collector
+                    collector = create_data_collector()
+                    
+                    # Lấy thời gian từ Binance
+                    server_time = collector.client.get_server_time()
+                    server_time_ms = server_time['serverTime']
+                    now = datetime.fromtimestamp(server_time_ms / 1000)
+                    logger.info(f"Using Binance server time for timestamp: {now}")
+                    self.last_prediction_time = now
+                except Exception as e:
+                    # Nếu không lấy được thời gian từ Binance, sử dụng thời gian local
+                    self.last_prediction_time = datetime.now()
+                    logger.warning(f"Unable to get Binance server time, using local time: {self.last_prediction_time}. Error: {e}")
+                
                 self.prediction_count += 1
                 
                 return prediction
@@ -245,7 +285,24 @@ class PredictionEngine:
             
             # Store for caching
             self.last_prediction = prediction
-            self.last_prediction_time = datetime.now()
+            
+            # Lấy thời gian từ Binance nếu có thể
+            try:
+                # Sử dụng data_collector đã tạo
+                from utils.data_collector import create_data_collector
+                collector = create_data_collector()
+                
+                # Lấy thời gian từ Binance
+                server_time = collector.client.get_server_time()
+                server_time_ms = server_time['serverTime']
+                now = datetime.fromtimestamp(server_time_ms / 1000)
+                logger.info(f"Using Binance server time for timestamp: {now}")
+                self.last_prediction_time = now
+            except Exception as e:
+                # Nếu không lấy được thời gian từ Binance, sử dụng thời gian local
+                self.last_prediction_time = datetime.now()
+                logger.warning(f"Unable to get Binance server time, using local time: {self.last_prediction_time}. Error: {e}")
+            
             self.prediction_count += 1
             
             logger.info(f"Prediction generated: {prediction['trend']} with confidence {prediction['confidence']:.2f}")

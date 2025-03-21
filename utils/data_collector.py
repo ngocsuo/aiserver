@@ -686,22 +686,53 @@ class BinanceDataCollector:
                     # We have existing data, just update with recent candles
                     # Determine how many candles to fetch based on the last timestamp
                     last_timestamp = self.data[tf].index.max()
+                    
+                    # Lấy thời gian hiện tại từ Binance để đảm bảo đồng bộ
+                    try:
+                        server_time = self.client.get_server_time()
+                        server_time_ms = server_time['serverTime']
+                        server_datetime = datetime.fromtimestamp(server_time_ms / 1000)
+                        logger.info(f"Binance server time: {server_datetime}")
+                    except Exception as e:
+                        logger.warning(f"Failed to get Binance server time: {e}. Using local time.")
+                        server_datetime = now
+                    
+                    # Tính toán thời gian bắt đầu để đảm bảo không bỏ sót dữ liệu 
+                    # và thêm khoảng thời gian an toàn (10 phút) để đảm bảo chồng lặp
+                    lookback_time = timedelta(minutes=10)
+                    start_time = int((last_timestamp - lookback_time).timestamp() * 1000)
+                    
                     # Fetch a reasonable number of recent candles to ensure no gaps
                     recent_klines = self.client.get_historical_klines(
                         symbol=symbol,
                         interval=tf,
-                        start_str=int((last_timestamp - timedelta(hours=1)).timestamp() * 1000),
-                        limit=100
+                        start_str=start_time,
+                        limit=100  # Tăng limit để đảm bảo lấy đủ dữ liệu
                     )
                     
                     # Convert to DataFrame
                     if recent_klines:
                         recent_df = self._convert_klines_to_dataframe(recent_klines)
                         
+                        # Log thông tin về dữ liệu mới
+                        if not recent_df.empty:
+                            newest_time = recent_df.index.max()
+                            logger.info(f"Got new data up to {newest_time} for {symbol} {tf}")
+                            
+                            # Kiểm tra độ trễ dữ liệu
+                            data_delay = (server_datetime - newest_time).total_seconds()
+                            if data_delay > 60:  # Nếu trễ hơn 1 phút
+                                logger.warning(f"Data delay is {data_delay} seconds for {symbol} {tf}")
+                            else:
+                                logger.info(f"Data delay is {data_delay} seconds for {symbol} {tf}")
+                        
                         # Filter to new data only
                         recent_df = recent_df[recent_df.index > last_timestamp]
                         
                         if not recent_df.empty:
+                            # Thông báo số nến mới nhận được
+                            logger.info(f"Received {len(recent_df)} new candles for {symbol} {tf}")
+                            
                             # Append the new data
                             self.data[tf] = pd.concat([self.data[tf], recent_df])
                             
@@ -710,6 +741,10 @@ class BinanceDataCollector:
                             
                             # Sort by time
                             self.data[tf].sort_index(inplace=True)
+                            
+                            # Báo cáo thời gian của nến mới nhất
+                            latest_timestamp = self.data[tf].index.max()
+                            logger.info(f"Latest data timestamp for {symbol} {tf}: {latest_timestamp}")
                     
             # Update last update time
             self.last_update = now
