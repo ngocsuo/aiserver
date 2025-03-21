@@ -9,11 +9,11 @@ BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
 # Proxy Configuration
-USE_PROXY = os.environ.get("USE_PROXY", "True").lower() in ("true", "1", "yes")  # Mặc định sử dụng proxy vì trên Replit bắt buộc phải dùng proxy
-PROXY_HOST = os.environ.get("PROXY_HOST", "mb105.raiproxy.com")
-PROXY_PORT = os.environ.get("PROXY_PORT", "15989")
-PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "S6lnXxjtieCIA38a")
-PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "XXjY9RleeBfS8AFX")
+USE_PROXY = os.environ.get("USE_PROXY", "False").lower() in ("true", "1", "yes")  # Tắt proxy mặc định
+PROXY_HOST = os.environ.get("PROXY_HOST", "")
+PROXY_PORT = os.environ.get("PROXY_PORT", "")
+PROXY_USERNAME = os.environ.get("PROXY_USERNAME", "")
+PROXY_PASSWORD = os.environ.get("PROXY_PASSWORD", "")
 
 # Feature flags
 USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data
