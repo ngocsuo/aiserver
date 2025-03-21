@@ -224,20 +224,9 @@ class TradingManager:
                 self.add_log("Chưa kết nối đến Binance API", "error")
                 return None
             
-            # Thiết lập chế độ margin nếu cần (xử lý lỗi No need to change margin type)
-            if is_isolated:
-                try:
-                    # Thực hiện việc đổi margin type trong khối try-except
-                    # Sẽ bỏ qua nếu gặp lỗi "No need to change margin type"
-                    try:
-                        self.client.futures_change_margin_type(symbol=symbol, marginType='ISOLATED')
-                        self.add_log(f"Đã chuyển sang chế độ margin cô lập cho {symbol}")
-                    except BinanceAPIException as e:
-                        # Bỏ qua lỗi No need to change margin type
-                        if "No need to change margin type" not in str(e):
-                            self.add_log(f"Lỗi khi thiết lập chế độ margin: {e}", "warning")
-                except Exception as e:
-                    self.add_log(f"Lỗi khi thiết lập chế độ margin: {str(e)}", "warning")
+            # Mở vị thế mà không cần thay đổi margin type
+            # Nếu margin type cần được đổi, API sẽ tự báo lỗi
+            # Tạo lệnh thử và xử lý lỗi nếu có
             
             # Tạo lệnh
             order = self.client.futures_create_order(
@@ -364,14 +353,34 @@ class TradingManager:
             return
         
         try:
-            symbol = self.position_info['symbol']
-            positions = self.client.futures_position_information(symbol=symbol)
-            
+            # Lấy thông tin vị thế từ Binance
+            symbol = self.position_info.get('symbol')
+            if not symbol:
+                self.add_log("Thiếu thông tin symbol trong position_info", "warning")
+                return
+                
+            try:
+                positions = self.client.futures_position_information(symbol=symbol)
+            except Exception as e:
+                self.add_log(f"Không thể lấy thông tin vị thế từ Binance: {str(e)}", "warning")
+                return
+                
+            # Tìm vị thế hiện tại và cập nhật giá
             for position in positions:
-                if position['symbol'] == symbol and float(position['positionAmt']) != 0:
-                    self.position_info['entry_price'] = float(position['entryPrice'])
-                    self.add_log(f"Cập nhật giá vào lệnh: {self.position_info['entry_price']}")
-                    break
+                try:
+                    if (position.get('symbol') == symbol and 
+                        'positionAmt' in position and 
+                        float(position['positionAmt']) != 0):
+                        
+                        if 'entryPrice' in position:
+                            self.position_info['entry_price'] = float(position['entryPrice'])
+                            self.add_log(f"Cập nhật giá vào lệnh: {self.position_info['entry_price']}")
+                        else:
+                            self.add_log("Không tìm thấy entryPrice trong thông tin vị thế", "warning")
+                        break
+                except Exception as e:
+                    self.add_log(f"Lỗi khi xử lý thông tin vị thế: {str(e)}", "warning")
+                    continue
         except Exception as e:
             self.add_log(f"Lỗi khi cập nhật giá vị thế: {str(e)}", "warning")
     
@@ -466,42 +475,71 @@ class TradingManager:
             
             symbol = symbol or self.position_info['symbol']
             
-            # Lấy thông tin vị thế
-            positions = self.client.futures_position_information(symbol=symbol)
-            
-            for position in positions:
-                if position['symbol'] == symbol and float(position['positionAmt']) != 0:
-                    entry_price = float(position['entryPrice'])
-                    mark_price = float(position['markPrice'])
-                    position_amt = float(position['positionAmt'])
-                    leverage = float(position['leverage'])
+            # Xử lý trong một khối try lớn
+            try:
+                try:
+                    positions = self.client.futures_position_information(symbol=symbol)
                     
-                    # Tính PNL dựa trên hướng vị thế
-                    if position_amt > 0:  # Long position
-                        pnl_percent = (mark_price - entry_price) / entry_price * 100 * leverage
-                        pnl_usdt = position_amt * (mark_price - entry_price)
-                    else:  # Short position
-                        pnl_percent = (entry_price - mark_price) / entry_price * 100 * leverage
-                        pnl_usdt = -position_amt * (entry_price - mark_price)
+                    for position in positions:
+                        # Xử lý cẩn thận với try-except
+                        try:
+                            if (position.get('symbol') == symbol and 
+                                'positionAmt' in position and 
+                                float(position['positionAmt']) != 0):
+                                
+                                # Kiểm tra các trường cần thiết
+                                if not all(k in position for k in ['entryPrice', 'markPrice', 'leverage', 'positionAmt']):
+                                    self.add_log(f"Thiếu trường dữ liệu vị thế PNL: {position.keys()}", "warning")
+                                    continue
+                                
+                                entry_price = float(position['entryPrice'])
+                                mark_price = float(position['markPrice'])
+                                position_amt = float(position['positionAmt'])
+                                leverage = float(position['leverage'])
+                                
+                                # Tính PNL dựa trên hướng vị thế
+                                if position_amt > 0:  # Long position
+                                    pnl_percent = (mark_price - entry_price) / entry_price * 100 * leverage
+                                    pnl_usdt = position_amt * (mark_price - entry_price)
+                                else:  # Short position
+                                    pnl_percent = (entry_price - mark_price) / entry_price * 100 * leverage
+                                    pnl_usdt = -position_amt * (entry_price - mark_price)
+                                
+                                # Lấy giá thanh lý nếu có
+                                liquidation_price = None
+                                if 'liquidationPrice' in position:
+                                    if position['liquidationPrice'] != '0':
+                                        liquidation_price = float(position['liquidationPrice'])
+                                
+                                return {
+                                    "has_position": True,
+                                    "symbol": symbol,
+                                    "position_amount": position_amt,
+                                    "entry_price": entry_price,
+                                    "current_price": mark_price,
+                                    "pnl": pnl_usdt,
+                                    "pnl_percent": pnl_percent,
+                                    "leverage": leverage,
+                                    "liquidation_price": liquidation_price
+                                }
+                        except KeyError as e:
+                            self.add_log(f"Thiếu trường {e} trong dữ liệu vị thế", "warning")
+                            continue
+                        except Exception as e:
+                            self.add_log(f"Lỗi khi xử lý thông tin vị thế: {str(e)}", "warning")
+                            continue
                     
-                    result = {
-                        "has_position": True,
-                        "symbol": symbol,
-                        "position_amount": position_amt,
-                        "entry_price": entry_price,
-                        "current_price": mark_price,
-                        "pnl": pnl_usdt,
-                        "pnl_percent": pnl_percent,
-                        "leverage": leverage,
-                        "liquidation_price": float(position['liquidationPrice']) if position['liquidationPrice'] != '0' else None
-                    }
+                    # Không tìm thấy vị thế trong dữ liệu từ API
+                    self.is_position_open = False
+                    self.position_info = None
+                    return {"has_position": False, "pnl": 0, "pnl_percent": 0}
                     
-                    return result
-            
-            # Không tìm thấy vị thế
-            self.is_position_open = False
-            self.position_info = None
-            return {"has_position": False, "pnl": 0, "pnl_percent": 0}
+                except Exception as e:
+                    self.add_log(f"Lỗi khi lấy thông tin vị thế: {str(e)}", "warning")
+                    return {"has_position": False, "pnl": 0, "pnl_percent": 0}
+            except Exception as e:
+                self.add_log(f"Lỗi không xác định: {str(e)}", "error")
+                return {"has_position": False, "pnl": 0, "pnl_percent": 0}
         except BinanceAPIException as e:
             self.add_log(f"Lỗi khi lấy thông tin PNL: {e}", "error")
             return None
