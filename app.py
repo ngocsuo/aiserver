@@ -2144,7 +2144,8 @@ elif st.session_state.selected_tab == "Cài đặt":
                         # Gọi hàm huấn luyện với thiết lập mới
                         with st.spinner("Đang bắt đầu quá trình huấn luyện..."):
                             # Lưu thiết lập huấn luyện và bắt đầu huấn luyện
-                            config.HISTORICAL_START_DATE = st.session_state.training_settings["start_date"]
+                            new_start_date = st.session_state.training_settings["start_date"]
+                            config.HISTORICAL_START_DATE = new_start_date
                             
                             # Hiển thị thông báo đang huấn luyện
                             st.success("🚀 Đang bắt đầu huấn luyện mô hình...")

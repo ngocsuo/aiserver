@@ -62,8 +62,9 @@ from datetime import datetime, timedelta
 today = datetime.now()
 DEFAULT_TRAINING_START_DATE = (today - timedelta(days=DATA_RANGE_OPTIONS["training"])).strftime("%Y-%m-%d")
 
-# Sử dụng dữ liệu 3 tháng gần nhất để tăng tốc độ trainng
-HISTORICAL_START_DATE = DEFAULT_TRAINING_START_DATE  # Start date for historical data training
+# Giá trị mặc định cho ngày bắt đầu dữ liệu huấn luyện
+# Giá trị này có thể được cập nhật trong thời gian chạy từ UI
+HISTORICAL_START_DATE = "2023-12-01"  # Sử dụng ngày 1/12/2023 làm giá trị mặc định theo yêu cầu
 
 ENABLE_BACKTESTING = True  # Enable backtesting functionality
 BACKTEST_PERIOD_START = "2022-01-01"  # Start date for backtesting
