@@ -5,6 +5,7 @@ import os
 import time
 import threading
 import logging
+import math
 from datetime import datetime, timedelta, timezone
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
@@ -413,7 +414,7 @@ class TradingManager:
             quantity = (trade_amount * leverage) / price
             
             # Lấy thông tin symbol để làm tròn số lượng
-            exchange_info = self.client.get_exchange_info()
+            exchange_info = self.client.futures_exchange_info()
             symbol_info = next((s for s in exchange_info['symbols'] if s['symbol'] == symbol), None)
             
             if symbol_info:
@@ -428,13 +429,20 @@ class TradingManager:
                     if '.' in str(step_size):
                         precision = len(str(step_size).split('.')[1])
                     
-                    quantity = max(min_qty, round(quantity - (quantity % step_size), precision))
+                    # Tính số lượng theo step size đúng cách
+                    step_size_precision = int(round(-math.log10(step_size)))
+                    quantity = max(min_qty, round(quantity, step_size_precision))
+                    
+                    # Làm tròn theo step size
+                    quantity = float(int(quantity / step_size) * step_size)
+                    # Format với đúng số chữ số thập phân
+                    quantity = float(format(quantity, f'.{step_size_precision}f'))
                     
                     self.add_log(f"Số lượng giao dịch {symbol}: {quantity} (${trade_amount:.2f}, {account_percent}% tài khoản)")
                     return quantity
             
-            # Nếu không tìm thấy thông tin symbol, làm tròn đến 4 chữ số thập phân
-            rounded_quantity = round(quantity, 4)
+            # Nếu không tìm thấy thông tin symbol, làm tròn đến 3 chữ số thập phân
+            rounded_quantity = round(quantity, 3)
             self.add_log(f"Số lượng giao dịch {symbol}: {rounded_quantity} (${trade_amount:.2f}, {account_percent}% tài khoản)")
             return rounded_quantity
         except BinanceAPIException as e:
