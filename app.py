@@ -1158,27 +1158,42 @@ if st.session_state.selected_tab == "Live Dashboard":
         
         # Status badges at the top - more compact
         status_container = st.container()
-        status_col1, status_col2, status_col3, status_col4 = status_container.columns(4)
+        status_col1, status_col2, status_col3, status_col4, status_col5 = status_container.columns(5)
         
         with status_col1:
             source_color = "green" if not isinstance(st.session_state.data_collector, MockDataCollector) else "orange"
-            source_text = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Simulated Data"
-            st.markdown(f"**Data Source:** :{source_color}[{source_text}]")
+            source_text = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Mô phỏng"
+            st.markdown(f"**Nguồn dữ liệu:** :{source_color}[{source_text}]")
             
         with status_col2:
-            data_status = "✅ Data Available" if st.session_state.latest_data is not None else "❌ No Data"
+            data_status = "✅ Có sẵn" if st.session_state.latest_data is not None else "❌ Không có"
             data_color = "green" if st.session_state.latest_data is not None else "red"
-            st.markdown(f"**Data Status:** :{data_color}[{data_status}]")
-            
+            st.markdown(f"**Dữ liệu trực tuyến:** :{data_color}[{data_status}]")
+        
         with status_col3:
-            model_status = "✅ Models Trained" if st.session_state.model_trained else "❌ Not Trained"
-            model_color = "green" if st.session_state.model_trained else "red"
-            st.markdown(f"**Model Status:** :{model_color}[{model_status}]")
+            # Thêm trạng thái tải dữ liệu lịch sử
+            if 'historical_data_status' in st.session_state:
+                if 'progress' in st.session_state.historical_data_status:
+                    progress = st.session_state.historical_data_status['progress']
+                    hist_status = f"⏳ {progress}%" if progress < 100 else "✅ Hoàn tất"
+                    hist_color = "orange" if progress < 100 else "green"
+                else:
+                    hist_status = "⏱️ Đang chờ"
+                    hist_color = "yellow"
+            else:
+                hist_status = "❌ Chưa bắt đầu"
+                hist_color = "red"
+            st.markdown(f"**Dữ liệu lịch sử:** :{hist_color}[{hist_status}]")
             
         with status_col4:
-            update_status = "✅ Auto Updates On" if st.session_state.thread_running else "❌ Updates Off"
+            model_status = "✅ Đã huấn luyện" if st.session_state.model_trained else "❌ Chưa huấn luyện"
+            model_color = "green" if st.session_state.model_trained else "red"
+            st.markdown(f"**Mô hình AI:** :{model_color}[{model_status}]")
+            
+        with status_col5:
+            update_status = "✅ Bật" if st.session_state.thread_running else "❌ Tắt"
             update_color = "green" if st.session_state.thread_running else "red"
-            st.markdown(f"**Auto Updates:** :{update_color}[{update_status}]")
+            st.markdown(f"**Cập nhật tự động:** :{update_color}[{update_status}]")
         
         # Display prediction and chart in tabs - Default to chart first
         tabs = st.tabs(["📊 Price Chart", "🔍 Technical Analysis", "📈 Prediction History", "📋 Training Logs"])
@@ -1188,31 +1203,31 @@ if st.session_state.selected_tab == "Live Dashboard":
         action_col1, action_col2, action_col3, action_col4 = action_container.columns(4)
         
         with action_col1:
-            if st.button("🔄 Fetch Data", use_container_width=True):
-                with st.spinner("Fetching latest data..."):
-                    fetch_data()
+            if st.button("🔄 Tải dữ liệu thời gian thực", use_container_width=True):
+                with st.spinner("Đang tải dữ liệu thời gian thực..."):
+                    fetch_realtime_data()
                 
         with action_col2:
-            if st.button("🔮 Make Prediction", use_container_width=True):
-                with st.spinner("Generating prediction..."):
+            if st.button("🔮 Tạo dự đoán", use_container_width=True):
+                with st.spinner("Đang tạo dự đoán..."):
                     make_prediction()
                 
         with action_col3:
             if not st.session_state.model_trained:
-                if st.button("🧠 Train Models", use_container_width=True):
-                    with st.spinner("Training models..."):
+                if st.button("🧠 Huấn luyện mô hình", use_container_width=True):
+                    with st.spinner("Đang huấn luyện mô hình..."):
                         train_models()
             else:
-                if st.button("🔄 Retrain Models", use_container_width=True):
-                    with st.spinner("Retraining models..."):
+                if st.button("🔄 Huấn luyện lại mô hình", use_container_width=True):
+                    with st.spinner("Đang huấn luyện lại mô hình..."):
                         train_models()
                 
         with action_col4:
             if not st.session_state.thread_running:
-                if st.button("▶️ Start Auto Updates", use_container_width=True):
+                if st.button("▶️ Bật cập nhật tự động", use_container_width=True):
                     start_update_thread()
             else:
-                if st.button("⏹️ Stop Auto Updates", use_container_width=True):
+                if st.button("⏹️ Tắt cập nhật tự động", use_container_width=True):
                     stop_update_thread()
         
         with tabs[0]:
