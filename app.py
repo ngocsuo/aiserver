@@ -1278,36 +1278,82 @@ def display_system_status(data_status, thread_status, prediction_count):
             st.write(f"Recent trend distribution:")
             st.write(f"LONG: {long_pct:.1f}% | NEUTRAL: {neutral_pct:.1f}% | SHORT: {short_pct:.1f}%")
 
-# Sidebar with modern design
+# Sidebar đơn giản và hiệu quả
 with st.sidebar:
-    st.title("🚀 ETHUSDT AI Prediction")
-    st.markdown("<div style='margin-bottom: 20px;'>Dự đoán thông minh với AI</div>", unsafe_allow_html=True)
+    # Header với logo và tiêu đề ngắn gọn
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        st.image("generated-icon.png", width=50)
+    with col2:
+        st.title("ETHUSDT AI")
+    
+    # Khung trạng thái hệ thống với phân cách rõ ràng
+    st.markdown("---")
     
     # Hiển thị trạng thái hệ thống với thiết kế hiện đại
-    if st.session_state.initialized:
-        st.success("🟢 Hệ thống đã sẵn sàng")
+    if not st.session_state.initialized:
+        # Nút khởi tạo hệ thống nổi bật
+        st.warning("⚠️ Hệ thống chưa được khởi tạo")
+        if st.button("🚀 Khởi tạo hệ thống", type="primary", use_container_width=True):
+            initialize_system()
     else:
-        st.info("⏳ Đang khởi tạo hệ thống...")
+        # Trạng thái hệ thống
+        st.success(f"✅ Hệ thống đã sẵn sàng ({datetime.now().strftime('%H:%M:%S')})")
+        
+        # Hiển thị nguồn dữ liệu
+        if hasattr(st.session_state, 'data_source'):
+            source_color = st.session_state.data_source_color if hasattr(st.session_state, 'data_source_color') else 'blue'
+            st.markdown(f"<span style='color:{source_color}'><b>📊 Nguồn dữ liệu:</b> {st.session_state.data_source}</span>", unsafe_allow_html=True)
+        
+        # Tiến trình tải dữ liệu lịch sử (nếu đang chạy)
+        if 'historical_data_status' in st.session_state:
+            status = st.session_state.historical_data_status
+            if 'progress' in status and status['progress'] < 100:
+                with st.expander("📥 Tiến trình tải dữ liệu", expanded=True):
+                    st.progress(status['progress'])
+                    st.caption(status.get('status', 'Đang tải...'))
+        
+        # Khung hành động
+        st.markdown("---")
+        st.markdown("### 🛠️ Hành động nhanh")
+        
+        # Các nút hành động chính
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔄 Cập nhật", use_container_width=True):
+                fetch_realtime_data()
+        with col2:
+            if st.button("🧠 Huấn luyện", use_container_width=True):
+                train_models()
+        
+        # Nút dự đoán nổi bật
+        if st.button("🔮 Tạo Dự đoán", type="primary", use_container_width=True):
+            make_prediction()
     
-    # Navigation với thiết kế hiện đại và icon emoji
+    # Navigation đơn giản hơn
+    st.markdown("---")
     st.markdown("### 📊 Điều hướng")
+    
+    # Danh sách tab được sắp xếp theo mức độ quan trọng
     tabs = [
         "🔍 Live Dashboard", 
-        "🧠 Models & Training", 
-        "⚙️ Cài đặt", 
         "📊 Backtest",
-        "🛠️ System Status", 
-        "📡 API Guide"
+        "⚙️ Cài đặt", 
+        "🧠 Models", 
+        "🛠️ Trạng thái", 
+        "📡 API"
     ]
+    
     # Map từ tab hiển thị đến tên trong session_state
     tab_mapping = {
         "🔍 Live Dashboard": "Live Dashboard",
-        "🧠 Models & Training": "Models & Training",
+        "🧠 Models": "Models & Training",
         "⚙️ Cài đặt": "Cài đặt",
         "📊 Backtest": "Backtest",
-        "🛠️ System Status": "System Status",
-        "📡 API Guide": "API Guide"
+        "🛠️ Trạng thái": "System Status",
+        "📡 API": "API Guide"
     }
+    
     # Tìm index mặc định
     default_index = 0
     for i, tab in enumerate(tabs):
@@ -1315,49 +1361,14 @@ with st.sidebar:
             default_index = i
             break
             
-    selected_tab_display = st.radio("Chọn chế độ xem", tabs, index=default_index)
+    selected_tab_display = st.radio("", tabs, index=default_index)
     # Lưu tab đã chọn vào session state
     st.session_state.selected_tab = tab_mapping[selected_tab_display]
     
-    # Data controls với thiết kế hiện đại
-    if st.session_state.initialized:
-        st.markdown("### 🔄 Điều khiển dữ liệu")
-        
-        # Thêm tùy chọn tự động cập nhật biểu đồ mỗi 10 giây
-        st.session_state.chart_auto_refresh = st.toggle("Tự động cập nhật biểu đồ (10s)", value=True)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🔄 Tải lại"):
-                fetch_data()
-                
-        with col2:
-            if not st.session_state.thread_running:
-                if st.button("▶️ Auto"):
-                    start_update_thread()
-            else:
-                if st.button("⏹️ Dừng"):
-                    stop_update_thread()
-        
-        # Hiển thị thời gian cập nhật cuối
-        if 'data_fetch_status' in st.session_state and st.session_state.data_fetch_status.get('last_update'):
-            st.caption(f"Cập nhật cuối: {st.session_state.data_fetch_status['last_update']}")
-        
-        # Model controls với thiết kế hiện đại
-        st.markdown("### 🧠 Mô hình AI")
-        if st.button("🔬 Huấn luyện"):
-            train_models()
-        
-        # Prediction button
-        if st.button("Make Prediction"):
-            prediction = make_prediction()
-            if prediction:
-                st.success("New prediction generated!")
-        
-        # Show last update time
-        if st.session_state.data_fetch_status["last_update"]:
-            st.caption(f"Last update: {st.session_state.data_fetch_status['last_update']}")
+    # Hiển thị cập nhật cuối cùng trong footer
+    if st.session_state.initialized and hasattr(st.session_state, 'data_fetch_status'):
+        if st.session_state.data_fetch_status.get('last_update'):
+            st.caption(f"Cập nhật cuối cùng: {st.session_state.data_fetch_status['last_update']}")
 
 # Tự động khởi tạo hệ thống khi tải trang (sau khi tất cả các function đã được định nghĩa)
 if not st.session_state.initialized and not st.session_state.auto_initialize_triggered:
