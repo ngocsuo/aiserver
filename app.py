@@ -1108,29 +1108,24 @@ def display_current_prediction(prediction):
     color_map = {"LONG": "green", "NEUTRAL": "gray", "SHORT": "red"}
     color = color_map.get(prediction["trend"], "blue")
     
-    # Show prediction details in columns
-    col1, col2, col3 = st.columns(3)
+    # Show prediction details individually to avoid nested columns issues
+    st.metric(
+        label="Current Trend", 
+        value=prediction["trend"],
+        delta=f"{prediction['predicted_move']}%" if prediction["trend"] != "NEUTRAL" else None,
+        delta_color="normal" if prediction["trend"] == "LONG" else "inverse" if prediction["trend"] == "SHORT" else "off"
+    )
     
-    with col1:
-        st.metric(
-            label="Current Trend", 
-            value=prediction["trend"],
-            delta=f"{prediction['predicted_move']}%" if prediction["trend"] != "NEUTRAL" else None,
-            delta_color="normal" if prediction["trend"] == "LONG" else "inverse" if prediction["trend"] == "SHORT" else "off"
-        )
+    st.metric(
+        label="Current Price", 
+        value=f"${prediction['price']:.2f}"
+    )
     
-    with col2:
-        st.metric(
-            label="Current Price", 
-            value=f"${prediction['price']:.2f}"
-        )
-    
-    with col3:
-        st.metric(
-            label="Target Price", 
-            value=f"${prediction['target_price']:.2f}",
-            delta=f"{(prediction['target_price'] - prediction['price']):.2f} USDT"
-        )
+    st.metric(
+        label="Target Price", 
+        value=f"${prediction['target_price']:.2f}",
+        delta=f"{(prediction['target_price'] - prediction['price']):.2f} USDT"
+    )
     
     # Confidence gauge
     st.write(f"**Confidence: {prediction['confidence'] * 100:.1f}%**")
@@ -1153,34 +1148,30 @@ def display_current_prediction(prediction):
             st.write("#### Key Technical Indicators")
             indicators = prediction['technical_indicators']
             
-            # Create 3 columns for technical indicators
-            ind_col1, ind_col2, ind_col3 = st.columns(3)
+            # Hiển thị các chỉ báo kỹ thuật theo dạng danh sách thay vì cột
+            if 'rsi' in indicators:
+                st.metric("RSI", f"{indicators['rsi']:.1f}", 
+                         delta="Overbought" if indicators['rsi'] > 70 else "Oversold" if indicators['rsi'] < 30 else "Neutral")
             
-            with ind_col1:
-                if 'rsi' in indicators:
-                    st.metric("RSI", f"{indicators['rsi']:.1f}", 
-                              delta="Overbought" if indicators['rsi'] > 70 else "Oversold" if indicators['rsi'] < 30 else "Neutral")
-                
-                if 'macd' in indicators:
-                    st.metric("MACD", f"{indicators['macd']:.4f}", 
-                              delta=f"{indicators['macd'] - indicators.get('macd_signal', 0):.4f}")
+            if 'macd' in indicators:
+                st.metric("MACD", f"{indicators['macd']:.4f}", 
+                         delta=f"{indicators['macd'] - indicators.get('macd_signal', 0):.4f}")
             
-            with ind_col2:
-                if 'ema_9' in indicators and 'ema_21' in indicators:
-                    diff = indicators['ema_9'] - indicators['ema_21']
-                    st.metric("EMA 9/21 Diff", f"{diff:.2f}", 
-                              delta="Bullish" if diff > 0 else "Bearish")
-                
-                if 'atr' in indicators:
-                    st.metric("ATR", f"{indicators['atr']:.2f}")
+            # Hiển thị các chỉ báo kỹ thuật bổ sung dưới dạng danh sách
+            if 'ema_9' in indicators and 'ema_21' in indicators:
+                diff = indicators['ema_9'] - indicators['ema_21']
+                st.metric("EMA 9/21 Diff", f"{diff:.2f}", 
+                          delta="Bullish" if diff > 0 else "Bearish")
             
-            with ind_col3:
-                if 'bb_width' in indicators:
-                    st.metric("BB Width", f"{indicators['bb_width']:.2f}",
-                              delta="High Volatility" if indicators['bb_width'] > 0.05 else "Low Volatility")
+            if 'atr' in indicators:
+                st.metric("ATR", f"{indicators['atr']:.2f}")
                 
-                if 'volume' in indicators:
-                    st.metric("Volume", f"{indicators['volume']:.0f}")
+            if 'bb_width' in indicators:
+                st.metric("BB Width", f"{indicators['bb_width']:.2f}",
+                          delta="High Volatility" if indicators['bb_width'] > 0.05 else "Low Volatility")
+            
+            if 'volume' in indicators:
+                st.metric("Volume", f"{indicators['volume']:.0f}")
         
         # Show buy/sell signals
         if prediction['trend'] != "NEUTRAL":
