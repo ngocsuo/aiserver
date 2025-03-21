@@ -1992,7 +1992,7 @@ if st.session_state.selected_tab == "Live Dashboard":
                     
                     # Hiển thị biểu đồ
                     chart = plot_candlestick_chart(st.session_state.latest_data.iloc[-candles:])
-                    st.plotly_chart(chart, use_container_width=True)
+                    st.plotly_chart(chart, use_container_width=True, key="candlestick_chart")
                     
                     # Hiển thị thông tin thời điểm cập nhật cuối
                     last_update = st.session_state.data_fetch_status.get('last_update', 'Unknown')
@@ -2041,13 +2041,13 @@ if st.session_state.selected_tab == "Live Dashboard":
                 
                 # Technical indicators chart
                 indicators_chart = plot_technical_indicators(st.session_state.latest_data.iloc[-100:])
-                st.plotly_chart(indicators_chart, use_container_width=True)
+                st.plotly_chart(indicators_chart, use_container_width=True, key="tech_indicators_chart")
                 
                 # Confidence distribution if predictions exist
                 if st.session_state.predictions:
                     st.subheader("Prediction Confidence Distribution")
                     confidence_chart = plot_confidence_distribution(st.session_state.predictions[-20:])
-                    st.plotly_chart(confidence_chart, use_container_width=True)
+                    st.plotly_chart(confidence_chart, use_container_width=True, key="confidence_distribution_chart")
             else:
                 st.warning("No data available for technical analysis. Please fetch data first.")
         
@@ -2084,7 +2084,7 @@ if st.session_state.selected_tab == "Live Dashboard":
                 # Display history chart
                 if filtered_predictions:
                     history_chart = plot_prediction_history(filtered_predictions)
-                    st.plotly_chart(history_chart, use_container_width=True)
+                    st.plotly_chart(history_chart, use_container_width=True, key="prediction_history_plot")
                     
                     # Show most recent predictions in a table
                     with st.expander("Recent Predictions (Table View)", expanded=True):
@@ -3742,7 +3742,7 @@ def render_main_interface():
             if st.session_state.predictions and len(st.session_state.predictions) > 0:
                 # Vẽ biểu đồ lịch sử dự đoán
                 hist_chart = plot_prediction_history(st.session_state.predictions)
-                st.plotly_chart(hist_chart, use_container_width=True)
+                st.plotly_chart(hist_chart, use_container_width=True, key="prediction_history_chart")
             else:
                 st.info("Chưa có dữ liệu lịch sử dự đoán")
     
