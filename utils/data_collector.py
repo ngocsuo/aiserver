@@ -420,6 +420,11 @@ class BinanceDataCollector:
                     logger.error("Binance API error: Invalid API key")
                     self.connection_status["error"] = "Invalid API key"
                     self.connection_status["message"] = "Please check your API key and secret"
+                elif 'APIError(code=0)' in str(e) or 'restricted location' in str(e).lower():
+                    # Geographic restriction with code 0
+                    logger.error("Binance API error: Geographic restrictions detected (code 0)")
+                    self.connection_status["error"] = "Geographic restriction"
+                    self.connection_status["message"] = "Binance service unavailable from your region. This is a geographic restriction by Binance."
                 else:
                     logger.error(f"Binance API error: {e}")
                     self.connection_status["error"] = str(e)
@@ -502,6 +507,11 @@ class BinanceDataCollector:
             return df
             
         except BinanceAPIException as e:
+            if 'APIError(code=0)' in str(e) or 'restricted location' in str(e).lower():
+                # Geographic restriction with code 0
+                logger.error("Binance API error: Geographic restrictions detected (code 0)")
+                self.connection_status["error"] = "Geographic restriction"
+                self.connection_status["message"] = "Binance service unavailable from your region. This is a geographic restriction by Binance."
             logger.error(f"Binance API error fetching historical data: {e}")
             raise
         except Exception as e:
