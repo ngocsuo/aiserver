@@ -476,7 +476,7 @@ class ContinuousTrainer:
     
     def _save_cached_data(self, data, start_date, end_date):
         """
-        Lưu dữ liệu đã xử lý vào bộ nhớ đệm
+        Lưu dữ liệu đã xử lý vào bộ nhớ đệm với tính năng nén để tiết kiệm không gian.
         
         Args:
             data (pd.DataFrame): Dữ liệu đã xử lý
@@ -489,30 +489,96 @@ class ContinuousTrainer:
             os.makedirs(cache_dir, exist_ok=True)
             
             # Tạo tên tệp dựa trên khoảng thời gian
-            cache_file = os.path.join(cache_dir, f"{start_date}_to_{end_date}.pkl")
+            cache_file = os.path.join(cache_dir, f"{start_date}_to_{end_date}.pkl.gz")
             
-            # Lưu DataFrame vào tệp
-            data.to_pickle(cache_file)
+            # Tối ưu hóa kiểu dữ liệu trước khi lưu để giảm kích thước
+            optimized_data = self._optimize_dataframe_types(data.copy())
+            
+            # Lưu DataFrame vào tệp với tính năng nén
+            optimized_data.to_pickle(cache_file, compression='gzip')
+            
+            # Tính kích thước đã tiết kiệm
+            normal_size = data.memory_usage(deep=True).sum()
+            optimized_size = optimized_data.memory_usage(deep=True).sum()
+            savings_percent = ((normal_size - optimized_size) / normal_size * 100) if normal_size > 0 else 0
             
             # Cập nhật danh sách khoảng thời gian đã tải
             ranges_file = os.path.join(cache_dir, "data_ranges.json")
             existing_ranges = self._get_existing_data_ranges()
             
-            # Thêm khoảng thời gian mới
+            # Thêm khoảng thời gian mới kèm thông tin về kích thước và ngày tạo
             if not self._is_data_range_covered(start_date, end_date, existing_ranges):
-                existing_ranges.append([start_date, end_date])
+                existing_ranges.append({
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "created_at": datetime.now().isoformat(),
+                    "size_bytes": os.path.getsize(cache_file) if os.path.exists(cache_file) else 0,
+                    "rows": len(optimized_data)
+                })
                 
                 # Lưu danh sách cập nhật
                 with open(ranges_file, 'w') as f:
-                    json.dump(existing_ranges, f)
+                    json.dump(existing_ranges, f, indent=2)
             
-            logger.info(f"Cached data saved for period {start_date} to {end_date}")
+            logger.info(f"Cached data saved for period {start_date} to {end_date} (Memory optimized: {savings_percent:.1f}% saved)")
         except Exception as e:
             logger.error(f"Error saving cached data: {e}")
     
+    def _optimize_dataframe_types(self, df):
+        """
+        Tối ưu kiểu dữ liệu của DataFrame để giảm bộ nhớ sử dụng.
+        
+        Args:
+            df (pd.DataFrame): DataFrame cần tối ưu
+            
+        Returns:
+            pd.DataFrame: DataFrame đã tối ưu
+        """
+        # Danh sách các cột để bỏ qua quá trình tối ưu (các cột mục tiêu)
+        exclude_cols = ['target', 'target_class', 'target_binary']
+        
+        # Tối ưu cột numeric
+        for col in df.select_dtypes(include=['float']).columns:
+            if col not in exclude_cols:
+                col_min = df[col].min()
+                col_max = df[col].max()
+                
+                # Kiểm tra xem dữ liệu có thể chuyển đổi sang int không
+                if df[col].equals(df[col].astype(int)):
+                    if col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
+                        df[col] = df[col].astype(np.int8)
+                    elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
+                        df[col] = df[col].astype(np.int16)
+                    elif col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
+                        df[col] = df[col].astype(np.int32)
+                else:
+                    # Tối ưu cột float
+                    if col_min >= np.finfo(np.float32).min and col_max <= np.finfo(np.float32).max:
+                        df[col] = df[col].astype(np.float32)
+        
+        # Tối ưu cột integer
+        for col in df.select_dtypes(include=['int']).columns:
+            if col not in exclude_cols:
+                col_min = df[col].min()
+                col_max = df[col].max()
+                
+                if col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+        
+        # Tối ưu cột boolean
+        for col in df.select_dtypes(include=['bool']).columns:
+            if col not in exclude_cols:
+                df[col] = df[col].astype('int8')  # int8 tiết kiệm hơn bool
+        
+        return df
+    
     def _load_cached_data(self, start_date, end_date):
         """
-        Tải dữ liệu đã lưu từ bộ nhớ đệm
+        Tải dữ liệu đã lưu từ bộ nhớ đệm với hỗ trợ cho cả định dạng nén và không nén.
         
         Args:
             start_date (str): Ngày bắt đầu khoảng thời gian
@@ -522,16 +588,32 @@ class ContinuousTrainer:
             pd.DataFrame: Dữ liệu đã xử lý hoặc None nếu không tìm thấy
         """
         try:
-            # Tạo đường dẫn tệp cache
-            cache_file = os.path.join(config.MODEL_DIR, "data_cache", f"{start_date}_to_{end_date}.pkl")
+            # Tạo các đường dẫn tệp cache có thể (nén và không nén)
+            cache_dir = os.path.join(config.MODEL_DIR, "data_cache")
+            cache_file_gz = os.path.join(cache_dir, f"{start_date}_to_{end_date}.pkl.gz")
+            cache_file = os.path.join(cache_dir, f"{start_date}_to_{end_date}.pkl")
             
-            # Kiểm tra xem tệp có tồn tại không
-            if os.path.exists(cache_file):
-                # Tải dữ liệu từ tệp
-                import pandas as pd
-                data = pd.read_pickle(cache_file)
-                logger.info(f"Loaded cached data for period {start_date} to {end_date}")
+            # Kiểm tra tệp nén trước
+            if os.path.exists(cache_file_gz):
+                # Tải dữ liệu từ tệp nén
+                data = pd.read_pickle(cache_file_gz, compression='gzip')
+                file_size = os.path.getsize(cache_file_gz) / (1024 * 1024)  # Convert to MB
+                logger.info(f"Loaded compressed cached data for period {start_date} to {end_date} ({file_size:.2f} MB)")
                 return data
+            # Kiểm tra tệp không nén
+            elif os.path.exists(cache_file):
+                # Tải dữ liệu từ tệp không nén
+                data = pd.read_pickle(cache_file)
+                
+                # Tối ưu và lưu tệp nén cho lần sau
+                optimized_data = self._optimize_dataframe_types(data.copy())
+                optimized_data.to_pickle(cache_file_gz, compression='gzip')
+                
+                logger.info(f"Loaded and migrated cached data for period {start_date} to {end_date}")
+                return data
+            
+            # Nếu không tìm thấy tệp cache nào
+            logger.info(f"No cached data found for period {start_date} to {end_date}")
         except Exception as e:
             logger.error(f"Error loading cached data: {e}")
         

@@ -1,9 +1,14 @@
 """
 Data processing module for preparing datasets for training and prediction.
+Optimized with parallel processing and memory-efficient operations.
 """
 import pandas as pd
 import numpy as np
 import logging
+import os
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from functools import partial
 from sklearn.model_selection import train_test_split
 import config
 
@@ -23,31 +28,157 @@ class DataProcessor:
         self.processed_data = None
         logger.info("Data processor initialized")
     
-    def process_data(self, raw_data):
+    def _optimize_dataframe(self, df):
         """
-        Process raw OHLCV data for model training.
+        Tối ưu hóa bộ nhớ của DataFrame bằng cách giảm kích thước kiểu dữ liệu.
         
         Args:
-            raw_data (pd.DataFrame): Raw OHLCV data
+            df (pd.DataFrame): DataFrame cần tối ưu
             
         Returns:
-            pd.DataFrame: Processed data with features and targets
+            pd.DataFrame: DataFrame đã tối ưu
+        """
+        # Tối ưu số nguyên
+        for col in df.select_dtypes(include=['int']).columns:
+            col_min = df[col].min()
+            col_max = df[col].max()
+            
+            if col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
+                df[col] = df[col].astype(np.int8)
+            elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
+                df[col] = df[col].astype(np.int16)
+            elif col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
+                df[col] = df[col].astype(np.int32)
+                
+        # Tối ưu số thực
+        for col in df.select_dtypes(include=['float']).columns:
+            col_min = df[col].min()
+            col_max = df[col].max()
+            
+            if col_min >= np.finfo(np.float32).min and col_max <= np.finfo(np.float32).max:
+                df[col] = df[col].astype(np.float32)
+                
+        # Tối ưu boolean
+        for col in df.select_dtypes(include=['bool']).columns:
+            df[col] = df[col].astype('int8')
+            
+        return df
+    
+    def _process_chunk(self, chunk, add_basic=True, add_technical=True, add_labels=True, normalize=True):
+        """
+        Xử lý một phần dữ liệu. Dùng cho xử lý song song.
+        
+        Args:
+            chunk (pd.DataFrame): Phần dữ liệu cần xử lý
+            add_basic (bool): Thêm tính năng cơ bản
+            add_technical (bool): Thêm chỉ báo kỹ thuật
+            add_labels (bool): Thêm nhãn mục tiêu
+            normalize (bool): Chuẩn hóa dữ liệu
+            
+        Returns:
+            pd.DataFrame: Dữ liệu đã xử lý
+        """
+        return self.feature_engineer.preprocess_data(
+            chunk, 
+            add_basic=add_basic, 
+            add_technical=add_technical,
+            add_labels=add_labels,
+            normalize=normalize
+        )
+        
+    def process_data(self, raw_data):
+        """
+        Xử lý dữ liệu OHLCV thô cho việc huấn luyện mô hình sử dụng xử lý song song.
+        
+        Args:
+            raw_data (pd.DataFrame): Dữ liệu OHLCV thô
+            
+        Returns:
+            pd.DataFrame: Dữ liệu đã xử lý với các tính năng và mục tiêu
         """
         if raw_data is None or raw_data.empty:
             logger.error("No data provided for processing")
             return None
         
         try:
-            logger.info(f"Processing {len(raw_data)} candles of data")
+            data_length = len(raw_data)
+            logger.info(f"Processing {data_length} candles of data")
             
-            # Apply full preprocessing pipeline
-            processed_data = self.feature_engineer.preprocess_data(
-                raw_data, 
+            # Đối với dữ liệu nhỏ, sử dụng phương pháp đơn luồng
+            if data_length < 5000:
+                logger.info("Using single-process data processing for small dataset")
+                processed_data = self.feature_engineer.preprocess_data(
+                    raw_data, 
+                    add_basic=True, 
+                    add_technical=True,
+                    add_labels=True,
+                    normalize=True
+                )
+                self.processed_data = processed_data
+                return processed_data
+                
+            # Đối với dữ liệu lớn, chia nhỏ và xử lý song song
+            # Xác định số lượng CPU sẽ sử dụng
+            cpu_count = multiprocessing.cpu_count()
+            workers = max(1, min(cpu_count - 1, 4))  # Sử dụng tối đa 4 CPU hoặc (n_cores - 1)
+            
+            # Xác định kích thước phần (đảm bảo chia hết để tránh các vấn đề với dãy thời gian)
+            chunk_size = max(1000, data_length // workers)
+            
+            # Chia dữ liệu thành các phần
+            chunks = []
+            for i in range(0, data_length, chunk_size):
+                end = min(i + chunk_size, data_length)
+                # Đảm bảo chồng lấn các phần để tránh mất thông tin tại ranh giới
+                if i > 0:
+                    # Chồng lấn 100 điểm dữ liệu để tính toán chỉ báo kỹ thuật chính xác
+                    overlap = 100
+                    start = max(0, i - overlap)
+                else:
+                    start = i
+                chunks.append(raw_data.iloc[start:end])
+                
+            logger.info(f"Data split into {len(chunks)} chunks for parallel processing using {workers} workers")
+            
+            # Xử lý song song
+            partial_preprocess = partial(
+                self._process_chunk, 
                 add_basic=True, 
                 add_technical=True,
                 add_labels=True,
                 normalize=True
             )
+            
+            processed_chunks = []
+            
+            # Sử dụng ProcessPoolExecutor cho xử lý song song
+            with ProcessPoolExecutor(max_workers=workers) as executor:
+                processed_chunks = list(executor.map(partial_preprocess, chunks))
+                
+            # Kết hợp các phần đã xử lý
+            if processed_chunks:
+                # Loại bỏ các phần chồng lấn
+                for i in range(1, len(processed_chunks)):
+                    # Xác định điểm bắt đầu bỏ qua phần chồng lấn
+                    if len(chunks[i-1]) >= chunk_size:
+                        # Giữ lại các điểm dữ liệu không chồng lấn
+                        processed_chunks[i] = processed_chunks[i].iloc[100:]
+                
+                # Kết hợp các phần
+                processed_data = pd.concat(processed_chunks)
+                
+                # Loại bỏ bản sao nếu có
+                processed_data = processed_data[~processed_data.index.duplicated(keep='first')]
+                
+                # Tối ưu hóa bộ nhớ
+                processed_data = self._optimize_dataframe(processed_data)
+                
+                logger.info(f"Parallel processing complete: {len(processed_data)} samples with {len(processed_data.columns)} features")
+                self.processed_data = processed_data
+                return processed_data
+            else:
+                logger.error("No data processed")
+                return None
             
             self.processed_data = processed_data
             
