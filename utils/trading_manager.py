@@ -83,8 +83,34 @@ class TradingManager:
                 self.status = "Lỗi: Thiếu API keys"
                 return False
             
-            # Tạo kết nối
-            self.client = Client(self.api_key, self.api_secret)
+            # Thiết lập proxy để vượt qua hạn chế IP của Binance
+            proxy_str = "mb105.raiproxy.com:15989:S6lnXxjtieCIA38a:XXjY9RleeBfS8AFX"
+            proxy_parts = proxy_str.split(':')
+            
+            if len(proxy_parts) >= 4:
+                host = proxy_parts[0]
+                port = proxy_parts[1]
+                username = proxy_parts[2]
+                password = proxy_parts[3]
+                
+                proxy_auth = f"{username}:{password}@{host}:{port}"
+                proxy_settings = {
+                    'http': f'http://{proxy_auth}',
+                    'https': f'http://{proxy_auth}'
+                }
+                
+                logger.info(f"Kết nối qua proxy xác thực ({host}:{port})")
+                
+                # Tạo kết nối với proxy
+                self.client = Client(
+                    self.api_key, 
+                    self.api_secret,
+                    {"proxies": proxy_settings, "timeout": 60}
+                )
+            else:
+                # Fallback to direct connection if proxy format is invalid
+                logger.warning("Định dạng proxy không hợp lệ, thử kết nối trực tiếp")
+                self.client = Client(self.api_key, self.api_secret)
             
             # Kiểm tra kết nối
             server_time = self.client.get_server_time()
