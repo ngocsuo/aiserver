@@ -205,43 +205,24 @@ def create_metric_card(title, value, subtitle=None, icon=None, color="blue", is_
         is_percent (bool): Có hiển thị dạng % không
     """
     try:
-        # Xử lý title an toàn
+        # Xử lý giá trị an toàn
         if title is None:
             title = "Không xác định"
         else:
-            title = str(title).replace("<", "&lt;").replace(">", "&gt;")
-            
-        # Xử lý giá trị value đầu vào để tránh các lỗi khi hiển thị
+            title = str(title)
+        
+        # Xử lý giá trị
         if value is None:
             value_str = "N/A"
-        elif isinstance(value, str) and ("<" in value or ">" in value or "&" in value):
-            # Nếu chứa HTML tags, sử dụng giá trị an toàn
-            value_str = str(value).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;")
-            if is_percent:
-                value_str += "%"
-        else:
-            # Định dạng giá trị bình thường
+        elif is_percent:
             try:
-                value_str = f"{float(value):.2f}%" if is_percent else f"{value}"
+                value_str = f"{float(value):.2f}%"
             except (ValueError, TypeError):
-                # Nếu không thể chuyển thành số, hiển thị nguyên dạng an toàn
-                value_str = str(value).replace("<", "&lt;").replace(">", "&gt;")
-                if is_percent:
-                    value_str += "%"
-        
-        # Xử lý subtitle an toàn
-        if subtitle is not None:
-            subtitle = str(subtitle).replace("<", "&lt;").replace(">", "&gt;")
-        
-        # Xử lý icon an toàn
-        if icon is not None:
-            if len(str(icon)) > 5:  # Nếu icon quá dài, có thể là mã độc
-                icon = "📊"  # Sử dụng biểu tượng mặc định an toàn
-            icon_html = f"<span style='font-size: 24px;'>{icon}</span>"
+                value_str = f"{value}%"
         else:
-            icon_html = ""
+            value_str = str(value)
         
-        # Xác định màu an toàn
+        # Màu sắc cho từng loại metrics
         color_map = {
             "blue": "#485ec4",
             "green": "#2ecc71",
@@ -249,25 +230,21 @@ def create_metric_card(title, value, subtitle=None, icon=None, color="blue", is_
             "yellow": "#f1c40f",
             "gray": "#95a5a6"
         }
-        
         border_color = color_map.get(color, "#485ec4")
         
-        # Tạo HTML an toàn với tất cả các giá trị đã được xử lý
-        card_html = f"""
-        <div style="background-color: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {border_color}; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="color: #7f8c8d; font-size: 14px;">{title}</div>
-                    <div style="font-size: 28px; font-weight: bold; color: #2c3e50;">{value_str}</div>
-                    {f'<div style="color: #95a5a6; font-size: 12px;">{subtitle}</div>' if subtitle else ''}
-                </div>
-                <div>
-                    {icon_html}
-                </div>
-            </div>
-        </div>
-        """
-        st.markdown(card_html, unsafe_allow_html=True)
+        # Sử dụng các thành phần tiêu chuẩn của Streamlit
+        col1, col2 = st.columns([5, 1])
+        
+        with col1:
+            st.markdown(f"**{title}**")
+            st.markdown(f"<h3 style='margin-top: -10px; color: {border_color};'>{value_str}</h3>", unsafe_allow_html=True)
+            if subtitle:
+                st.caption(subtitle)
+        
+        with col2:
+            if icon:
+                st.markdown(f"<div style='text-align: center; font-size: 28px; margin-top: 10px;'>{icon}</div>", unsafe_allow_html=True)
+    
     except Exception as e:
         # Hiển thị phiên bản dự phòng nếu có lỗi
         st.warning(f"{title}: {str(value)}")
