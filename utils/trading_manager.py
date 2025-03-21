@@ -5,9 +5,10 @@ import os
 import time
 import threading
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
+import pytz
 
 # Thiết lập logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -34,6 +35,15 @@ class TradingManager:
         self.position_info = None
         self.trading_logs = []
         self.status = "Khởi tạo"
+        
+        # Khởi tạo thống kê PNL theo ngày (múi giờ +7)
+        self.daily_pnl = {
+            'date': self._get_current_date_tz7(),
+            'trades': [],
+            'total_pnl': 0.0,
+            'win_count': 0,
+            'loss_count': 0
+        }
     
     def add_log(self, message, level="info"):
         """
