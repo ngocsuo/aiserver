@@ -1079,25 +1079,65 @@ def plot_prediction_history(predictions):
     return fig
 
 def plot_technical_indicators(df):
-    """Create technical indicators chart"""
+    """Create technical indicators chart with advanced indicators"""
     if df is None or df.empty:
         return go.Figure()
     
     # Make a copy first to avoid SettingWithCopyWarning
     df_copy = df.copy()
     
-    # Calculate simple indicators on the copy
+    # Calculate indicators on the copy
+    # Basic indicators
     df_copy.loc[:, 'sma_9'] = df_copy['close'].rolling(window=9).mean()
     df_copy.loc[:, 'sma_21'] = df_copy['close'].rolling(window=21).mean()
     df_copy.loc[:, 'upper_band'] = df_copy['sma_21'] + (df_copy['close'].rolling(window=21).std() * 2)
     df_copy.loc[:, 'lower_band'] = df_copy['sma_21'] - (df_copy['close'].rolling(window=21).std() * 2)
     
+    # Advanced indicators
+    # Calculate RSI
+    delta = df_copy['close'].diff()
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    avg_gain = gain.rolling(window=14).mean()
+    avg_loss = loss.rolling(window=14).mean()
+    rs = avg_gain / avg_loss.replace(0, np.nan)
+    rs = rs.fillna(0)
+    df_copy.loc[:, 'rsi'] = 100 - (100 / (1 + rs))
+    
+    # Calculate SuperTrend (simplified version)
+    atr_period = 10
+    multiplier = 3.0
+    
+    # Calculate ATR
+    prev_close = df_copy['close'].shift(1)
+    tr1 = df_copy['high'] - df_copy['low']
+    tr2 = (df_copy['high'] - prev_close).abs()
+    tr3 = (df_copy['low'] - prev_close).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    atr = tr.rolling(window=atr_period).mean()
+    
+    # SuperTrend calculation
+    hl2 = (df_copy['high'] + df_copy['low']) / 2
+    df_copy.loc[:, 'supertrend_upper'] = hl2 + (multiplier * atr)
+    df_copy.loc[:, 'supertrend_lower'] = hl2 - (multiplier * atr)
+    
+    # ADX calculation (simplified)
+    smoothed_tr = tr.rolling(window=14).mean()
+    plus_dm = df_copy['high'].diff()
+    minus_dm = df_copy['low'].diff().abs() * -1
+    plus_dm = plus_dm.where((plus_dm > minus_dm.abs()) & (plus_dm > 0), 0)
+    minus_dm = minus_dm.where((minus_dm.abs() > plus_dm) & (minus_dm < 0), 0)
+    plus_di = 100 * (plus_dm.rolling(window=14).mean() / smoothed_tr)
+    minus_di = 100 * (minus_dm.abs().rolling(window=14).mean() / smoothed_tr)
+    dx = 100 * ((plus_di - minus_di).abs() / (plus_di + minus_di + 0.0001))
+    df_copy.loc[:, 'adx'] = dx.rolling(window=14).mean()
+    
     # Use the copied dataframe for the rest of the function
     df = df_copy
     
-    # Create subplots
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
-                       vertical_spacing=0.03, row_heights=[0.7, 0.3])
+    # Create subplots with 3 rows for more indicators
+    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, 
+                       vertical_spacing=0.03, row_heights=[0.5, 0.25, 0.25])
     
     # Add price and MAs
     fig.add_trace(
@@ -1106,7 +1146,7 @@ def plot_technical_indicators(df):
             y=df['close'],
             mode='lines',
             name='Price',
-            line=dict(color='black', width=1)
+            line=dict(color='black', width=1.5)
         ),
         row=1, col=1
     )
@@ -1139,7 +1179,7 @@ def plot_technical_indicators(df):
             x=df.index, 
             y=df['upper_band'],
             mode='lines',
-            name='Upper Band',
+            name='BB Upper',
             line=dict(color='rgba(0,128,0,0.3)', width=1)
         ),
         row=1, col=1
@@ -1151,10 +1191,62 @@ def plot_technical_indicators(df):
             y=df['lower_band'],
             mode='lines',
             fill='tonexty',
-            name='Lower Band',
+            name='BB Lower',
             line=dict(color='rgba(0,128,0,0.3)', width=1)
         ),
         row=1, col=1
+    )
+    
+    # Add SuperTrend
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['supertrend_upper'],
+            mode='lines',
+            name='SuperTrend Upper',
+            line=dict(color='rgba(255,0,0,0.5)', width=1, dash='dash')
+        ),
+        row=1, col=1
+    )
+    
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['supertrend_lower'],
+            mode='lines',
+            name='SuperTrend Lower',
+            line=dict(color='rgba(0,255,0,0.5)', width=1, dash='dash')
+        ),
+        row=1, col=1
+    )
+    
+    # Add RSI
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['rsi'],
+            mode='lines',
+            name='RSI (14)',
+            line=dict(color='purple', width=1)
+        ),
+        row=2, col=1
+    )
+    
+    # Add RSI reference lines at 70 and 30
+    fig.add_hline(y=70, line_dash="dash", line_color="red", row=2, col=1)
+    fig.add_hline(y=30, line_dash="dash", line_color="green", row=2, col=1)
+    fig.add_hline(y=50, line_dash="dot", line_color="gray", row=2, col=1)
+    
+    # Add ADX
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['adx'],
+            mode='lines',
+            name='ADX (14)',
+            line=dict(color='brown', width=1)
+        ),
+        row=2, col=1
     )
     
     # Add volume
@@ -1166,14 +1258,14 @@ def plot_technical_indicators(df):
             marker_color=colors,
             name="Volume"
         ),
-        row=2, col=1
+        row=3, col=1
     )
     
     # Update layout
     fig.update_layout(
-        title="Technical Indicators",
+        title="Advanced Technical Indicators",
         xaxis_title="Date",
-        height=500,
+        height=700,  # Increased height for more indicators
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -1186,7 +1278,8 @@ def plot_technical_indicators(df):
     
     # Set y-axes titles
     fig.update_yaxes(title_text="Price (USDT)", row=1, col=1)
-    fig.update_yaxes(title_text="Volume", row=2, col=1)
+    fig.update_yaxes(title_text="Oscillators", row=2, col=1)
+    fig.update_yaxes(title_text="Volume", row=3, col=1)
     
     return fig
 
