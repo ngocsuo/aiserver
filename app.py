@@ -252,7 +252,7 @@ def fetch_historical_data_thread():
     # Quá trình này dựa vào ContinuousTrainer đã bắt đầu trong initialize_system
     # và đang chạy trong một luồng riêng
     
-    # Cập nhật trạng thái để hiển thị trên giao diện
+    # Cập nhật trạng thái để hiển thị trên giao diện mà không sử dụng Streamlit API trực tiếp trong thread
     def update_status():
         while True:
             try:
@@ -270,11 +270,34 @@ def fetch_historical_data_thread():
                 if 'current_chunk' in status and 'total_chunks' in status:
                     progress = int((status['current_chunk'] / status['total_chunks']) * 100)
                     
+                    # Cập nhật vào session_state thay vì gọi trực tiếp Streamlit API
+                    # Điều này tránh được warning "missing ScriptRunContext"
+                    if 'historical_data_status' not in st.session_state:
+                        st.session_state.historical_data_status = {}
+                        
                     st.session_state.historical_data_status = {
                         "status": f"Đang tải chunk {status['current_chunk']}/{status['total_chunks']}",
                         "progress": progress,
                         "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
+                    
+                    # Lưu thông tin về Binance server time vào session state
+                    try:
+                        from utils.data_collector import create_data_collector
+                        collector = create_data_collector()
+                        server_time = collector.client.get_server_time()
+                        server_time_ms = server_time['serverTime']
+                        binance_time = datetime.fromtimestamp(server_time_ms / 1000)
+                        
+                        if 'binance_server_time' not in st.session_state:
+                            st.session_state.binance_server_time = {}
+                            
+                        st.session_state.binance_server_time = {
+                            "time": binance_time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                    except Exception as e:
+                        print(f"Error getting Binance server time: {e}")
                 
                 time.sleep(10)  # Kiểm tra mỗi 10 giây
             except Exception as e:
@@ -1031,6 +1054,12 @@ def display_system_status(data_status, thread_status, prediction_count):
         
         if data_status["last_update"]:
             st.write(f"Last update: {data_status['last_update']}")
+        
+        # Display Binance server time if available
+        if 'binance_server_time' in st.session_state:
+            binance_time = st.session_state.binance_server_time.get('time', 'N/A')
+            st.write(f"Binance server time: {binance_time}")
+            st.write(f"Time sync: {st.session_state.binance_server_time.get('update_time', 'N/A')}")
     
     with col2:
         # AI Models Status
