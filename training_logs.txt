@@ -366,3 +366,9 @@
 2025-03-22 19:37:04 - Binance server time: 2025-03-22 19:37:04
 2025-03-22 19:37:07 - Binance server time: 2025-03-22 19:37:06
 2025-03-22 19:40:20 - Tiến trình huấn luyện: 0% (0/78 chunks)
+2025-03-22 19:40:22 - Binance server time: 2025-03-22 19:40:22
+2025-03-22 19:40:32 - Tiến trình huấn luyện: 100% (78/78 chunks)
+2025-03-22 19:40:35 - Binance server time: 2025-03-22 19:40:35
+2025-03-22 19:41:04 - Tiến trình huấn luyện: 0% (0/78 chunks)
+2025-03-22 19:41:06 - Binance server time: 2025-03-22 19:41:06
+2025-03-22 19:41:07 - Binance server time: 2025-03-22 19:41:07

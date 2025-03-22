@@ -4491,13 +4491,22 @@ def render_main_interface():
                     week_ago_price = st.session_state.latest_data.iloc[-2016]['close']
                     week_change = (latest_candle['close'] - week_ago_price) / week_ago_price * 100
             
-            create_price_card(
-                latest_candle['close'],
-                price_change,  # Thay đổi 24h
-                week_change,   # Thay đổi 7 ngày
-                high_24h,
-                low_24h
-            )
+            try:
+                create_price_card(
+                    latest_candle['close'],
+                    price_change_pct,  # Thay đổi 24h (phần trăm)
+                    week_change,   # Thay đổi 7 ngày
+                    high_24h,
+                    low_24h
+                )
+            except Exception as e:
+                st.error(f"Lỗi khi tạo price card: {str(e)}")
+                # Sử dụng phiên bản đơn giản hơn để hiển thị giá
+                st.metric(
+                    label="ETHUSDT",
+                    value=f"${latest_candle['close']:.2f}",
+                    delta=f"{price_change_pct:.2f}%"
+                )
         
         with col2:
             # Hiển thị khối lượng giao dịch
