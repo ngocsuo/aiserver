@@ -368,6 +368,9 @@ class ContinuousTrainer:
         # Dictionary để lưu trữ dữ liệu đã xử lý cho mỗi khung thời gian
         all_processed_data = {timeframe: [] for timeframe in self.timeframes_to_train}
         
+        # Dictionary để lưu trữ kết quả mô hình cho mỗi khung thời gian
+        model_results = {}
+        
         # Set total chunks for progress tracking (tổng số chunks nhân với số khung thời gian)
         self.total_chunks = len(self.monthly_chunks) * len(self.timeframes_to_train)
         self.current_chunk = 0
