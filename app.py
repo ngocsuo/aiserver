@@ -922,26 +922,61 @@ def read_logs_from_file(log_file="training_logs.txt", max_lines=100):
         
     # Hàm hỗ trợ ghi log
     def update_log(message):
-        """Log training progress to session state and to local list"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        log_msg = f"{timestamp} - {message}"
+        """Ghi log huấn luyện sử dụng hàm thread_safe"""
+        # Sử dụng hàm thread_safe_log để ghi log
+        thread_safe_log(message)
         
-        # Thêm vào training logs
-        if 'training_log_messages' not in st.session_state:
-            st.session_state.training_log_messages = []
-        st.session_state.training_log_messages.append(log_msg)
-        
-        # Thêm vào system logs
-        if 'log_messages' in st.session_state:
-            st.session_state.log_messages.append(log_msg)
-        
-        # Hiển thị toast notification cho người dùng
-        if ("thành công" in message or 
-            "hoàn thành" in message or 
-            "độ chính xác" in message):
-            show_toast(message, "success", 3000)
-        elif "Lỗi" in message or "LỖI" in message:
-            show_toast(f"Lỗi huấn luyện: {message}", "error", 5000)
+        # Lưu thông báo thông qua file để update UI
+        try:
+            import json
+            import os
+            
+            # Đảm bảo thư mục logs tồn tại
+            if not os.path.exists("logs"):
+                os.makedirs("logs")
+                
+            # Đọc logs hiện tại nếu tồn tại
+            training_logs = []
+            if os.path.exists("logs/training_logs_ui.json"):
+                try:
+                    with open("logs/training_logs_ui.json", "r") as f:
+                        training_logs = json.load(f)
+                except:
+                    training_logs = []
+            
+            # Thêm log mới vào danh sách
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            log_msg = f"{timestamp} - {message}"
+            training_logs.append(log_msg)
+            
+            # Giới hạn số lượng log lưu trữ
+            if len(training_logs) > 500:
+                training_logs = training_logs[-500:]
+                
+            # Lưu lại file
+            with open("logs/training_logs_ui.json", "w") as f:
+                json.dump(training_logs, f)
+                
+            # Lưu thông báo toast nếu cần
+            if ("thành công" in message or 
+                "hoàn thành" in message or 
+                "độ chính xác" in message):
+                with open("logs/pending_toast.json", "w") as f:
+                    json.dump({
+                        "message": message,
+                        "type": "success",
+                        "duration": 3000
+                    }, f)
+            elif "Lỗi" in message or "LỖI" in message:
+                with open("logs/pending_toast.json", "w") as f:
+                    json.dump({
+                        "message": f"Lỗi huấn luyện: {message}",
+                        "type": "error",
+                        "duration": 5000
+                    }, f)
+        except Exception as e:
+            # Nếu có lỗi khi lưu file, vẫn ghi log ra console
+            print(f"Lỗi khi lưu log: {e}")
     
     # Hiển thị thông báo huấn luyện đang bắt đầu
     show_toast("Đang bắt đầu quá trình huấn luyện mô hình AI...", "info", 3000)
@@ -953,28 +988,42 @@ def read_logs_from_file(log_file="training_logs.txt", max_lines=100):
     progress_placeholder = st.empty()
     progress_bar = st.progress(0)
     
-    def update_log(message):
+    # Hàm này sẽ được thay thế bằng hàm update_log ở trên
+    # sử dụng thread_safe_log thay vì truy cập trực tiếp st.session_state
+    def update_progress(message):
+        """Hàm cập nhật tiến trình hiển thị trong UI"""
+        # Sử dụng thread_safe_log để ghi vào file
+        from utils.thread_safe_logging import thread_safe_log
+        
+        # Ghi log vào file
+        thread_safe_log(message)
+        
+        # Thêm vào training_logs local cho function này
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_msg = f"{timestamp} - {message}"
-        
-        # Thêm vào training_logs cho tab Training Logs
-        if 'training_log_messages' not in st.session_state:
-            st.session_state.training_log_messages = []
-        st.session_state.training_log_messages.append(log_msg)
-        
-        # Thêm vào log_messages chung
-        if 'log_messages' not in st.session_state:
-            st.session_state.log_messages = []
-        st.session_state.log_messages.append(log_msg)
-        
-        # Lưu lại local cho function này
         training_logs.append(log_msg)
         
-        # Hiển thị toast notification cho các thông báo quan trọng
+        # Lưu thông báo toast nếu cần
         if "Step" in message or "model trained" in message:
-            show_toast(message, "info", 3000)
+            try:
+                with open("logs/pending_toast.json", "w") as f:
+                    json.dump({
+                        "message": message,
+                        "type": "info",
+                        "duration": 3000
+                    }, f)
+            except Exception as e:
+                print(f"Lỗi khi lưu thông báo toast: {e}")
         elif "Error" in message or "ERROR" in message:
-            show_toast(message, "error", 5000)
+            try:
+                with open("logs/pending_toast.json", "w") as f:
+                    json.dump({
+                        "message": f"Lỗi huấn luyện: {message}",
+                        "type": "error",
+                        "duration": 5000
+                    }, f)
+            except Exception as e:
+                print(f"Lỗi khi lưu thông báo toast: {e}")
     
     # Bắt đầu huấn luyện trong thread
     training_thread = threading.Thread(target=train_models_background)
