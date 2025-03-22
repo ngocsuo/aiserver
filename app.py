@@ -1,6 +1,7 @@
 """
 Main Streamlit application for ETHUSDT prediction dashboard.
 Enhanced with improved UI, advanced technical analysis, and multi-source data integration.
+Added support for proxy configuration to overcome geographic restrictions.
 """
 import streamlit as st
 import pandas as pd
@@ -18,8 +19,37 @@ import random
 import streamlit.components.v1 as components
 import traceback
 import base64
+import logging
 
-from utils.data_collector import BinanceDataCollector, MockDataCollector
+# Thiết lập logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("app")
+
+# Thiết lập proxy trước khi import các module khác
+try:
+    from utils.proxy_config import configure_proxy, get_proxy_url_format, configure_socket_proxy
+    logger.info("Configuring proxy for Binance API")
+    proxies = configure_proxy()
+    proxy_url = get_proxy_url_format()
+    if proxies and proxy_url:
+        logger.info(f"Proxy configured successfully")
+        # Thiết lập biến môi trường cho proxy
+        os.environ['HTTP_PROXY'] = proxy_url
+        os.environ['HTTPS_PROXY'] = proxy_url
+        # Cấu hình socket proxy
+        configure_socket_proxy()
+    else:
+        logger.warning("No proxy configured, using direct connection")
+except ImportError:
+    logger.warning("Proxy configuration module not found, using direct connection")
+except Exception as e:
+    logger.error(f"Error configuring proxy: {e}")
+
+# Import các module khác
+from utils.data_collector_factory import create_data_collector
 import config
 from utils.data_processor import DataProcessor
 from dashboard.components.custom_style import (
@@ -32,6 +62,7 @@ from models.model_trainer import ModelTrainer
 from utils.pattern_recognition import (
     detect_candlestick_patterns, calculate_support_resistance, analyze_price_trend
 )
+from utils.thread_safe_logging import thread_safe_log, read_logs_from_file
 
 # Custom Toast Notification Component
 def show_toast(message, type="info", duration=3000):
@@ -272,7 +303,8 @@ def initialize_system():
     with st.spinner("Đang khởi tạo hệ thống dự đoán ETHUSDT..."):
         try:
             # Initialize data collector with factory function
-            from utils.data_collector import create_data_collector, MockDataCollector
+            from utils.data_collector_factory import create_data_collector
+            from utils.data_collector import MockDataCollector
             
             # Create the appropriate data collector based on config
             st.session_state.data_collector = create_data_collector()
@@ -544,7 +576,7 @@ def fetch_historical_data_thread():
                     
                     # Lưu thông tin về Binance server time vào session state
                     try:
-                        from utils.data_collector import create_data_collector
+                        from utils.data_collector_factory import create_data_collector
                         collector = create_data_collector()
                         server_time = collector.client.get_server_time()
                         server_time_ms = server_time['serverTime']
