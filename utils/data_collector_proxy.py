@@ -89,11 +89,17 @@ class BinanceDataCollector:
                 logger.info("Binance API connection successful")
                 
                 # Kiểm tra trạng thái hệ thống
-                system_status = self.client.get_system_status()
-                if system_status['status'] == 0:
-                    logger.info("Binance system status: Normal")
-                else:
-                    logger.warning(f"Binance system status: Maintenance - {system_status['msg']}")
+                try:
+                    system_status = self.client.get_system_status()
+                    if isinstance(system_status, dict) and 'status' in system_status:
+                        if system_status['status'] == 0:
+                            logger.info("Binance system status: Normal")
+                        else:
+                            logger.warning(f"Binance system status: Maintenance - {system_status.get('msg', 'Unknown message')}")
+                    else:
+                        logger.warning(f"Unexpected system status format: {system_status}")
+                except Exception as e:
+                    logger.warning(f"Could not get system status: {e}")
                 
                 # Kiểm tra xem API Futures có thể truy cập không
                 test_klines = self.client.futures_klines(
