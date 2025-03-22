@@ -396,7 +396,12 @@ class ContinuousTrainer:
             self.training_in_progress = False
             
     def _train_by_monthly_chunks(self):
-        """Train models using monthly data chunks to manage memory usage for both timeframes."""
+        """
+        Train models using monthly data chunks to manage memory usage for both timeframes.
+        
+        Returns:
+            dict: Dictionary của các mô hình đã huấn luyện cho mỗi khung thời gian
+        """
         logger.info(f"Training with {len(self.monthly_chunks)} monthly chunks from {self.historical_start_date} for timeframes: {', '.join(self.timeframes_to_train)}")
         self._add_log(f"Bắt đầu huấn luyện với {len(self.monthly_chunks)} đoạn dữ liệu tháng từ {self.historical_start_date}")
         
