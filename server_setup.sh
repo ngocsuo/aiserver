@@ -1,79 +1,86 @@
 #!/bin/bash
-# Script cài đặt môi trường trên server
+# Script cài đặt ETHUSDT Dashboard lên server
 
-# Màu sắc
+# Màu sắc đầu ra
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-SCRIPT_DIR="/root/ethusdt_dashboard"
-PYTHON_VERSION="3.10"
-VENV_DIR="$SCRIPT_DIR/venv"
+INSTALL_DIR="/root/ethusdt_dashboard"
+LOG_FILE="$INSTALL_DIR/setup_log.txt"
 
-echo -e "${YELLOW}=== CÀI ĐẶT MÔI TRƯỜNG CHO ETHUSDT DASHBOARD ===${NC}"
+echo -e "${YELLOW}=== CÀI ĐẶT ETHUSDT DASHBOARD LÊN SERVER ===${NC}" | tee -a $LOG_FILE
+echo "$(date): Bắt đầu cài đặt" | tee -a $LOG_FILE
 
-# Kiểm tra xem script có được chạy với quyền root không
-if [ "$(id -u)" != "0" ]; then
-   echo -e "${RED}Script này cần được chạy với quyền root${NC}" 
-   exit 1
+# Tạo thư mục cài đặt nếu chưa tồn tại
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo -e "${BLUE}Tạo thư mục cài đặt $INSTALL_DIR...${NC}" | tee -a $LOG_FILE
+    mkdir -p $INSTALL_DIR
 fi
 
-# Cập nhật hệ thống
-echo -e "${YELLOW}Cập nhật hệ thống...${NC}"
-apt update && apt upgrade -y
-
-# Cài đặt các gói cần thiết
-echo -e "${YELLOW}Cài đặt các gói cần thiết...${NC}"
-apt install -y python$PYTHON_VERSION python3-pip python3-venv python3-dev build-essential libssl-dev libffi-dev git curl wget unzip
-
-# Tạo các thư mục cần thiết
-echo -e "${YELLOW}Tạo cấu trúc thư mục...${NC}"
-mkdir -p $SCRIPT_DIR/data
-mkdir -p $SCRIPT_DIR/logs
-mkdir -p $SCRIPT_DIR/saved_models
-mkdir -p $SCRIPT_DIR/.streamlit
-
-# Tạo môi trường ảo Python
-echo -e "${YELLOW}Tạo môi trường ảo Python...${NC}"
-if [ ! -d "$VENV_DIR" ]; then
-    python$PYTHON_VERSION -m venv $VENV_DIR
-    echo -e "${GREEN}Môi trường ảo đã được tạo tại $VENV_DIR${NC}"
+# Kiểm tra và cài đặt Python 3.10
+echo -e "${BLUE}Kiểm tra phiên bản Python...${NC}" | tee -a $LOG_FILE
+if command -v python3.10 &> /dev/null; then
+    PYTHON_VERSION=$(python3.10 --version)
+    echo -e "${GREEN}Python đã được cài đặt: $PYTHON_VERSION${NC}" | tee -a $LOG_FILE
 else
-    echo -e "${GREEN}Môi trường ảo đã tồn tại tại $VENV_DIR${NC}"
+    echo -e "${YELLOW}Python 3.10 chưa được cài đặt. Đang cài đặt...${NC}" | tee -a $LOG_FILE
+    apt-get update | tee -a $LOG_FILE
+    apt-get install -y software-properties-common | tee -a $LOG_FILE
+    add-apt-repository -y ppa:deadsnakes/ppa | tee -a $LOG_FILE
+    apt-get update | tee -a $LOG_FILE
+    apt-get install -y python3.10 python3.10-venv python3.10-dev | tee -a $LOG_FILE
+    
+    if command -v python3.10 &> /dev/null; then
+        echo -e "${GREEN}Python 3.10 đã được cài đặt thành công.${NC}" | tee -a $LOG_FILE
+    else
+        echo -e "${RED}Không thể cài đặt Python 3.10. Vui lòng kiểm tra lại.${NC}" | tee -a $LOG_FILE
+        exit 1
+    fi
 fi
 
-# Nâng cấp pip
-echo -e "${YELLOW}Nâng cấp pip...${NC}"
-$VENV_DIR/bin/pip install --upgrade pip
+# Cài đặt pip nếu chưa có
+echo -e "${BLUE}Kiểm tra pip...${NC}" | tee -a $LOG_FILE
+if ! command -v pip3 &> /dev/null; then
+    echo -e "${YELLOW}pip chưa được cài đặt. Đang cài đặt...${NC}" | tee -a $LOG_FILE
+    apt-get install -y python3-pip | tee -a $LOG_FILE
+fi
 
-# Cài đặt các thư viện Python từ requirements
-echo -e "${YELLOW}Cài đặt các thư viện Python cần thiết...${NC}"
-$VENV_DIR/bin/pip install -r $SCRIPT_DIR/requirements_server.txt
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Cài đặt thư viện thành công!${NC}"
+# Cài đặt virtualenv
+echo -e "${BLUE}Cài đặt virtualenv...${NC}" | tee -a $LOG_FILE
+pip3 install virtualenv | tee -a $LOG_FILE
+
+# Tạo và kích hoạt môi trường ảo
+if [ ! -d "$INSTALL_DIR/venv" ]; then
+    echo -e "${BLUE}Tạo môi trường ảo...${NC}" | tee -a $LOG_FILE
+    cd $INSTALL_DIR
+    python3.10 -m venv venv | tee -a $LOG_FILE
+fi
+
+echo -e "${BLUE}Kích hoạt môi trường ảo...${NC}" | tee -a $LOG_FILE
+source $INSTALL_DIR/venv/bin/activate | tee -a $LOG_FILE
+
+# Cài đặt các gói phụ thuộc
+echo -e "${BLUE}Cài đặt các gói phụ thuộc...${NC}" | tee -a $LOG_FILE
+if [ -f "$INSTALL_DIR/requirements_server.txt" ]; then
+    pip install -r $INSTALL_DIR/requirements_server.txt | tee -a $LOG_FILE
 else
-    echo -e "${RED}Cài đặt thư viện thất bại!${NC}"
-    exit 1
+    echo -e "${YELLOW}File requirements_server.txt không tồn tại. Cài đặt các gói mặc định...${NC}" | tee -a $LOG_FILE
+    pip install streamlit pandas numpy plotly python-binance scikit-learn tensorflow requests | tee -a $LOG_FILE
 fi
 
-# Cấu hình Streamlit
-echo -e "${YELLOW}Cấu hình Streamlit...${NC}"
-cat > $SCRIPT_DIR/.streamlit/config.toml << EOF
-[server]
-headless = true
-enableCORS = false
-enableXsrfProtection = false
-port = 5000
-address = "0.0.0.0"
+# Tạo thư mục dữ liệu và logs nếu chưa tồn tại
+echo -e "${BLUE}Tạo thư mục dữ liệu và logs...${NC}" | tee -a $LOG_FILE
+mkdir -p $INSTALL_DIR/data $INSTALL_DIR/logs | tee -a $LOG_FILE
 
-[browser]
-serverAddress = "localhost"
-serverPort = 5000
-EOF
+# Tạo thư mục cho các model đã huấn luyện
+echo -e "${BLUE}Tạo thư mục lưu trữ model...${NC}" | tee -a $LOG_FILE
+mkdir -p $INSTALL_DIR/models/saved | tee -a $LOG_FILE
 
-# Tạo file service cho systemd
-echo -e "${YELLOW}Tạo service systemd...${NC}"
+# Cài đặt và cấu hình systemd service
+echo -e "${BLUE}Cài đặt systemd service...${NC}" | tee -a $LOG_FILE
 cat > /etc/systemd/system/ethusdt-dashboard.service << EOF
 [Unit]
 Description=ETHUSDT Dashboard Service
@@ -81,50 +88,147 @@ After=network.target
 
 [Service]
 User=root
-Group=root
-WorkingDirectory=$SCRIPT_DIR
-Environment="PATH=$VENV_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=$VENV_DIR/bin/python -m streamlit run $SCRIPT_DIR/app.py --server.port=5000 --server.address=0.0.0.0 --server.headless=true
+WorkingDirectory=$INSTALL_DIR
+Environment="PATH=$INSTALL_DIR/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=$INSTALL_DIR/venv/bin/streamlit run app.py --server.port=5000 --server.address=0.0.0.0 --server.headless=true
 Restart=always
 RestartSec=10
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Tạo script restart.sh
-echo -e "${YELLOW}Tạo script khởi động lại...${NC}"
-cat > $SCRIPT_DIR/restart.sh << 'EOF'
+# Khởi động dịch vụ
+echo -e "${BLUE}Khởi động dịch vụ...${NC}" | tee -a $LOG_FILE
+systemctl daemon-reload | tee -a $LOG_FILE
+systemctl enable ethusdt-dashboard | tee -a $LOG_FILE
+systemctl restart ethusdt-dashboard | tee -a $LOG_FILE
+
+# Kiểm tra trạng thái service
+echo -e "${BLUE}Kiểm tra trạng thái service...${NC}" | tee -a $LOG_FILE
+systemctl status ethusdt-dashboard | tee -a $LOG_FILE
+
+# Thiết lập tường lửa
+echo -e "${BLUE}Thiết lập tường lửa...${NC}" | tee -a $LOG_FILE
+if command -v ufw &> /dev/null; then
+    ufw allow 5000/tcp | tee -a $LOG_FILE
+    echo -e "${GREEN}Đã mở cổng 5000 trên tường lửa.${NC}" | tee -a $LOG_FILE
+else
+    echo -e "${YELLOW}UFW không được cài đặt. Bỏ qua thiết lập tường lửa.${NC}" | tee -a $LOG_FILE
+fi
+
+# Kiểm tra trạng thái ứng dụng
+echo -e "${BLUE}Chờ ứng dụng khởi động (10 giây)...${NC}" | tee -a $LOG_FILE
+sleep 10
+
+echo -e "${BLUE}Kiểm tra ứng dụng...${NC}" | tee -a $LOG_FILE
+if curl -s http://localhost:5000 > /dev/null; then
+    echo -e "${GREEN}Ứng dụng đang chạy tại http://localhost:5000${NC}" | tee -a $LOG_FILE
+    
+    # Lấy địa chỉ IP công khai
+    PUBLIC_IP=$(curl -s ifconfig.me)
+    echo -e "${GREEN}Truy cập ứng dụng tại: http://$PUBLIC_IP:5000${NC}" | tee -a $LOG_FILE
+else
+    echo -e "${RED}Không thể kết nối đến ứng dụng. Vui lòng kiểm tra logs.${NC}" | tee -a $LOG_FILE
+    journalctl -u ethusdt-dashboard -n 50 | tee -a $LOG_FILE
+fi
+
+# Tạo tập lệnh khởi động lại dịch vụ
+echo -e "${BLUE}Tạo tập lệnh khởi động lại dịch vụ...${NC}" | tee -a $LOG_FILE
+cat > $INSTALL_DIR/restart.sh << EOF
 #!/bin/bash
-# Script khởi động lại ứng dụng
-
-# Dừng service
-systemctl stop ethusdt-dashboard
-
-# Đợi 2 giây
-sleep 2
-
-# Khởi động lại service
-systemctl start ethusdt-dashboard
-
-# Hiển thị trạng thái
-systemctl status ethusdt-dashboard --no-pager
-EOF
-
-chmod +x $SCRIPT_DIR/restart.sh
-
-# Kích hoạt và khởi động service
-echo -e "${YELLOW}Kích hoạt và khởi động service...${NC}"
-systemctl daemon-reload
-systemctl enable ethusdt-dashboard
 systemctl restart ethusdt-dashboard
+echo "Đã khởi động lại dịch vụ ETHUSDT Dashboard!"
+EOF
+chmod +x $INSTALL_DIR/restart.sh | tee -a $LOG_FILE
 
-# Kiểm tra trạng thái
-echo -e "${YELLOW}Kiểm tra trạng thái service...${NC}"
-systemctl status ethusdt-dashboard --no-pager
+# Tạo tập lệnh debug
+echo -e "${BLUE}Tạo tập lệnh debug...${NC}" | tee -a $LOG_FILE
+cat > $INSTALL_DIR/debug.sh << EOF
+#!/bin/bash
+echo "===== ETHUSDT Dashboard Debug Tool ====="
+echo "1. Hiển thị logs"
+echo "2. Khởi động lại dịch vụ"
+echo "3. Kiểm tra trạng thái dịch vụ"
+echo "4. Kiểm tra các quá trình Python đang chạy"
+echo "5. Kiểm tra kết nối mạng"
+echo "6. Kiểm tra tài nguyên hệ thống"
+echo "7. Thoát"
 
-echo -e "${GREEN}=== CÀI ĐẶT HOÀN TẤT ===${NC}"
-echo -e "${GREEN}ETHUSDT Dashboard đã được cài đặt và khởi động.${NC}"
-echo -e "${GREEN}Bạn có thể truy cập ứng dụng tại: http://SERVER_IP:5000${NC}"
-echo -e "${GREEN}Sử dụng lệnh 'systemctl status ethusdt-dashboard' để kiểm tra trạng thái.${NC}"
-echo -e "${GREEN}Sử dụng lệnh '$SCRIPT_DIR/restart.sh' để khởi động lại ứng dụng.${NC}"
+read -p "Chọn một tùy chọn (1-7): " choice
+
+case \$choice in
+    1)
+        echo "===== Logs gần đây ====="
+        journalctl -u ethusdt-dashboard -n 100 --no-pager
+        ;;
+    2)
+        echo "===== Khởi động lại dịch vụ ====="
+        systemctl restart ethusdt-dashboard
+        sleep 2
+        systemctl status ethusdt-dashboard
+        ;;
+    3)
+        echo "===== Trạng thái dịch vụ ====="
+        systemctl status ethusdt-dashboard
+        ;;
+    4)
+        echo "===== Các quá trình Python đang chạy ====="
+        ps aux | grep python | grep -v grep
+        ;;
+    5)
+        echo "===== Kiểm tra kết nối mạng ====="
+        echo "Kiểm tra kết nối đến Binance:"
+        curl -s https://api.binance.com/api/v3/ping
+        echo -e "\nKiểm tra kết nối đến Internet:"
+        ping -c 4 google.com
+        ;;
+    6)
+        echo "===== Tài nguyên hệ thống ====="
+        echo "CPU:"
+        top -bn1 | head -20
+        echo "RAM:"
+        free -m
+        echo "Disk:"
+        df -h
+        ;;
+    7)
+        echo "Thoát"
+        exit 0
+        ;;
+    *)
+        echo "Lựa chọn không hợp lệ!"
+        ;;
+esac
+EOF
+chmod +x $INSTALL_DIR/debug.sh | tee -a $LOG_FILE
+
+# Tạo thư mục backup
+echo -e "${BLUE}Tạo thư mục backup...${NC}" | tee -a $LOG_FILE
+mkdir -p $INSTALL_DIR/backup | tee -a $LOG_FILE
+
+# Tạo tập lệnh backup
+echo -e "${BLUE}Tạo tập lệnh backup...${NC}" | tee -a $LOG_FILE
+cat > $INSTALL_DIR/backup_app.sh << EOF
+#!/bin/bash
+BACKUP_DIR="$INSTALL_DIR/backup"
+TIMESTAMP=\$(date +"%Y%m%d_%H%M%S")
+BACKUP_FILE="\$BACKUP_DIR/ethusdt_dashboard_\$TIMESTAMP.tar.gz"
+
+echo "Tạo backup vào \$BACKUP_FILE..."
+tar -czf \$BACKUP_FILE -C $INSTALL_DIR app.py config.py models utils dashboard data
+echo "Backup hoàn tất!"
+ls -lh \$BACKUP_FILE
+EOF
+chmod +x $INSTALL_DIR/backup_app.sh | tee -a $LOG_FILE
+
+echo -e "${GREEN}=== CÀI ĐẶT HOÀN TẤT ===${NC}" | tee -a $LOG_FILE
+echo "$(date): Hoàn tất cài đặt" | tee -a $LOG_FILE
+echo -e "${GREEN}Ứng dụng ETHUSDT Dashboard đã được cài đặt và khởi động thành công!${NC}" | tee -a $LOG_FILE
+echo -e "Truy cập ứng dụng tại: http://$(curl -s ifconfig.me):5000" | tee -a $LOG_FILE
+echo -e "Các tập lệnh hữu ích:" | tee -a $LOG_FILE
+echo -e "  - $INSTALL_DIR/restart.sh: Khởi động lại dịch vụ" | tee -a $LOG_FILE
+echo -e "  - $INSTALL_DIR/debug.sh: Công cụ debug" | tee -a $LOG_FILE
+echo -e "  - $INSTALL_DIR/backup_app.sh: Tạo backup" | tee -a $LOG_FILE
