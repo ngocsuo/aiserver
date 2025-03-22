@@ -12,6 +12,7 @@ TIMEFRAMES = {
     "primary": PRIMARY_TIMEFRAME,
     "secondary": [SECONDARY_TIMEFRAME]
 }
+ALL_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1d"]
 BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.environ.get("BINANCE_API_SECRET", "")
 LOOKBACK_PERIODS = 1000
@@ -45,6 +46,14 @@ SECONDARY_TIMEFRAME = "1m"  # Thời gian thứ cấp để lấy dữ liệu
 
 # Data update settings
 DATA_UPDATE_INTERVAL = 60  # In seconds
+DATA_RANGE_OPTIONS = {
+    "realtime": 3,       # Số ngày dữ liệu thời gian thực
+    "short": 7,          # Số ngày cho dữ liệu ngắn hạn
+    "medium": 30,        # Số ngày cho dữ liệu trung hạn
+    "long": 90,          # Số ngày cho dữ liệu dài hạn
+    "historical": 365,   # Số ngày cho dữ liệu lịch sử
+    "training": 365 * 2  # Số ngày cho dữ liệu huấn luyện
+}
 
 # System paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
