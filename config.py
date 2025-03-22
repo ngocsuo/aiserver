@@ -45,7 +45,7 @@ DEFAULT_TRAINING_START_DATE = "2022-01-01"
 SECONDARY_TIMEFRAME = "1m"  # Thời gian thứ cấp để lấy dữ liệu
 
 # Data update settings
-DATA_UPDATE_INTERVAL = 60  # In seconds
+DATA_UPDATE_INTERVAL = 60
 DATA_RANGE_OPTIONS = {
     "realtime": 3,       # Số ngày dữ liệu thời gian thực
     "short": 7,          # Số ngày cho dữ liệu ngắn hạn
@@ -108,7 +108,9 @@ BACKTEST_PERIOD_END = "2023-12-31"
 
 # Training settings
 TRAINING_SCHEDULE = {
-    "frequency": "hourly",
+    "frequency": "30 phút", 
+    "interval_minutes": 30,
+    "hourly_frequency": "hourly",
     "interval": 1,  # Train every 1 hour
     "start_hour": 0,
     "end_hour": 23,
@@ -117,7 +119,7 @@ TRAINING_SCHEDULE = {
 CONTINUOUS_TRAINING = True
 MINIMUM_NEW_DATA_POINTS = 100
 CHUNK_BY_MONTHS = True
-UPDATE_INTERVAL = 60  # In seconds
+UPDATE_INTERVAL = 60
 
 # Feature engineering settings
 TECHNICAL_FEATURES = [
