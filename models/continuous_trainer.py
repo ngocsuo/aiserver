@@ -956,10 +956,9 @@ class ContinuousTrainer:
                                 self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
                             else:
                                 self._add_log(f"❌ Kết quả models là None sau khi xử lý")
+                                model_results[timeframe] = {}
                         else:
                             self._add_log(f"❌ train_all_models trả về None cho {timeframe}")
-                        else:
-                            self._add_log(f"⚠️ Huấn luyện cho {timeframe} trả về None")
                             model_results[timeframe] = {}
                             
                     except ValueError as e:
