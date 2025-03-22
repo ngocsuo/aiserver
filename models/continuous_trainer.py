@@ -647,8 +647,25 @@ class ContinuousTrainer:
             
             for data_range in existing_ranges:
                 try:
-                    # Xử lý trường hợp data_range có thể có 2 hoặc 3 phần tử
-                    if isinstance(data_range, (list, tuple)) and len(data_range) >= 2:
+                    # Xử lý trường hợp data_range là dict (định dạng mới)
+                    if isinstance(data_range, dict) and 'start_date' in data_range and 'end_date' in data_range:
+                        exist_start = data_range['start_date']
+                        exist_end = data_range['end_date']
+                        
+                        # Kiểm tra định dạng khớp với timeframe
+                        if hasattr(self, 'current_timeframe') and hasattr(data_range, 'timeframe'):
+                            if self.current_timeframe != data_range.get('timeframe'):
+                                continue
+                                
+                        exist_start_date = datetime.strptime(exist_start, "%Y-%m-%d")
+                        exist_end_date = datetime.strptime(exist_end, "%Y-%m-%d")
+                        
+                        # Khoảng thời gian đã được bao phủ bởi một khoảng thời gian hiện có
+                        if start >= exist_start_date and end <= exist_end_date:
+                            logger.info(f"Khoảng thời gian {start_date} đến {end_date} đã tồn tại trong cache")
+                            return True
+                    # Xử lý trường hợp data_range là list/tuple (định dạng cũ)
+                    elif isinstance(data_range, (list, tuple)) and len(data_range) >= 2:
                         exist_start = data_range[0]
                         exist_end = data_range[1]
                         
@@ -664,8 +681,9 @@ class ContinuousTrainer:
                         
                         # Khoảng thời gian đã được bao phủ bởi một khoảng thời gian hiện có
                         if start >= exist_start_date and end <= exist_end_date:
+                            logger.info(f"Khoảng thời gian {start_date} đến {end_date} đã tồn tại trong cache")
                             return True
-                except (ValueError, IndexError, TypeError) as e:
+                except (ValueError, IndexError, TypeError, KeyError) as e:
                     logger.warning(f"Lỗi khi xử lý khoảng dữ liệu {data_range}: {e}")
                     continue
                     
@@ -673,6 +691,9 @@ class ContinuousTrainer:
             logger.error(f"Lỗi khi kiểm tra khoảng dữ liệu {start_date} - {end_date}: {e}")
             # Trước đây trả về giá trị 0 gây lỗi "too many values to unpack (expected 2)"
             # Trả về False để xử lý lỗi một cách an toàn
+            return False
+            
+        # Trả về False nếu không tìm thấy khoảng thời gian phù hợp
         return False
     
     def _save_cached_data(self, data, start_date, end_date, timeframe=None):
@@ -742,43 +763,67 @@ class ContinuousTrainer:
         # Danh sách các cột để bỏ qua quá trình tối ưu (các cột mục tiêu)
         exclude_cols = ['target', 'target_class', 'target_binary']
         
-        # Tối ưu cột numeric
-        for col in df.select_dtypes(include=['float']).columns:
-            if col not in exclude_cols:
-                col_min = df[col].min()
-                col_max = df[col].max()
-                
-                # Kiểm tra xem dữ liệu có thể chuyển đổi sang int không
-                if df[col].equals(df[col].astype(int)):
-                    if col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
-                        df[col] = df[col].astype(np.int8)
-                    elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
-                        df[col] = df[col].astype(np.int16)
-                    elif col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
-                        df[col] = df[col].astype(np.int32)
-                else:
-                    # Tối ưu cột float
-                    if col_min >= np.finfo(np.float32).min and col_max <= np.finfo(np.float32).max:
-                        df[col] = df[col].astype(np.float32)
-        
-        # Tối ưu cột integer
-        for col in df.select_dtypes(include=['int']).columns:
-            if col not in exclude_cols:
-                col_min = df[col].min()
-                col_max = df[col].max()
-                
-                if col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
-                    df[col] = df[col].astype(np.int8)
-                elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
-                    df[col] = df[col].astype(np.int16)
-                elif col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
-                    df[col] = df[col].astype(np.int32)
-        
-        # Tối ưu cột boolean
-        for col in df.select_dtypes(include=['bool']).columns:
-            if col not in exclude_cols:
-                df[col] = df[col].astype('int8')  # int8 tiết kiệm hơn bool
-        
+        try:
+            # Loại bỏ các giá trị NaN trước khi tối ưu kiểu dữ liệu
+            df = df.fillna(0)
+            
+            # Loại bỏ các giá trị vô cùng (inf)
+            df = df.replace([np.inf, -np.inf], 0)
+            
+            # Tối ưu cột numeric
+            for col in df.select_dtypes(include=['float']).columns:
+                if col not in exclude_cols:
+                    try:
+                        col_min = df[col].min()
+                        col_max = df[col].max()
+                        
+                        # Kiểm tra xem dữ liệu có thể chuyển đổi sang int không
+                        if df[col].equals(df[col].astype(int)):
+                            if col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
+                                df[col] = df[col].astype(np.int32)
+                            elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
+                                df[col] = df[col].astype(np.int16)
+                            elif col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
+                                df[col] = df[col].astype(np.int8)
+                        else:
+                            # Tối ưu cột float
+                            if col_min >= np.finfo(np.float32).min and col_max <= np.finfo(np.float32).max:
+                                df[col] = df[col].astype(np.float32)
+                    except Exception as e:
+                        logger.warning(f"Không thể tối ưu hóa cột {col}: {e}")
+                        continue
+            
+            # Tối ưu cột integer
+            for col in df.select_dtypes(include=['int']).columns:
+                if col not in exclude_cols:
+                    try:
+                        col_min = df[col].min()
+                        col_max = df[col].max()
+                        
+                        if col_min >= np.iinfo(np.int32).min and col_max <= np.iinfo(np.int32).max:
+                            df[col] = df[col].astype(np.int32)
+                        elif col_min >= np.iinfo(np.int16).min and col_max <= np.iinfo(np.int16).max:
+                            df[col] = df[col].astype(np.int16)
+                        elif col_min >= np.iinfo(np.int8).min and col_max <= np.iinfo(np.int8).max:
+                            df[col] = df[col].astype(np.int8)
+                    except Exception as e:
+                        logger.warning(f"Không thể tối ưu hóa cột {col}: {e}")
+                        continue
+            
+            # Tối ưu cột boolean
+            for col in df.select_dtypes(include=['bool']).columns:
+                if col not in exclude_cols:
+                    try:
+                        df[col] = df[col].astype('int8')  # int8 tiết kiệm hơn bool
+                    except Exception as e:
+                        logger.warning(f"Không thể tối ưu hóa cột {col}: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Lỗi khi tối ưu hóa DataFrame: {e}")
+            # Trả về DataFrame gốc nếu xảy ra lỗi
+            return df
+            
         return df
     
     def _load_cached_data(self, start_date, end_date, timeframe=None):
