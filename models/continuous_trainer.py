@@ -690,27 +690,67 @@ class ContinuousTrainer:
                         if isinstance(data_dict[key], dict):
                             data_dict[key]['timeframe'] = timeframe
                 
+                # SỬA LỖI: Xử lý lỗi "too many values to unpack (expected 2)"
                 try:
-                    # Đảm bảo hàm train_all_models trả về đúng giá trị models
-                    models = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
-                    model_results[timeframe] = models
-                    self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                    # Fix #1: Lưu kết quả vào biến tạm trước để kiểm tra loại dữ liệu
+                    result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                    
+                    # Fix #2: Kiểm tra xem kết quả có phải là tuple không, nếu có thì lấy phần tử đầu tiên
+                    if isinstance(result, tuple) and len(result) > 0:
+                        models = result[0]  # Lấy phần tử đầu tiên (models)
+                        self._add_log(f"⚠️ Đã tự động xử lý kết quả tuple từ train_all_models")
+                    else:
+                        # Nếu không phải tuple, sử dụng kết quả trực tiếp
+                        models = result
+                        
+                    # Fix #3: Đảm bảo models không None trước khi lưu vào kết quả
+                    if models is not None:
+                        model_results[timeframe] = models
+                        self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                    else:
+                        self._add_log(f"⚠️ Huấn luyện cho {timeframe} trả về None")
+                        model_results[timeframe] = {}
+                        
                 except ValueError as e:
-                    # Xử lý lỗi 'too many values to unpack'
+                    # Fix #4: Xử lý lỗi 'too many values to unpack' nếu vẫn xảy ra
                     if "too many values to unpack" in str(e):
                         self._add_log(f"⚠️ Lỗi định dạng kết quả: {str(e)}")
                         logger.warning(f"Value unpacking error in train_all_models: {str(e)}")
-                        # Thử lấy giá trị đầu tiên từ kết quả
-                        result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
-                        if isinstance(result, tuple) and len(result) > 0:
-                            models = result[0]  # Lấy phần tử đầu tiên
-                            model_results[timeframe] = models
-                            self._add_log(f"✅ Đã khắc phục lỗi và huấn luyện thành công mô hình cho {timeframe}")
+                        
+                        try:
+                            # Lấy kết quả dưới dạng list để xử lý an toàn
+                            result_list = list(self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe))
+                            if result_list:
+                                models = result_list[0]  # Lấy phần tử đầu tiên
+                                model_results[timeframe] = models
+                                self._add_log(f"✅ Đã khắc phục lỗi và huấn luyện thành công mô hình cho {timeframe}")
+                            else:
+                                self._add_log(f"⚠️ Kết quả huấn luyện rỗng cho {timeframe}")
+                                model_results[timeframe] = {}
+                        except Exception as inner_e:
+                            self._add_log(f"❌ Lỗi khi xử lý kết quả huấn luyện: {str(inner_e)}")
+                            logger.error(f"Error processing training result: {inner_e}")
+                            model_results[timeframe] = {}
                     else:
                         # Lỗi ValueError khác
-                        raise
+                        self._add_log(f"❌ Lỗi không xác định: {str(e)}")
+                        logger.error(f"Unknown error in train_all_models: {e}")
+                        model_results[timeframe] = {}
+                except Exception as e:
+                    # Fix #5: Xử lý các ngoại lệ khác
+                    self._add_log(f"❌ Lỗi trong quá trình huấn luyện: {str(e)}")
+                    logger.error(f"Error in training process: {e}")
+                    model_results[timeframe] = {}
                 
-                self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình cho {timeframe}")
+                # Thông báo kết quả sau khi xử lý
+                if timeframe in model_results and model_results[timeframe]:
+                    try:
+                        model_count = len(model_results[timeframe])
+                        self._add_log(f"✅ Đã huấn luyện thành công {model_count} mô hình cho {timeframe}")
+                    except:
+                        self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                else:
+                    self._add_log(f"⚠️ Không có mô hình nào được huấn luyện cho {timeframe}")
                 logger.info(f"Trained {len(models)} models for {timeframe} with {len(combined_data)} data points")
             else:
                 self._add_log(f"❌ Không có dữ liệu khả dụng cho {timeframe} sau khi xử lý tất cả các đoạn")

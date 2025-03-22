@@ -200,35 +200,107 @@ class ModelTrainer:
             logger.error(f"Error training Meta-Learner model: {e}")
             return None, None
     
-    def train_all_models(self, sequence_data, image_data):
+    def train_all_models(self, sequence_data, image_data, timeframe=None):
         """
         Train all models in the ensemble.
         
         Args:
             sequence_data (dict): Dictionary with sequence data for training
             image_data (dict): Dictionary with image data for training
+            timeframe (str, optional): Timeframe for model training (e.g., '1m', '5m')
             
         Returns:
-            dict: Trained models
+            dict: Trained models - NOT A TUPLE
         """
         try:
-            logger.info("Training all models")
+            logger.info(f"Training all models for timeframe {timeframe or 'default'}")
+            
+            # Store models dictionary to return
+            models = {}
             
             # Train each model type
-            lstm_model, lstm_history = self.train_lstm(sequence_data)
-            transformer_model, transformer_history = self.train_transformer(sequence_data)
-            cnn_model, cnn_history = self.train_cnn(image_data)
-            historical_model, _ = self.train_historical_similarity(sequence_data)
-            meta_model, _ = self.train_meta_learner(sequence_data, image_data)
-            
+            try:
+                # Fix: Use result_list to handle tuple unpacking error
+                result = self.train_lstm(sequence_data)
+                if isinstance(result, tuple) and len(result) >= 1:
+                    lstm_model = result[0]
+                    lstm_history = result[1] if len(result) > 1 else None
+                else:
+                    lstm_model = result
+                    lstm_history = None
+                    
+                if lstm_model:
+                    models['lstm'] = lstm_model
+            except Exception as e:
+                logger.error(f"Error training LSTM model: {e}")
+                
+            try:
+                # Fix: Use result_list to handle tuple unpacking error
+                result = self.train_transformer(sequence_data)
+                if isinstance(result, tuple) and len(result) >= 1:
+                    transformer_model = result[0]
+                    transformer_history = result[1] if len(result) > 1 else None
+                else:
+                    transformer_model = result
+                    transformer_history = None
+                    
+                if transformer_model:
+                    models['transformer'] = transformer_model
+            except Exception as e:
+                logger.error(f"Error training Transformer model: {e}")
+                
+            try:
+                # Fix: Use result_list to handle tuple unpacking error
+                result = self.train_cnn(image_data)
+                if isinstance(result, tuple) and len(result) >= 1:
+                    cnn_model = result[0]
+                    cnn_history = result[1] if len(result) > 1 else None
+                else:
+                    cnn_model = result
+                    cnn_history = None
+                    
+                if cnn_model:
+                    models['cnn'] = cnn_model
+            except Exception as e:
+                logger.error(f"Error training CNN model: {e}")
+                
+            try:
+                # Fix: Use result_list to handle tuple unpacking error
+                result = self.train_historical_similarity(sequence_data)
+                if isinstance(result, tuple) and len(result) >= 1:
+                    historical_model = result[0]
+                else:
+                    historical_model = result
+                    
+                if historical_model:
+                    models['historical_similarity'] = historical_model
+            except Exception as e:
+                logger.error(f"Error training Historical Similarity model: {e}")
+                
+            try:
+                # Fix: Use result_list to handle tuple unpacking error
+                result = self.train_meta_learner(sequence_data, image_data)
+                if isinstance(result, tuple) and len(result) >= 1:
+                    meta_model = result[0]
+                else:
+                    meta_model = result
+                    
+                if meta_model:
+                    models['meta_learner'] = meta_model
+            except Exception as e:
+                logger.error(f"Error training Meta-Learner model: {e}")
+                
             # Store models and training histories
-            self.models = {
-                'lstm': lstm_model,
-                'transformer': transformer_model,
-                'cnn': cnn_model,
-                'historical_similarity': historical_model,
-                'meta_learner': meta_model
-            }
+            self.models = models
+            
+            # Lưu histories nếu có
+            self.histories = {}
+            if 'lstm' in models and lstm_history is not None:
+                self.histories['lstm'] = lstm_history
+            if 'transformer' in models and transformer_history is not None:
+                self.histories['transformer'] = transformer_history
+            if 'cnn' in models and cnn_history is not None:
+                self.histories['cnn'] = cnn_history
             
             self.histories = {
                 'lstm': lstm_history,
@@ -238,7 +310,8 @@ class ModelTrainer:
             
             logger.info("All models trained successfully")
             
-            return self.models
+            # Sửa lỗi: Đảm bảo trả về dict models, KHÔNG phải tuple
+            return self.models  # Chỉ trả về dictionary models, không phải tuple
             
         except Exception as e:
             logger.error(f"Error training all models: {e}")
