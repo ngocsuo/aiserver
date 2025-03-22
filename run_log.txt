@@ -34,3 +34,374 @@
 2025-03-22 22:31:03,980 - Runner - INFO - [streamlit] 2025-03-22 22:31:03 - Binance server time: 2025-03-22 22:31:03
 2025-03-22 22:31:11,265 - Runner - INFO - [streamlit] 2025-03-22 22:31:11 - Tiến trình huấn luyện: 100% (30/30 chunks)
 2025-03-22 22:31:13,761 - Runner - INFO - [streamlit] 2025-03-22 22:31:13 - Binance server time: 2025-03-22 22:31:13
+2025-03-22 22:31:13,988 - Runner - INFO - [streamlit] 2025-03-22 22:31:13 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 22:31:16,582 - Runner - INFO - [streamlit] 2025-03-22 22:31:16 - Binance server time: 2025-03-22 22:31:16
+2025-03-22 22:31:26,249 - Runner - INFO - [streamlit] 2025-03-22 22:31:26 - Binance server time: 2025-03-22 22:31:26
+2025-03-22 22:31:29,162 - Runner - INFO - [streamlit] 2025-03-22 22:31:29 - Binance server time: 2025-03-22 22:31:29
+2025-03-22 22:31:38,856 - Runner - INFO - [streamlit] 2025-03-22 22:31:38 - Binance server time: 2025-03-22 22:31:38
+2025-03-22 22:31:41,797 - Runner - INFO - [streamlit] 2025-03-22 22:31:41 - Binance server time: 2025-03-22 22:31:41
+2025-03-22 22:31:51,341 - Runner - INFO - [streamlit] 2025-03-22 22:31:51 - Binance server time: 2025-03-22 22:31:51
+2025-03-22 22:31:54,331 - Runner - INFO - [streamlit] 2025-03-22 22:31:54 - Binance server time: 2025-03-22 22:31:54
+2025-03-22 22:32:03,821 - Runner - INFO - [streamlit] 2025-03-22 22:32:03 - Binance server time: 2025-03-22 22:32:03
+2025-03-22 22:32:06,838 - Runner - INFO - [streamlit] 2025-03-22 22:32:06 - Binance server time: 2025-03-22 22:32:06
+2025-03-22 22:32:16,594 - Runner - INFO - [streamlit] 2025-03-22 22:32:16 - Binance server time: 2025-03-22 22:32:16
+2025-03-22 22:32:19,371 - Runner - INFO - [streamlit] 2025-03-22 22:32:19 - Binance server time: 2025-03-22 22:32:19
+2025-03-22 22:32:30,837 - Runner - INFO - [streamlit] 2025-03-22 22:32:30 - Binance server time: 2025-03-22 22:32:30
+2025-03-22 22:32:33,774 - Runner - INFO - [streamlit] 2025-03-22 22:32:33 - Binance server time: 2025-03-22 22:32:33
+2025-03-22 22:32:34,544 - Runner - ERROR - [streamlit] 2025-03-22 22:30:51,810 - app - INFO - Configuring proxy for Binance API
+2025-03-22 22:32:34,545 - Runner - ERROR - [streamlit] 2025-03-22 22:30:51,810 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,545 - Runner - ERROR - [streamlit] 2025-03-22 22:30:52,330 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,545 - Runner - ERROR - [streamlit] 2025-03-22 22:30:52,330 - app - INFO - Proxy configured successfully
+2025-03-22 22:32:34,545 - Runner - ERROR - [streamlit] 2025-03-22 22:30:52,330 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,545 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,013 - app - INFO - Configuring proxy for Binance API
+2025-03-22 22:32:34,545 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,013 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,714 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,715 - app - INFO - Proxy configured successfully
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,715 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56.988 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,989 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:56,989 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57.157 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,158 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,158 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,516 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,516 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,516 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,700 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,546 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,700 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:57,700 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,029 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,029 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,029 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,228 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,228 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,228 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,669 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,547 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,787 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,852 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:58,972 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,317 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,317 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,317 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,318 - data_processor - INFO - Data processor initialized
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,319 - model_trainer - INFO - Model trainer initialized
+2025-03-22 22:32:34,548 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,319 - data_processor - INFO - Data processor initialized
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,319 - prediction_engine - INFO - Prediction engine initialized
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,320 - data_collector - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,320 - data_collector - INFO - Connecting directly to Binance API
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,320 - data_collector - INFO - Using direct connection to Binance API
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,514 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,514 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,514 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - data_processor - INFO - Data processor initialized
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - model_trainer - INFO - Model trainer initialized
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - data_processor - INFO - Data processor initialized
+2025-03-22 22:32:34,549 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - prediction_engine - INFO - Prediction engine initialized
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - data_collector - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - data_collector - INFO - Connecting directly to Binance API
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,515 - data_collector - INFO - Using direct connection to Binance API
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:30:59,965 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,087 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,162 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,283 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,618 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,619 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,619 - data_collector - INFO - Successfully connected to Binance API
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,619 - data_processor - INFO - Data processor initialized
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,619 - model_trainer - INFO - Model trainer initialized
+2025-03-22 22:32:34,550 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,620 - continuous_trainer - INFO - Using custom historical start date: 2024-01-01
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,621 - continuous_trainer - INFO - Generated 15 monthly chunks from 2024-01-01 to 2025-03-22
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,755 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - data_collector - INFO - Successfully connected to Binance API
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - data_processor - INFO - Data processor initialized
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - model_trainer - INFO - Model trainer initialized
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - continuous_trainer - INFO - Using custom historical start date: 2024-01-01
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,834 - continuous_trainer - INFO - Generated 15 monthly chunks from 2024-01-01 to 2025-03-22
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:00,835 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,028 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,028 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-22 22:32:34,551 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,117 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,118 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,227 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,229 - continuous_trainer - INFO - Training loop started
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,229 - continuous_trainer - INFO - Forced training scheduled
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,229 - continuous_trainer - INFO - Starting training process at 2025-03-22 22:31:01.229303
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,229 - continuous_trainer - INFO - Training with 15 monthly chunks from 2024-01-01 for timeframes: 5m, 1m
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,229 - continuous_trainer - INFO - Continuous training manager started
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,234 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,239 - continuous_trainer - INFO - Processing data for timeframe: 5m
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,240 - continuous_trainer - INFO - Khoảng thời gian 2024-01-01 đến 2024-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,552 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,240 - continuous_trainer - INFO - Skipping chunk 1/15 (5m): 2024-01-01 to 2024-01-31 - data already exists
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,271 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-01-01 to 2024-01-31 (1.70 MB)
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,272 - continuous_trainer - INFO - Khoảng thời gian 2024-02-01 đến 2024-02-29 đã tồn tại trong cache
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,272 - continuous_trainer - INFO - Skipping chunk 2/15 (5m): 2024-02-01 to 2024-02-29 - data already exists
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,295 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-02-01 to 2024-02-29 (1.57 MB)
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,295 - continuous_trainer - INFO - Khoảng thời gian 2024-03-01 đến 2024-03-31 đã tồn tại trong cache
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,295 - continuous_trainer - INFO - Skipping chunk 3/15 (5m): 2024-03-01 to 2024-03-31 - data already exists
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,319 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,320 - continuous_trainer - INFO - Training loop started
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,320 - continuous_trainer - INFO - Forced training scheduled
+2025-03-22 22:32:34,553 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,320 - continuous_trainer - INFO - Starting training process at 2025-03-22 22:31:01.320590
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,320 - continuous_trainer - INFO - Training with 15 monthly chunks from 2024-01-01 for timeframes: 5m, 1m
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,321 - continuous_trainer - INFO - Continuous training manager started
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,321 - continuous_trainer - INFO - Processing data for timeframe: 5m
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,322 - continuous_trainer - INFO - Khoảng thời gian 2024-01-01 đến 2024-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,322 - continuous_trainer - INFO - Skipping chunk 1/15 (5m): 2024-01-01 to 2024-01-31 - data already exists
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,329 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,330 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,554 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,349 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,369 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-03-01 to 2024-03-31 (1.72 MB)
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,370 - continuous_trainer - INFO - Khoảng thời gian 2024-04-01 đến 2024-04-30 đã tồn tại trong cache
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,370 - continuous_trainer - INFO - Skipping chunk 4/15 (5m): 2024-04-01 to 2024-04-30 - data already exists
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,403 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-01-01 to 2024-01-31 (1.70 MB)
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,404 - continuous_trainer - INFO - Khoảng thời gian 2024-02-01 đến 2024-02-29 đã tồn tại trong cache
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,404 - continuous_trainer - INFO - Skipping chunk 2/15 (5m): 2024-02-01 to 2024-02-29 - data already exists
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,420 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-22 22:32:34,555 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,420 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,436 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-04-01 to 2024-04-30 (1.65 MB)
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,437 - continuous_trainer - INFO - Khoảng thời gian 2024-05-01 đến 2024-05-31 đã tồn tại trong cache
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,437 - continuous_trainer - INFO - Skipping chunk 5/15 (5m): 2024-05-01 to 2024-05-31 - data already exists
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,485 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-02-01 to 2024-02-29 (1.57 MB)
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,485 - continuous_trainer - INFO - Khoảng thời gian 2024-03-01 đến 2024-03-31 đã tồn tại trong cache
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,485 - continuous_trainer - INFO - Skipping chunk 3/15 (5m): 2024-03-01 to 2024-03-31 - data already exists
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,516 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-05-01 to 2024-05-31 (1.70 MB)
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,518 - continuous_trainer - INFO - Khoảng thời gian 2024-06-01 đến 2024-06-30 đã tồn tại trong cache
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,519 - continuous_trainer - INFO - Skipping chunk 6/15 (5m): 2024-06-01 to 2024-06-30 - data already exists
+2025-03-22 22:32:34,556 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,547 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,547 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,549 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-03-01 to 2024-03-31 (1.72 MB)
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,550 - continuous_trainer - INFO - Khoảng thời gian 2024-04-01 đến 2024-04-30 đã tồn tại trong cache
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,550 - continuous_trainer - INFO - Skipping chunk 4/15 (5m): 2024-04-01 to 2024-04-30 - data already exists
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,587 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-06-01 to 2024-06-30 (1.63 MB)
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,588 - continuous_trainer - INFO - Khoảng thời gian 2024-07-01 đến 2024-07-31 đã tồn tại trong cache
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,588 - continuous_trainer - INFO - Skipping chunk 7/15 (5m): 2024-07-01 to 2024-07-31 - data already exists
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,591 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-04-01 to 2024-04-30 (1.65 MB)
+2025-03-22 22:32:34,557 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,592 - continuous_trainer - INFO - Khoảng thời gian 2024-05-01 đến 2024-05-31 đã tồn tại trong cache
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,592 - continuous_trainer - INFO - Skipping chunk 5/15 (5m): 2024-05-01 to 2024-05-31 - data already exists
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,609 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,784 - app - INFO - Configuring proxy for Binance API
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,785 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,810 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,943 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-05-01 to 2024-05-31 (1.70 MB)
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,944 - continuous_trainer - INFO - Khoảng thời gian 2024-06-01 đến 2024-06-30 đã tồn tại trong cache
+2025-03-22 22:32:34,558 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,945 - continuous_trainer - INFO - Skipping chunk 6/15 (5m): 2024-06-01 to 2024-06-30 - data already exists
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,947 - app - INFO - Configuring proxy for Binance API
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,947 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,979 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-07-01 to 2024-07-31 (1.71 MB)
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,981 - continuous_trainer - INFO - Khoảng thời gian 2024-08-01 đến 2024-08-31 đã tồn tại trong cache
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,981 - continuous_trainer - INFO - Skipping chunk 8/15 (5m): 2024-08-01 to 2024-08-31 - data already exists
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,982 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,983 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,559 - Runner - ERROR - [streamlit] 2025-03-22 22:31:01,983 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,028 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-06-01 to 2024-06-30 (1.63 MB)
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,029 - continuous_trainer - INFO - Khoảng thời gian 2024-07-01 đến 2024-07-31 đã tồn tại trong cache
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,029 - continuous_trainer - INFO - Skipping chunk 7/15 (5m): 2024-07-01 to 2024-07-31 - data already exists
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,099 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-08-01 to 2024-08-31 (1.70 MB)
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,100 - continuous_trainer - INFO - Khoảng thời gian 2024-09-01 đến 2024-09-30 đã tồn tại trong cache
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,100 - continuous_trainer - INFO - Skipping chunk 9/15 (5m): 2024-09-01 to 2024-09-30 - data already exists
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,143 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-07-01 to 2024-07-31 (1.71 MB)
+2025-03-22 22:32:34,560 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,144 - continuous_trainer - INFO - Khoảng thời gian 2024-08-01 đến 2024-08-31 đã tồn tại trong cache
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,144 - continuous_trainer - INFO - Skipping chunk 8/15 (5m): 2024-08-01 to 2024-08-31 - data already exists
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,183 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-09-01 to 2024-09-30 (1.64 MB)
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,193 - continuous_trainer - INFO - Khoảng thời gian 2024-10-01 đến 2024-10-31 đã tồn tại trong cache
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,194 - continuous_trainer - INFO - Skipping chunk 10/15 (5m): 2024-10-01 to 2024-10-31 - data already exists
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,215 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-08-01 to 2024-08-31 (1.70 MB)
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,216 - continuous_trainer - INFO - Khoảng thời gian 2024-09-01 đến 2024-09-30 đã tồn tại trong cache
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,216 - continuous_trainer - INFO - Skipping chunk 9/15 (5m): 2024-09-01 to 2024-09-30 - data already exists
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,258 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-10-01 to 2024-10-31 (1.69 MB)
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,258 - continuous_trainer - INFO - Khoảng thời gian 2024-11-01 đến 2024-11-30 đã tồn tại trong cache
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,258 - continuous_trainer - INFO - Skipping chunk 11/15 (5m): 2024-11-01 to 2024-11-30 - data already exists
+2025-03-22 22:32:34,561 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,273 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-09-01 to 2024-09-30 (1.64 MB)
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,274 - continuous_trainer - INFO - Khoảng thời gian 2024-10-01 đến 2024-10-31 đã tồn tại trong cache
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,274 - continuous_trainer - INFO - Skipping chunk 10/15 (5m): 2024-10-01 to 2024-10-31 - data already exists
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,331 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,332 - app - INFO - Proxy configured successfully
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,332 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,351 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-11-01 to 2024-11-30 (1.66 MB)
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,351 - continuous_trainer - INFO - Khoảng thời gian 2024-12-01 đến 2024-12-31 đã tồn tại trong cache
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,352 - continuous_trainer - INFO - Skipping chunk 12/15 (5m): 2024-12-01 to 2024-12-31 - data already exists
+2025-03-22 22:32:34,562 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,381 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-10-01 to 2024-10-31 (1.69 MB)
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,382 - continuous_trainer - INFO - Khoảng thời gian 2024-11-01 đến 2024-11-30 đã tồn tại trong cache
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,382 - continuous_trainer - INFO - Skipping chunk 11/15 (5m): 2024-11-01 to 2024-11-30 - data already exists
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,493 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-12-01 to 2024-12-31 (1.72 MB)
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,494 - continuous_trainer - INFO - Khoảng thời gian 2025-01-01 đến 2025-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,494 - continuous_trainer - INFO - Skipping chunk 13/15 (5m): 2025-01-01 to 2025-01-31 - data already exists
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,497 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,498 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,498 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,499 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,502 - app - INFO - Proxy configured successfully
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,503 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,534 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-11-01 to 2024-11-30 (1.66 MB)
+2025-03-22 22:32:34,563 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,535 - continuous_trainer - INFO - Khoảng thời gian 2024-12-01 đến 2024-12-31 đã tồn tại trong cache
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,535 - continuous_trainer - INFO - Skipping chunk 12/15 (5m): 2024-12-01 to 2024-12-31 - data already exists
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,635 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-01-01 to 2025-01-31 (1.72 MB)
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,635 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,639 - continuous_trainer - INFO - Skipping chunk 14/15 (5m): 2025-02-01 to 2025-02-28 - data already exists
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,656 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-12-01 to 2024-12-31 (1.72 MB)
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,657 - continuous_trainer - INFO - Khoảng thời gian 2025-01-01 đến 2025-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,564 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,657 - continuous_trainer - INFO - Skipping chunk 13/15 (5m): 2025-01-01 to 2025-01-31 - data already exists
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,752 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-02-01 to 2025-02-28 (1.53 MB)
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,753 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-22 đã tồn tại trong cache
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,753 - continuous_trainer - INFO - Skipping chunk 15/15 (5m): 2025-03-01 to 2025-03-22 - data already exists
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,787 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-01-01 to 2025-01-31 (1.72 MB)
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,788 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,788 - continuous_trainer - INFO - Skipping chunk 14/15 (5m): 2025-02-01 to 2025-02-28 - data already exists
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,853 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-03-01 to 2025-03-22 (1.17 MB)
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,854 - continuous_trainer - INFO - Processing data for timeframe: 1m
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,854 - continuous_trainer - INFO - Khoảng thời gian 2024-01-01 đến 2024-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,565 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,854 - continuous_trainer - INFO - Skipping chunk 1/15 (1m): 2024-01-01 to 2024-01-31 - data already exists
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,973 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-02-01 to 2025-02-28 (1.53 MB)
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,974 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-22 đã tồn tại trong cache
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:02,974 - continuous_trainer - INFO - Skipping chunk 15/15 (5m): 2025-03-01 to 2025-03-22 - data already exists
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,043 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-03-01 to 2025-03-22 (1.17 MB)
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,043 - continuous_trainer - INFO - Processing data for timeframe: 1m
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,043 - continuous_trainer - INFO - Khoảng thời gian 2024-01-01 đến 2024-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,044 - continuous_trainer - INFO - Skipping chunk 1/15 (1m): 2024-01-01 to 2024-01-31 - data already exists
+2025-03-22 22:32:34,566 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,155 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,298 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03.305 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,537 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-01-01 to 2024-01-31 (8.28 MB)
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,538 - continuous_trainer - INFO - Khoảng thời gian 2024-02-01 đến 2024-02-29 đã tồn tại trong cache
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,541 - continuous_trainer - INFO - Skipping chunk 2/15 (1m): 2024-02-01 to 2024-02-29 - data already exists
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,693 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-01-01 to 2024-01-31 (8.28 MB)
+2025-03-22 22:32:34,567 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,693 - continuous_trainer - INFO - Khoảng thời gian 2024-02-01 đến 2024-02-29 đã tồn tại trong cache
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,693 - continuous_trainer - INFO - Skipping chunk 2/15 (1m): 2024-02-01 to 2024-02-29 - data already exists
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,857 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,857 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,857 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,987 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-02-01 to 2024-02-29 (7.74 MB)
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,988 - continuous_trainer - INFO - Khoảng thời gian 2024-03-01 đến 2024-03-31 đã tồn tại trong cache
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:03,988 - continuous_trainer - INFO - Skipping chunk 3/15 (1m): 2024-03-01 to 2024-03-31 - data already exists
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,111 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-02-01 to 2024-02-29 (7.74 MB)
+2025-03-22 22:32:34,568 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,112 - continuous_trainer - INFO - Khoảng thời gian 2024-03-01 đến 2024-03-31 đã tồn tại trong cache
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,112 - continuous_trainer - INFO - Skipping chunk 3/15 (1m): 2024-03-01 to 2024-03-31 - data already exists
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,427 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-03-01 to 2024-03-31 (8.51 MB)
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,429 - continuous_trainer - INFO - Khoảng thời gian 2024-04-01 đến 2024-04-30 đã tồn tại trong cache
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,429 - continuous_trainer - INFO - Skipping chunk 4/15 (1m): 2024-04-01 to 2024-04-30 - data already exists
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,651 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-03-01 to 2024-03-31 (8.51 MB)
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,652 - continuous_trainer - INFO - Khoảng thời gian 2024-04-01 đến 2024-04-30 đã tồn tại trong cache
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,652 - continuous_trainer - INFO - Skipping chunk 4/15 (1m): 2024-04-01 to 2024-04-30 - data already exists
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,991 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-04-01 to 2024-04-30 (8.15 MB)
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,992 - continuous_trainer - INFO - Khoảng thời gian 2024-05-01 đến 2024-05-31 đã tồn tại trong cache
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:04,992 - continuous_trainer - INFO - Skipping chunk 5/15 (1m): 2024-05-01 to 2024-05-31 - data already exists
+2025-03-22 22:32:34,569 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,128 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-04-01 to 2024-04-30 (8.15 MB)
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,129 - continuous_trainer - INFO - Khoảng thời gian 2024-05-01 đến 2024-05-31 đã tồn tại trong cache
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,130 - continuous_trainer - INFO - Skipping chunk 5/15 (1m): 2024-05-01 to 2024-05-31 - data already exists
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,530 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-05-01 to 2024-05-31 (8.31 MB)
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,531 - continuous_trainer - INFO - Khoảng thời gian 2024-06-01 đến 2024-06-30 đã tồn tại trong cache
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,531 - continuous_trainer - INFO - Skipping chunk 6/15 (1m): 2024-06-01 to 2024-06-30 - data already exists
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,620 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-05-01 to 2024-05-31 (8.31 MB)
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,621 - continuous_trainer - INFO - Khoảng thời gian 2024-06-01 đến 2024-06-30 đã tồn tại trong cache
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,621 - continuous_trainer - INFO - Skipping chunk 6/15 (1m): 2024-06-01 to 2024-06-30 - data already exists
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,925 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-06-01 to 2024-06-30 (7.97 MB)
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,926 - continuous_trainer - INFO - Khoảng thời gian 2024-07-01 đến 2024-07-31 đã tồn tại trong cache
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:05,926 - continuous_trainer - INFO - Skipping chunk 7/15 (1m): 2024-07-01 to 2024-07-31 - data already exists
+2025-03-22 22:32:34,570 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,170 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-06-01 to 2024-06-30 (7.97 MB)
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,171 - continuous_trainer - INFO - Khoảng thời gian 2024-07-01 đến 2024-07-31 đã tồn tại trong cache
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,171 - continuous_trainer - INFO - Skipping chunk 7/15 (1m): 2024-07-01 to 2024-07-31 - data already exists
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,379 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-07-01 to 2024-07-31 (8.37 MB)
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,380 - continuous_trainer - INFO - Khoảng thời gian 2024-08-01 đến 2024-08-31 đã tồn tại trong cache
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,380 - continuous_trainer - INFO - Skipping chunk 8/15 (1m): 2024-08-01 to 2024-08-31 - data already exists
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,577 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-07-01 to 2024-07-31 (8.37 MB)
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,578 - continuous_trainer - INFO - Khoảng thời gian 2024-08-01 đến 2024-08-31 đã tồn tại trong cache
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,579 - continuous_trainer - INFO - Skipping chunk 8/15 (1m): 2024-08-01 to 2024-08-31 - data already exists
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,800 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-08-01 to 2024-08-31 (8.38 MB)
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,801 - continuous_trainer - INFO - Khoảng thời gian 2024-09-01 đến 2024-09-30 đã tồn tại trong cache
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:06,801 - continuous_trainer - INFO - Skipping chunk 9/15 (1m): 2024-09-01 to 2024-09-30 - data already exists
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,067 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-08-01 to 2024-08-31 (8.38 MB)
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,068 - continuous_trainer - INFO - Khoảng thời gian 2024-09-01 đến 2024-09-30 đã tồn tại trong cache
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,068 - continuous_trainer - INFO - Skipping chunk 9/15 (1m): 2024-09-01 to 2024-09-30 - data already exists
+2025-03-22 22:32:34,571 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,302 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-09-01 to 2024-09-30 (8.05 MB)
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,302 - continuous_trainer - INFO - Khoảng thời gian 2024-10-01 đến 2024-10-31 đã tồn tại trong cache
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,302 - continuous_trainer - INFO - Skipping chunk 10/15 (1m): 2024-10-01 to 2024-10-31 - data already exists
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,524 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-09-01 to 2024-09-30 (8.05 MB)
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,525 - continuous_trainer - INFO - Khoảng thời gian 2024-10-01 đến 2024-10-31 đã tồn tại trong cache
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,525 - continuous_trainer - INFO - Skipping chunk 10/15 (1m): 2024-10-01 to 2024-10-31 - data already exists
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,924 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-10-01 to 2024-10-31 (8.32 MB)
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,925 - continuous_trainer - INFO - Khoảng thời gian 2024-11-01 đến 2024-11-30 đã tồn tại trong cache
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:07,927 - continuous_trainer - INFO - Skipping chunk 11/15 (1m): 2024-11-01 to 2024-11-30 - data already exists
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,059 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-10-01 to 2024-10-31 (8.32 MB)
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,060 - continuous_trainer - INFO - Khoảng thời gian 2024-11-01 đến 2024-11-30 đã tồn tại trong cache
+2025-03-22 22:32:34,572 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,060 - continuous_trainer - INFO - Skipping chunk 11/15 (1m): 2024-11-01 to 2024-11-30 - data already exists
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,211 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-11-01 to 2024-11-30 (8.26 MB)
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,212 - continuous_trainer - INFO - Khoảng thời gian 2024-12-01 đến 2024-12-31 đã tồn tại trong cache
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,212 - continuous_trainer - INFO - Skipping chunk 12/15 (1m): 2024-12-01 to 2024-12-31 - data already exists
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,276 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-11-01 to 2024-11-30 (8.26 MB)
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,276 - continuous_trainer - INFO - Khoảng thời gian 2024-12-01 đến 2024-12-31 đã tồn tại trong cache
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,276 - continuous_trainer - INFO - Skipping chunk 12/15 (1m): 2024-12-01 to 2024-12-31 - data already exists
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,389 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-12-01 to 2024-12-31 (8.50 MB)
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,390 - continuous_trainer - INFO - Khoảng thời gian 2025-01-01 đến 2025-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,390 - continuous_trainer - INFO - Skipping chunk 13/15 (1m): 2025-01-01 to 2025-01-31 - data already exists
+2025-03-22 22:32:34,573 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,464 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-12-01 to 2024-12-31 (8.50 MB)
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,465 - continuous_trainer - INFO - Khoảng thời gian 2025-01-01 đến 2025-01-31 đã tồn tại trong cache
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,465 - continuous_trainer - INFO - Skipping chunk 13/15 (1m): 2025-01-01 to 2025-01-31 - data already exists
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,583 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-01-01 to 2025-01-31 (8.49 MB)
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,584 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,584 - continuous_trainer - INFO - Skipping chunk 14/15 (1m): 2025-02-01 to 2025-02-28 - data already exists
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,656 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-01-01 to 2025-01-31 (8.49 MB)
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,656 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,656 - continuous_trainer - INFO - Skipping chunk 14/15 (1m): 2025-02-01 to 2025-02-28 - data already exists
+2025-03-22 22:32:34,574 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,757 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-02-01 to 2025-02-28 (7.63 MB)
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,760 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-22 đã tồn tại trong cache
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,760 - continuous_trainer - INFO - Skipping chunk 15/15 (1m): 2025-03-01 to 2025-03-22 - data already exists
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,871 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-02-01 to 2025-02-28 (7.63 MB)
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,872 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-22 đã tồn tại trong cache
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,872 - continuous_trainer - INFO - Skipping chunk 15/15 (1m): 2025-03-01 to 2025-03-22 - data already exists
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:08,923 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-03-01 to 2025-03-22 (5.90 MB)
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:09,040 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-03-01 to 2025-03-22 (5.90 MB)
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:09,085 - continuous_trainer - INFO - Combined data for 5m: 116487 data points
+2025-03-22 22:32:34,575 - Runner - ERROR - [streamlit] 2025-03-22 22:31:09,146 - data_processor - INFO - Data split complete: 69892 train, 23297 validation, 23298 test samples
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:09,178 - continuous_trainer - INFO - Combined data for 5m: 116487 data points
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:09,233 - data_processor - INFO - Data split complete: 69892 train, 23297 validation, 23298 test samples
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:11,268 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:11,268 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:11,788 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:11,790 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:11,790 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:12,307 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:12,307 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:12,308 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,576 - Runner - ERROR - [streamlit] 2025-03-22 22:31:12,966 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:13,085 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:13,627 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:13,627 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:13,627 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:13,990 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:13,990 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:14,505 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:14,506 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:14,506 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:15,050 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:15,051 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,577 - Runner - ERROR - [streamlit] 2025-03-22 22:31:15,051 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:15,734 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:15,865 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:16,449 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:16,449 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:16,449 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:23,764 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:23,764 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,578 - Runner - ERROR - [streamlit] 2025-03-22 22:31:24,280 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:24,281 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:24,281 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:24,809 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:24,811 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:24,811 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:25,448 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:25,573 - data_collector - INFO - Binance system status: Normal
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:26,127 - data_collector - INFO - Binance Futures API accessible
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:26,127 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-22 22:32:34,579 - Runner - ERROR - [streamlit] 2025-03-22 22:31:26,127 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:26,594 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:26,594 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:27,113 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:27,120 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:27,120 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:27,634 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:27,637 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:27,637 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:28,352 - data_collector - INFO - Binance API connection successful
+2025-03-22 22:32:34,580 - Runner - ERROR - [streamlit] 2025-03-22 22:31:28,472 - data_collector - INFO - Binance system status: Normal
