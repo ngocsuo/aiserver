@@ -4479,11 +4479,24 @@ def render_main_interface():
         
         with col1:
             # Hiển thị giá hiện tại với thiết kế đẹp
+            # Lấy thêm dữ liệu cần thiết cho price card
+            high_24h = latest_candle.get('high', latest_candle['close'] * 1.01)  # Mặc định +1% nếu không có
+            low_24h = latest_candle.get('low', latest_candle['close'] * 0.99)    # Mặc định -1% nếu không có
+            
+            # Tính toán thay đổi 7 ngày (1 tuần)
+            week_change = 0.0  # Mặc định nếu không có dữ liệu
+            if hasattr(st.session_state, 'latest_data') and len(st.session_state.latest_data) > 0:
+                # Nếu có đủ dữ liệu (hơn 1 tuần), tính toán thay đổi 7 ngày
+                if len(st.session_state.latest_data) >= 2016:  # 1440 phút * 7 ngày / 5 phút = 2016 nến 5m
+                    week_ago_price = st.session_state.latest_data.iloc[-2016]['close']
+                    week_change = (latest_candle['close'] - week_ago_price) / week_ago_price * 100
+            
             create_price_card(
                 latest_candle['close'],
-                price_change,
-                price_change_pct,
-                st.session_state.data_fetch_status.get('last_update')
+                price_change,  # Thay đổi 24h
+                week_change,   # Thay đổi 7 ngày
+                high_24h,
+                low_24h
             )
         
         with col2:
