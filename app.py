@@ -2735,12 +2735,25 @@ elif st.session_state.selected_tab == "Cài đặt":
                     
                     config.TRAINING_SCHEDULE["interval_minutes"] = frequency_minutes[training_frequency]
                     
-                    # Lưu thiết lập vào config.py để duy trì giữa các phiên
+                    # Lưu thiết lập tần suất huấn luyện vào config.py để duy trì giữa các phiên
                     new_interval_minutes = frequency_minutes[training_frequency]
                     update_config_value("TRAINING_SCHEDULE", {
                         "frequency": training_frequency,
                         "interval_minutes": new_interval_minutes
                     })
+                    
+                    # Cập nhật cả ngày bắt đầu huấn luyện trong config và lưu vào tập tin config.py
+                    new_start_date = start_date.strftime("%Y-%m-%d")
+                    config.HISTORICAL_START_DATE = new_start_date
+                    update_config_value("HISTORICAL_START_DATE", new_start_date)
+                    
+                    # Cập nhật lại các đoạn dữ liệu hàng tháng nếu có continuous_trainer
+                    if hasattr(st.session_state, 'continuous_trainer'):
+                        continuous_trainer = st.session_state.continuous_trainer
+                        continuous_trainer.historical_start_date = config.HISTORICAL_START_DATE
+                        continuous_trainer.monthly_chunks = continuous_trainer._generate_monthly_chunks()
+                        print(f"Đã cập nhật ngày bắt đầu huấn luyện thành: {config.HISTORICAL_START_DATE}")
+                        print(f"Số đoạn dữ liệu mới: {len(continuous_trainer.monthly_chunks)}")
                     
                     st.success("Đã lưu cài đặt huấn luyện thành công!")
             
