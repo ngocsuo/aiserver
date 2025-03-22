@@ -1101,21 +1101,33 @@ class ContinuousTrainer:
             self._add_log(f"Training models for {timeframe}")
             thread_safe_log(f"Training models for {timeframe}")
             
-            # Gọi hàm train_all_models với xử lý đúng giá trị trả về
-            result = model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
-            
-            # Kiểm tra xem result có phải là tuple không (models, histories)
-            if isinstance(result, tuple) and len(result) >= 1:
-                models = result[0]  # Lấy models từ tuple
-            else:
-                models = result  # Nếu không phải tuple, result chính là models
+            # QUAN TRỌNG: SỬA LỖI Ở ĐÂY - Vấn đề "too many values to unpack"
+            try:
+                # Cách 1: Gán trực tiếp kết quả cho models
+                models = model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+            except ValueError as e:
+                # Nếu gặp lỗi "too many values", đây là phương pháp sửa thay thế
+                if "too many values to unpack" in str(e):
+                    thread_safe_log(f"Lỗi giá trị khi huấn luyện: {e}, đang thử phương pháp khác")
+                    # Lưu kết quả vào biến tạm thời
+                    result = model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                    # Lấy phần tử đầu tiên nếu là một tuple
+                    if isinstance(result, tuple) and len(result) > 0:
+                        models = result[0]
+                    else:
+                        models = result
+                else:
+                    # Nếu là lỗi khác, ném lại ngoại lệ
+                    raise
             
             if models:
                 self._add_log(f"Models trained successfully for {timeframe}")
                 thread_safe_log(f"Models trained successfully for {timeframe}")
+                return models
             else:
                 self._add_log(f"No models trained for {timeframe}")
                 thread_safe_log(f"No models trained for {timeframe}")
+                return None
                 
         except Exception as e:
             self._add_log(f"Error training for timeframe {timeframe}: {e}")
