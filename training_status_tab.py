@@ -177,28 +177,29 @@ def render_training_status_tab():
 
     st.subheader("Nhật ký huấn luyện")
     
-    # Load CSS tùy chỉnh bằng cơ chế an toàn của Streamlit
-    st.markdown('''
-    <style>
-    [data-testid="stDataFrame"] table {
-        background-color: #f8f9fa !important;
-        border-radius: 8px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-    }
-    
-    [data-testid="stDataFrame"] th {
-        background-color: #485ec4 !important;
-        color: white !important;
-        font-weight: normal !important;
-        padding: 10px !important;
-        text-align: left !important;
-    }
-    
-    [data-testid="stDataFrame"] tr:hover td {
-        background-color: #e5e9f5 !important;
-    }
-    </style>
-    ''', unsafe_allow_html=True)
+    # Thêm CSS với phương pháp đơn giản hơn
+    css = """
+        <style>
+            div[data-testid="stDataFrame"] table {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            div[data-testid="stDataFrame"] th {
+                background-color: #485ec4 !important;
+                color: white !important;
+                font-weight: normal;
+                padding: 10px;
+                text-align: left;
+            }
+            
+            div[data-testid="stDataFrame"] tr:hover td {
+                background-color: #e5e9f5;
+            }
+        </style>
+    """
+    st.write(css, unsafe_allow_html=True)
     
     logs = get_latest_logs(50)
     if logs:
