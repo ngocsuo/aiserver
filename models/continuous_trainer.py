@@ -67,7 +67,7 @@ class ContinuousTrainer:
         configured historical start date to the present.
         
         Returns:
-            list: List of (start_date, end_date) tuples for monthly chunks
+            list: List of tuples containing (start_date, end_date) for monthly chunks
         """
         # Sử dụng giá trị historical_start_date của đối tượng continuous_trainer
         # hoặc backup từ config nếu không có
@@ -105,12 +105,18 @@ class ContinuousTrainer:
             start_date = current.strftime("%Y-%m-%d")
             end_date = month_end.strftime("%Y-%m-%d")
             
+            # Đảm bảo thêm tuple có đúng 2 phần tử
             chunks.append((start_date, end_date))
             
             # Move to first day of next month
             current = datetime(current.year, current.month, last_day) + timedelta(days=1)
             
         logger.info(f"Generated {len(chunks)} monthly chunks from {start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')}")
+        
+        # In ra kiểm tra định dạng các chunk
+        for i, chunk in enumerate(chunks):
+            logger.debug(f"Chunk {i}: {chunk}, type: {type(chunk)}, length: {len(chunk) if isinstance(chunk, tuple) else 'not tuple'}")
+            
         return chunks
         
     def start(self):
@@ -684,8 +690,25 @@ class ContinuousTrainer:
                         if isinstance(data_dict[key], dict):
                             data_dict[key]['timeframe'] = timeframe
                 
-                models = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
-                model_results[timeframe] = models
+                try:
+                    # Đảm bảo hàm train_all_models trả về đúng giá trị models
+                    models = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                    model_results[timeframe] = models
+                    self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                except ValueError as e:
+                    # Xử lý lỗi 'too many values to unpack'
+                    if "too many values to unpack" in str(e):
+                        self._add_log(f"⚠️ Lỗi định dạng kết quả: {str(e)}")
+                        logger.warning(f"Value unpacking error in train_all_models: {str(e)}")
+                        # Thử lấy giá trị đầu tiên từ kết quả
+                        result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                        if isinstance(result, tuple) and len(result) > 0:
+                            models = result[0]  # Lấy phần tử đầu tiên
+                            model_results[timeframe] = models
+                            self._add_log(f"✅ Đã khắc phục lỗi và huấn luyện thành công mô hình cho {timeframe}")
+                    else:
+                        # Lỗi ValueError khác
+                        raise
                 
                 self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình cho {timeframe}")
                 logger.info(f"Trained {len(models)} models for {timeframe} with {len(combined_data)} data points")

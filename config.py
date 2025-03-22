@@ -10,9 +10,7 @@ BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
 # Proxy Configuration
 USE_PROXY = True  # Bật proxy để kết nối đến Binance
-PROXY_URL = "64.176.51.107:3128"  # URL của proxy (host:port)
-PROXY_USERNAME = None  # Username nếu proxy yêu cầu xác thực
-PROXY_PASSWORD = None  # Password nếu proxy yêu cầu xác thực
+PROXY_URL = "64.176.51.107:3128:hvnteam:matkhau123"  # URL của proxy (host:port:username:password)
 
 # Feature flags
 USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data
