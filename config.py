@@ -17,12 +17,20 @@ PREDICTION_HORIZON = {
     "medium": "30m",
     "long": "1h"
 }
+PREDICTION_WINDOW = 10  # Số period dự đoán
+VALIDITY_MINUTES = 30   # Thời gian hiệu lực dự đoán (phút)
 
 # Model training settings
 TRAINING_INTERVAL = 1800  # In seconds (30 minutes)
 SEQUENCE_LENGTH = 60  # Number of periods to use for sequence models
 TEST_SIZE = 0.2
 VALIDATION_SIZE = 0.2
+BATCH_SIZE = 32
+EPOCHS = 20
+CONFIDENCE_THRESHOLD = 0.6
+PRICE_MOVEMENT_THRESHOLD = 0.1  # Phần trăm thay đổi giá tối thiểu (1%)
+MODEL_VERSION = "v1.0"
+CLASSES = ["UP", "DOWN", "NEUTRAL"]  # Các lớp dự đoán
 
 # Data update settings
 DATA_UPDATE_INTERVAL = 60  # In seconds
@@ -32,6 +40,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 MODELS_DIR = os.path.join(BASE_DIR, "saved_models")
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
+MODEL_DIR = MODELS_DIR  # Alias for compatibility
 
 # Ensure directories exist
 for directory in [DATA_DIR, MODELS_DIR, LOGS_DIR]:
