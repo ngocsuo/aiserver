@@ -638,17 +638,40 @@ class ContinuousTrainer:
         Returns:
             bool: True nếu khoảng thời gian đã được tải, False nếu chưa
         """
-        start = datetime.strptime(start_date, "%Y-%m-%d")
-        end = datetime.strptime(end_date, "%Y-%m-%d")
-        
-        for exist_start, exist_end in existing_ranges:
-            exist_start_date = datetime.strptime(exist_start, "%Y-%m-%d")
-            exist_end_date = datetime.strptime(exist_end, "%Y-%m-%d")
+        if not existing_ranges:
+            return False
             
-            # Khoảng thời gian đã được bao phủ bởi một khoảng thời gian hiện có
-            if start >= exist_start_date and end <= exist_end_date:
-                return True
-        
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d")
+            end = datetime.strptime(end_date, "%Y-%m-%d")
+            
+            for data_range in existing_ranges:
+                try:
+                    # Xử lý trường hợp data_range có thể có 2 hoặc 3 phần tử
+                    if len(data_range) >= 2:
+                        exist_start = data_range[0]
+                        exist_end = data_range[1]
+                        
+                        # Kiểm tra định dạng khớp với timeframe
+                        if len(data_range) >= 3:
+                            range_timeframe = data_range[2]
+                            # Bỏ qua nếu không cùng timeframe
+                            if hasattr(self, 'current_timeframe') and self.current_timeframe != range_timeframe:
+                                continue
+                                
+                        exist_start_date = datetime.strptime(exist_start, "%Y-%m-%d")
+                        exist_end_date = datetime.strptime(exist_end, "%Y-%m-%d")
+                        
+                        # Khoảng thời gian đã được bao phủ bởi một khoảng thời gian hiện có
+                        if start >= exist_start_date and end <= exist_end_date:
+                            return True
+                except (ValueError, IndexError, TypeError) as e:
+                    logger.warning(f"Lỗi khi xử lý khoảng dữ liệu {data_range}: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.error(f"Lỗi khi kiểm tra khoảng dữ liệu {start_date} - {end_date}: {e}")
+            
         return False
     
     def _save_cached_data(self, data, start_date, end_date, timeframe=None):
@@ -921,27 +944,46 @@ class ContinuousTrainer:
         try:
             # Lặp qua từng khung thời gian để huấn luyện
             for timeframe in self.timeframes_to_train:
+                # Lưu thông tin về timeframe hiện tại để sử dụng trong các phương thức khác
+                self.current_timeframe = timeframe
+                
                 # Collect all historical data
                 raw_data = None
                 
                 self._add_log(f"🔄 Đang thu thập dữ liệu lịch sử cho {timeframe}...")
                 
-                if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
-                    raw_data = self.data_collector.collect_historical_data(
-                        timeframe=timeframe,
-                        start_date=config.HISTORICAL_START_DATE
-                    )
-                else:
-                    raw_data = self.data_collector.collect_historical_data(
-                        timeframe=timeframe,
-                        limit=config.LOOKBACK_PERIODS
-                    )
+                try:
+                    if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+                        raw_data = self.data_collector.collect_historical_data(
+                            timeframe=timeframe,
+                            start_date=config.HISTORICAL_START_DATE
+                        )
+                    else:
+                        raw_data = self.data_collector.collect_historical_data(
+                            timeframe=timeframe,
+                            limit=config.LOOKBACK_PERIODS
+                        )
+                except Exception as e:
+                    self._add_log(f"❌ Lỗi khi thu thập dữ liệu cho {timeframe}: {str(e)}")
+                    logger.error(f"Error collecting data for {timeframe}: {e}")
+                    model_results[timeframe] = {}
+                    continue
                     
-                if raw_data is not None and not raw_data.empty:
+                if raw_data is None or raw_data.empty:
+                    self._add_log(f"⚠️ Không thu thập được dữ liệu cho {timeframe}")
+                    model_results[timeframe] = {}
+                    continue
+                
+                try:
                     # Process the data
                     self._add_log(f"🔧 Đang xử lý {len(raw_data)} điểm dữ liệu lịch sử cho {timeframe}...")
                     processed_data = self.data_processor.process_data(raw_data)
                     
+                    if processed_data is None or processed_data.empty:
+                        self._add_log(f"⚠️ Dữ liệu sau khi xử lý trống cho {timeframe}")
+                        model_results[timeframe] = {}
+                        continue
+                        
                     # Prepare data for different model types
                     self._add_log(f"📊 Đang chuẩn bị dữ liệu đầu vào cho các mô hình ({timeframe})...")
                     sequence_data = self.data_processor.prepare_sequence_data(processed_data)
@@ -1032,8 +1074,13 @@ class ContinuousTrainer:
                             self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
                     else:
                         self._add_log(f"⚠️ Không có mô hình nào được huấn luyện cho {timeframe}")
-                
-                else:
+                except Exception as data_process_error:
+                    self._add_log(f"❌ Lỗi khi xử lý dữ liệu: {str(data_process_error)}")
+                    logger.error(f"Error processing data for {timeframe}: {data_process_error}")
+                    model_results[timeframe] = {}
+                    
+                # Kiểm tra nếu không có dữ liệu
+                if raw_data is None or raw_data.empty:
                     self._add_log(f"❌ Không thể thu thập dữ liệu lịch sử cho khung thời gian {timeframe}")
                     logger.error(f"No data collected for training timeframe {timeframe}")
                     model_results[timeframe] = {}
