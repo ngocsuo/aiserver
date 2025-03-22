@@ -3111,6 +3111,32 @@ elif st.session_state.selected_tab == "Models & Training":
                 # Thay vì dùng hàm train_models, gọi _execute_training trực tiếp để huấn luyện ngay
                 try:
                     if hasattr(st.session_state, 'continuous_trainer'):
+                        # Cập nhật cài đặt huấn luyện trong continuous_trainer
+                        # 1. Cập nhật khung thời gian
+                        if selected_timeframe not in st.session_state.continuous_trainer.timeframes_to_train:
+                            st.session_state.continuous_trainer.timeframes_to_train = [selected_timeframe]
+                            
+                        # 2. Cập nhật ngày bắt đầu dựa trên phạm vi huấn luyện đã chọn
+                        if training_range == "1 tháng gần nhất":
+                            days_back = 30
+                        elif training_range == "3 tháng gần nhất":
+                            days_back = 90
+                        elif training_range == "6 tháng gần nhất":
+                            days_back = 180
+                        else:  # 12 tháng gần nhất
+                            days_back = 365
+                            
+                        start_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+                        st.session_state.continuous_trainer.historical_start_date = start_date
+                        
+                        # Tạo lại các monthly chunks với ngày bắt đầu mới
+                        st.session_state.continuous_trainer.monthly_chunks = st.session_state.continuous_trainer._generate_monthly_chunks()
+                        st.session_state.continuous_trainer.chunk_start_dates = st.session_state.continuous_trainer.monthly_chunks.copy()
+                        
+                        # Ghi log về thay đổi cài đặt
+                        st.session_state.continuous_trainer._add_log(f"📅 Đã cập nhật ngày bắt đầu huấn luyện: {start_date}")
+                        st.session_state.continuous_trainer._add_log(f"⏱️ Đã cập nhật khung thời gian huấn luyện: {selected_timeframe}")
+                        
                         # Thực thi huấn luyện ngay trong một luồng riêng
                         training_thread = threading.Thread(
                             target=st.session_state.continuous_trainer._execute_training,
@@ -3120,7 +3146,7 @@ elif st.session_state.selected_tab == "Models & Training":
                         training_thread.start()
                         
                         # Hiển thị thông báo đã bắt đầu huấn luyện
-                        st.success("✅ Đã bắt đầu quá trình huấn luyện! Bạn có thể xem tiến trình trong tab 'Training Logs'")
+                        st.success(f"✅ Đã bắt đầu quá trình huấn luyện với {selected_timeframe} từ {start_date}! Bạn có thể xem tiến trình trong tab 'Training Logs'")
                 except Exception as e:
                     st.error(f"❌ Lỗi khi bắt đầu huấn luyện: {str(e)}")
         
