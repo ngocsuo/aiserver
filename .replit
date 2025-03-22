@@ -31,7 +31,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run app.py"
+args = "python run_clean.py --mode direct"
 waitForPort = 5000
 
 [[ports]]

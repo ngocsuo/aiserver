@@ -1,0 +1,36 @@
+2025-03-22 22:30:42,429 - Runner - INFO - Bắt đầu chạy ETHUSDT Dashboard với giám sát và xử lý lỗi tự động
+2025-03-22 22:30:42,429 - Runner - INFO - Chế độ chạy: direct
+2025-03-22 22:30:42,429 - Runner - INFO - Áp dụng bản vá cho module feature_engineering...
+2025-03-22 22:30:43,419 - FeatureEngineeringFix - INFO - Successfully patched normalize_features method
+2025-03-22 22:30:43,419 - FeatureEngineeringFix - ERROR - Failed to patch process_features: type object 'FeatureEngineer' has no attribute 'process_features'
+2025-03-22 22:30:43,420 - Runner - ERROR - Không thể áp dụng bản vá feature_engineering.
+2025-03-22 22:30:43,420 - Runner - INFO - Sửa lỗi dữ liệu...
+2025-03-22 22:30:43,421 - DataFix - INFO - Bắt đầu sửa chữa dữ liệu 1m
+2025-03-22 22:30:43,421 - DataFix - INFO - Kiểm tra tính toàn vẹn của dữ liệu 1m
+2025-03-22 22:30:43,421 - DataFix - INFO - Đã phát hiện 0 vấn đề
+2025-03-22 22:30:43,421 - DataFix - INFO - Kiểm tra và điền khoảng trống dữ liệu 1m
+2025-03-22 22:30:43,422 - DataFix - WARNING - Không tìm thấy tập tin dữ liệu cho 1m
+2025-03-22 22:30:43,422 - DataFix - INFO - Tạo lại cache cho 1m
+2025-03-22 22:30:43,422 - DataFix - INFO - Kiểm tra tính toàn vẹn của dữ liệu 1m
+2025-03-22 22:30:43,422 - DataFix - INFO - Đã phát hiện 0 vấn đề
+2025-03-22 22:30:43,422 - DataFix - INFO - Bắt đầu sửa chữa dữ liệu 5m
+2025-03-22 22:30:43,422 - DataFix - INFO - Kiểm tra tính toàn vẹn của dữ liệu 5m
+2025-03-22 22:30:43,423 - DataFix - INFO - Đã phát hiện 0 vấn đề
+2025-03-22 22:30:43,423 - DataFix - INFO - Kiểm tra và điền khoảng trống dữ liệu 5m
+2025-03-22 22:30:43,423 - DataFix - WARNING - Không tìm thấy tập tin dữ liệu cho 5m
+2025-03-22 22:30:43,423 - DataFix - INFO - Tạo lại cache cho 5m
+2025-03-22 22:30:43,423 - DataFix - INFO - Kiểm tra tính toàn vẹn của dữ liệu 5m
+2025-03-22 22:30:43,424 - DataFix - INFO - Đã phát hiện 0 vấn đề
+2025-03-22 22:30:43,424 - Runner - WARNING - Có vấn đề khi áp dụng bản vá lỗi. Tiếp tục chạy...
+2025-03-22 22:30:43,424 - Runner - INFO - Chạy Streamlit trực tiếp...
+2025-03-22 22:30:45,561 - Runner - INFO - [streamlit] 
+2025-03-22 22:30:45,562 - Runner - INFO - [streamlit] Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.
+2025-03-22 22:30:45,562 - Runner - INFO - [streamlit] 
+2025-03-22 22:30:45,811 - Runner - INFO - [streamlit] 
+2025-03-22 22:30:45,812 - Runner - INFO - [streamlit] You can now view your Streamlit app in your browser.
+2025-03-22 22:30:45,812 - Runner - INFO - [streamlit] 
+2025-03-22 22:30:45,812 - Runner - INFO - [streamlit] URL: http://0.0.0.0:5000
+2025-03-22 22:30:45,812 - Runner - INFO - [streamlit] 
+2025-03-22 22:31:03,980 - Runner - INFO - [streamlit] 2025-03-22 22:31:03 - Binance server time: 2025-03-22 22:31:03
+2025-03-22 22:31:11,265 - Runner - INFO - [streamlit] 2025-03-22 22:31:11 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 22:31:13,761 - Runner - INFO - [streamlit] 2025-03-22 22:31:13 - Binance server time: 2025-03-22 22:31:13

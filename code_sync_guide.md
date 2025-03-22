@@ -1,180 +1,142 @@
-# Hướng dẫn đồng bộ code giữa Replit và Server
+# Hướng dẫn đồng bộ code ETHUSDT Dashboard với server
 
-## Phương pháp 1: Sử dụng GitHub làm trung gian
+## 1. Sử dụng Git (Khuyến nghị)
 
-Đây là phương pháp được khuyến nghị nhất vì tính linh hoạt và độ an toàn.
-
-### Bước 1: Tạo repository GitHub
-
-1. Đăng nhập GitHub và tạo repository mới (private là tốt nhất để bảo mật)
-2. Lấy URL của repository (dạng `https://github.com/username/repository.git`)
-
-### Bước 2: Thiết lập Git trên Replit
+Nếu server của bạn có cài đặt Git, đây là cách tốt nhất để đồng bộ code:
 
 ```bash
-# Trong terminal của Replit
-git init
+# Trên máy local, đẩy code lên repository
 git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/username/repository.git
-git push -u origin main
-```
-
-### Bước 3: Thiết lập Git trên server
-
-```bash
-# SSH vào server
-ssh user@your-server-ip
-
-# Di chuyển đến thư mục dự án
-cd /đường/dẫn/đến/dự/án
-
-# Clone repository từ GitHub
-git clone https://github.com/username/repository.git
-
-# Nếu thư mục đã có dữ liệu, bạn cần sao lưu nó trước
-mv /đường/dẫn/đến/dự/án /đường/dẫn/đến/dự/án_backup
-git clone https://github.com/username/repository.git /đường/dẫn/đến/dự/án
-
-# Thiết lập thông tin đăng nhập Git (nếu cần)
-git config --global user.email "your-email@example.com"
-git config --global user.name "Your Name"
-```
-
-### Bước 4: Quá trình làm việc đồng bộ
-
-#### Khi sửa code trên Replit:
-
-```bash
-git add .
-git commit -m "Fix error: too many values to unpack"
+git commit -m "Cập nhật phiên bản mới nhất"
 git push origin main
-```
 
-#### Để cập nhật code trên server:
-
-```bash
-cd /đường/dẫn/đến/dự/án
+# Trên server, kéo code mới nhất về
 git pull origin main
 ```
 
-#### Khi sửa code trên server (nếu cần):
+## 2. Sử dụng rsync
+
+Nếu không sử dụng Git, bạn có thể dùng rsync để đồng bộ code:
 
 ```bash
-git add .
-git commit -m "Server-specific fixes"
-git push origin main
+# Trên máy local, đồng bộ code lên server
+rsync -avz --exclude 'logs' --exclude 'data' --exclude '.git' --exclude 'venv' --exclude '__pycache__' /path/to/local/ethusdt_dashboard/ user@server-ip:/path/to/server/ethusdt_dashboard/
 ```
 
-## Phương pháp 2: Sử dụng rsync để đồng bộ trực tiếp
-
-Nếu bạn không muốn sử dụng Git, bạn có thể dùng rsync để đồng bộ trực tiếp.
-
-### Trên Replit:
-
-1. Xuất code từ Replit (Downloads > Download as zip)
-2. Giải nén trên máy tính của bạn
-
-### Từ máy tính của bạn đến server:
+## 3. Sử dụng SCP
 
 ```bash
-rsync -avz --exclude='.git' --exclude='__pycache__' /đường/dẫn/local/code/ user@your-server-ip:/đường/dẫn/đến/dự/án/
+# Tạo một file zip (không bao gồm thư mục logs, data và các file tạm)
+zip -r ethusdt_dashboard.zip . -x "*.git*" -x "logs/*" -x "data/*.csv" -x "*.pyc" -x "__pycache__/*" -x "venv/*"
+
+# Chuyển file zip lên server
+scp ethusdt_dashboard.zip user@server-ip:/path/to/server/
+
+# Trên server, giải nén file
+unzip -o ethusdt_dashboard.zip -d /path/to/server/ethusdt_dashboard/
 ```
 
-## Phương pháp 3: Sử dụng GitHub Actions cho CI/CD tự động
+## 4. Sử dụng gói triển khai đã tạo sẵn
 
-Phương pháp nâng cao này tự động triển khai code lên server khi bạn push lên GitHub.
+Bạn có thể sử dụng gói triển khai đã tạo sẵn bằng script `prepare_for_server.py`:
 
-### Bước 1: Thiết lập SSH key trên GitHub
+```bash
+# Tạo package triển khai
+python prepare_for_server.py --output ethusdt_dashboard.zip
 
-1. Tạo SSH key trên server:
-   ```bash
-   ssh-keygen -t rsa -b 4096 -C "github-actions-deploy"
-   ```
-2. Thêm public key vào `~/.ssh/authorized_keys` trên server
-3. Thêm private key vào GitHub repository secrets với tên `SSH_PRIVATE_KEY`
+# Chuyển file zip lên server
+scp ethusdt_dashboard.zip user@server-ip:/path/to/server/
 
-### Bước 2: Tạo file workflow GitHub Actions
-
-Tạo file `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to Server
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Deploy to server
-      run: |
-        ssh -o StrictHostKeyChecking=no user@your-server-ip "cd /đường/dẫn/đến/dự/án && git pull origin main"
-        ssh -o StrictHostKeyChecking=no user@your-server-ip "systemctl restart your_app_name || supervisorctl restart your_app_name"
+# Trên server, giải nén và cài đặt
+unzip ethusdt_dashboard.zip
+cd ethusdt_dashboard
+chmod +x install.sh
+./install.sh
 ```
 
-## Phương pháp 4: Sử dụng VSCode Remote-SSH
+## 5. Đảm bảo các secrets được cấu hình đúng
 
-Nếu bạn muốn sửa code trực tiếp trên server qua giao diện VSCode:
+Trên server, đảm bảo các biến môi trường được thiết lập:
 
-1. Cài đặt Visual Studio Code trên máy tính của bạn
-2. Cài đặt extension "Remote - SSH"
-3. Nhấn F1, chọn "Remote-SSH: Connect to Host..." và nhập thông tin server
-4. Duyệt đến thư mục dự án và chỉnh sửa trực tiếp
+```bash
+# Thiết lập Binance API keys
+export BINANCE_API_KEY=your_api_key
+export BINANCE_API_SECRET=your_api_secret
 
-## Phương pháp 5: Sử dụng Replit Transfer API
-
-Replit cung cấp API để đồng bộ code, nhưng bạn cần viết script để sử dụng tính năng này:
-
-```python
-import requests
-import os
-import json
-
-def download_repl(repl_id, output_dir):
-    """Download a repl from Replit."""
-    api_url = f"https://replit.com/data/repls/{repl_id}"
-    headers = {
-        "X-Requested-With": "XMLHttpRequest",
-        "Accept": "application/json",
-        "Cookie": "connect.sid=YOUR_CONNECT_SID"  # Lấy từ cookies của trình duyệt
-    }
-    response = requests.get(api_url, headers=headers)
-    data = response.json()
-    
-    # Tạo thư mục đầu ra
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Lưu thông tin repl
-    with open(os.path.join(output_dir, "repl_info.json"), "w") as f:
-        json.dump(data, f, indent=2)
-    
-    # Tải các file
-    for file in data["files"]:
-        file_path = os.path.join(output_dir, file["path"])
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        content_response = requests.get(file["url"])
-        with open(file_path, "wb") as f:
-            f.write(content_response.content)
-
-# Sử dụng:
-download_repl("your-repl-id", "/path/to/output")
+# Hoặc thêm vào .bashrc hoặc .profile để tự động load khi đăng nhập
+echo 'export BINANCE_API_KEY=your_api_key' >> ~/.bashrc
+echo 'export BINANCE_API_SECRET=your_api_secret' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-## Lời khuyên
+## 6. Script kiểm tra đồng bộ
 
-1. **Sử dụng Git** là cách hiệu quả nhất để quản lý code và đồng bộ giữa nhiều môi trường
-2. **Tự động hóa quy trình triển khai** với GitHub Actions hoặc các công cụ CI/CD để giảm thiểu lỗi thủ công
-3. **Tách biệt cấu hình môi trường** bằng cách sử dụng các file .env khác nhau cho Replit và server
-4. **Luôn sao lưu trước khi đồng bộ** để tránh mất mát dữ liệu nếu có lỗi
-5. **Kiểm tra kỹ lưỡng** sau mỗi lần đồng bộ để đảm bảo ứng dụng vẫn hoạt động bình thường
+Sử dụng script sau để kiểm tra xem code đã được đồng bộ thành công chưa:
+
+```bash
+#!/bin/bash
+# Tạo file trên server: check_sync.sh
+
+echo "Kiểm tra phiên bản code..."
+echo "Thời gian cập nhật gần nhất: $(stat -c %y app.py)"
+echo "MD5 của file chính: $(md5sum app.py)"
+echo "MD5 của file cấu hình: $(md5sum config.py)"
+echo "Số lượng file Python: $(find . -name "*.py" | wc -l)"
+echo "Kiểm tra các thư mục quan trọng:"
+echo "- models: $(ls -la models | wc -l) files"
+echo "- utils: $(ls -la utils | wc -l) files"
+echo "- prediction: $(ls -la prediction | wc -l) files"
+echo "- dashboard: $(ls -la dashboard | wc -l) files"
+```
+
+## 7. Tự động đồng bộ code sử dụng systemd
+
+Trên server, bạn có thể cấu hình một service systemd để tự động cập nhật code:
+
+```bash
+# Tạo file: /etc/systemd/system/ethusdt-sync.service
+[Unit]
+Description=ETHUSDT Dashboard Code Sync Service
+After=network.target
+
+[Service]
+User=your_username
+WorkingDirectory=/path/to/server/ethusdt_dashboard
+ExecStart=/bin/bash -c 'git pull origin main && systemctl restart ethusdt-dashboard.service'
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+# Tạo file: /etc/systemd/system/ethusdt-sync.timer
+[Unit]
+Description=Run ETHUSDT Dashboard Code Sync Service daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Sau đó kích hoạt timer:
+
+```bash
+sudo systemctl enable ethusdt-sync.timer
+sudo systemctl start ethusdt-sync.timer
+```
+
+## 8. Khởi động lại ứng dụng sau khi đồng bộ
+
+Sau khi đồng bộ code, nhớ khởi động lại ứng dụng:
+
+```bash
+# Sử dụng script stop.sh đã tạo trước đó để dừng ứng dụng
+./stop.sh
+
+# Sử dụng script run.sh để khởi động lại ứng dụng
+./run.sh
+```

@@ -1,0 +1,60 @@
+{
+  "1m": {
+    "before": {
+      "data_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "cache_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "problems": []
+    },
+    "after": {
+      "data_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "cache_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "problems": []
+    },
+    "fixed": []
+  },
+  "5m": {
+    "before": {
+      "data_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "cache_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "problems": []
+    },
+    "after": {
+      "data_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "cache_files": {
+        "count": 0,
+        "files": [],
+        "total_size_mb": 0.0
+      },
+      "problems": []
+    },
+    "fixed": []
+  }
+}
