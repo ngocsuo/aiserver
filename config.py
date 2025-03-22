@@ -128,8 +128,20 @@ TECHNICAL_FEATURES = [
     "obv", "atr", "adx"
 ]
 
-# Alias for compatibility
-TECHNICAL_INDICATORS = TECHNICAL_FEATURES
+# Alias for compatibility - enhanced with configuration
+TECHNICAL_INDICATORS = {
+    'rsi': {'window': 14},
+    'ema': {'windows': [9, 21, 50]},
+    'macd': {'fast_period': 12, 'slow_period': 26, 'signal_period': 9},
+    'bbands': {'period': 20, 'dev_up': 2, 'dev_down': 2},
+    'atr': {'window': 14},
+    'vwap': {'window': 14},
+    'supertrend': {'period': 10, 'multiplier': 3},
+    'ichimoku': {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'displacement': 26},
+    'adx': {'window': 14},
+    'pivot_points': {'method': 'standard'},
+    'volume_profile': {'divisions': 10},
+}
 
 CHART_PATTERN_FEATURES = [
     "doji", "hammer", "engulfing_bullish", "engulfing_bearish",
