@@ -177,6 +177,7 @@ st.set_page_config(
     page_title="ETHUSDT AI Prediction System",
     page_icon="📈",
     layout="wide",
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 
