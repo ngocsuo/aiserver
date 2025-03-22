@@ -642,34 +642,30 @@ def train_models():
     # Tạo hàm huấn luyện chạy ngầm trong thread
 def train_models_background():
     try:
+        # Thay vì sử dụng update_log, dùng thread_safe_log
         thread_safe_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
         
-        # Đây là phần code huấn luyện
-        # ...
+        # Step 1: Process data for training
+        thread_safe_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
         
-        return True
-    except Exception as e:
-        thread_safe_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
-        return False
-    def train_models_background_old():
+        # Kiểm tra xem có sử dụng tham số tùy chỉnh không
+        custom_params = None 
         try:
-            # Ghi log bắt đầu huấn luyện
-            update_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
+            # Truy cập session_state an toàn bằng cách dùng biến global
+            if 'custom_training_params' in globals():
+                custom_params = custom_training_params
+            # Không gọi st.session_state trực tiếp trong thread
+        except Exception:
+            thread_safe_log("Không tìm thấy thông số huấn luyện tùy chỉnh, sử dụng cài đặt mặc định.")
             
-            # Step 1: Process data for training
-            update_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
-            
-            # Kiểm tra xem có sử dụng tham số tùy chỉnh không
-            custom_params = st.session_state.get('custom_training_params', None)
-            if custom_params:
-                update_log(f"🔧 Đang áp dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs")
-                # TODO: Áp dụng các tham số tùy chỉnh vào quá trình huấn luyện
-                # Nếu người dùng chọn khung thời gian khác
-                if custom_params['timeframe'] != config.TIMEFRAMES['primary']:
-                    update_log(f"Chuyển sang khung thời gian {custom_params['timeframe']} theo cài đặt tùy chỉnh")
-                    # Cần lấy dữ liệu cho khung thời gian được chọn
-                    try:
-                        if hasattr(st.session_state, 'data_collector'):
+        if custom_params:
+            thread_safe_log(f"🔧 Đang áp dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs")
+            # TODO: Áp dụng các tham số tùy chỉnh vào quá trình huấn luyện
+            # Nếu người dùng chọn khung thời gian khác
+            if custom_params['timeframe'] != config.TIMEFRAMES['primary']:
+                thread_safe_log(f"Chuyển sang khung thời gian {custom_params['timeframe']} theo cài đặt tùy chỉnh")
+                # Cần lấy dữ liệu cho khung thời gian được chọn
+                try:
                             update_log(f"Đang tải dữ liệu khung thời gian {custom_params['timeframe']}...")
                             custom_data = st.session_state.data_collector.collect_historical_data(
                                 symbol=config.SYMBOL,
