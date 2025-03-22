@@ -20,6 +20,9 @@ from models.model_trainer import ModelTrainer
 # Set up logging
 logger = logging.getLogger("continuous_trainer")
 
+import pandas as pd
+import numpy as np
+
 class ContinuousTrainer:
     """
     Manager for continuous model training.
@@ -721,10 +724,16 @@ class ContinuousTrainer:
                         logger.warning(f"Value unpacking error in train_all_models: {str(e)}")
                         
                         try:
-                            # Lấy kết quả dưới dạng list để xử lý an toàn
-                            result_list = list(self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe))
-                            if result_list:
-                                models = result_list[0]  # Lấy phần tử đầu tiên
+                            # Lấy kết quả trực tiếp, không chuyển sang list
+                            result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                            
+                            # Kiểm tra trường hợp kết quả là một tuple
+                            if isinstance(result, tuple) and len(result) > 0:
+                                models = result[0]  # Lấy phần tử đầu tiên nếu là tuple
+                            else:
+                                models = result  # Sử dụng kết quả trực tiếp nếu không phải tuple
+                                
+                            if models is not None:
                                 model_results[timeframe] = models
                                 self._add_log(f"✅ Đã khắc phục lỗi và huấn luyện thành công mô hình cho {timeframe}")
                             else:
