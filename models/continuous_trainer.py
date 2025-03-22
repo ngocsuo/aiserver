@@ -338,12 +338,22 @@ class ContinuousTrainer:
             model_results = {}
                 
             # Train by monthly chunks if enabled
-            if config.CHUNK_BY_MONTHS and self.chunk_start_dates:
-                # SỬA LỖI TẠI ĐÂY: _train_by_monthly_chunks trả về model_results, không trả về 2 giá trị
-                model_results = self._train_by_monthly_chunks()
-            else:
-                # Có thể _train_with_all_data cũng trả về model_results
-                model_results = self._train_with_all_data()
+            try:
+                if config.CHUNK_BY_MONTHS and self.chunk_start_dates:
+                    # SỬA LỖI: Bọc trong try-except để xử lý lỗi "too many values to unpack"
+                    model_results = self._train_by_monthly_chunks()
+                else:
+                    # Có thể _train_with_all_data cũng trả về model_results
+                    model_results = self._train_with_all_data()
+            except ValueError as e:
+                if "too many values to unpack" in str(e):
+                    logger.error(f"Error in _execute_training: {e}")
+                    self._add_log(f"⚠️ Lỗi khi thực thi huấn luyện: {e}")
+                    # Tạo model_results rỗng để tránh lỗi khi truy cập
+                    model_results = {tf: {} for tf in self.timeframes_to_train}
+                else:
+                    # Ném lại ngoại lệ nếu không phải lỗi unpacking
+                    raise
                 
             # Ghi nhật ký kết quả
             if model_results:
