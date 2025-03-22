@@ -547,16 +547,77 @@ def fetch_historical_data_thread():
     
     # Cập nhật trạng thái để hiển thị trên giao diện mà không sử dụng Streamlit API trực tiếp trong thread
     def update_status():
-        last_progress = -1  # Theo dõi tiến trình cuối cùng để tránh hiển thị thông báo quá nhiều lần
+        """Cập nhật trạng thái huấn luyện với cách an toàn với thread"""
+        # Đảm bảo rằng thread_safe_logging đã sẵn sàng
+        try:
+            from utils.thread_safe_logging import thread_safe_log
+        except ImportError:
+            # Nếu không có module, tạo file thread_safe_logging trong utils
+            if not os.path.exists("utils"):
+                os.makedirs("utils")
+                
+            with open("utils/thread_safe_logging.py", "w") as f:
+                f.write("""
+\"\"\"
+Thread-safe logging functions for AI Trading System
+\"\"\"
+import os
+import sys
+import time
+import threading
+from datetime import datetime
+
+_log_lock = threading.Lock()
+
+def log_to_file(message, log_file="training_logs.txt"):
+    \"\"\"Thread-safe function to log messages to a file\"\"\"
+    with _log_lock:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_file, "a") as f:
+            f.write(f"{timestamp} - {message}\\n")
+            f.flush()
+
+def log_to_console(message):
+    \"\"\"Thread-safe function to log messages to console\"\"\"
+    with _log_lock:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"{timestamp} - {message}")
+        sys.stdout.flush()
+
+def thread_safe_log(message, log_file="training_logs.txt"):
+    \"\"\"Combined logging function that logs to both file and console\"\"\"
+    log_to_file(message, log_file)
+    log_to_console(message)
+
+def read_logs_from_file(log_file="training_logs.txt", max_lines=100):
+    \"\"\"Read log entries from file with a maximum number of lines\"\"\"
+    if not os.path.exists(log_file):
+        return []
+        
+    with open(log_file, "r") as f:
+        lines = f.readlines()
+        
+    # Return last N lines (most recent)
+    return lines[-max_lines:]
+""")
+                
+            # Tạo file log trống
+            with open("training_logs.txt", "w") as f:
+                f.write("")
+                
+            # Import lại
+            from utils.thread_safe_logging import thread_safe_log
+        
+        last_progress = -1  # Theo dõi tiến trình cuối cùng để tránh hiển thị quá nhiều log
         
         while True:
             try:
-                if not hasattr(st.session_state, 'continuous_trainer'):
-                    time.sleep(10)
-                    continue
+                # Lấy trạng thái huấn luyện từ singleton object - KHÔNG sử dụng st.session_state
+                from models.continuous_trainer import get_continuous_trainer
+                trainer = get_continuous_trainer()
                 
-                trainer = st.session_state.continuous_trainer
                 if trainer is None:
+                    thread_safe_log("ContinuousTrainer chưa được khởi tạo")
                     time.sleep(10)
                     continue
                 
@@ -565,28 +626,27 @@ def fetch_historical_data_thread():
                 if 'current_chunk' in status and 'total_chunks' in status and status['total_chunks'] > 0:
                     progress = int((status['current_chunk'] / status['total_chunks']) * 100)
                     
-                    # Chỉ hiển thị toast khi tiến trình thay đổi đáng kể
-                    if progress != last_progress and (progress % 25 == 0 or progress == 100):
+                    # Ghi log thay vì hiển thị toast trong thread
+                    if progress != last_progress and (progress % 10 == 0 or progress == 100):
                         last_progress = progress
-                        # Đảm bảo không hiển thị toast trong luồng riêng
-                        st.session_state.pending_toast = {
-                            "message": f"Tải dữ liệu lịch sử: {progress}% hoàn thành",
-                            "type": "info" if progress < 100 else "success",
-                            "duration": 3000
-                        }
-                    
-                    # Cập nhật vào session_state thay vì gọi trực tiếp Streamlit API
-                    # Điều này tránh được warning "missing ScriptRunContext"
-                    if 'historical_data_status' not in st.session_state:
-                        st.session_state.historical_data_status = {}
+                        thread_safe_log(f"Tiến trình huấn luyện: {progress}% ({status['current_chunk']}/{status['total_chunks']} chunks)")
                         
-                    st.session_state.historical_data_status = {
-                        "status": f"Đang tải chunk {status['current_chunk']}/{status['total_chunks']}",
-                        "progress": progress,
-                        "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    }
+                        # Lưu thông tin vào file thay vì truy cập session_state
+                        try:
+                            import json
+                            with open("training_progress.json", "w") as f:
+                                json.dump({
+                                    "message": f"Tải dữ liệu lịch sử: {progress}% hoàn thành",
+                                    "type": "info" if progress < 100 else "success",
+                                    "duration": 3000,
+                                    "status": f"Đang tải chunk {status['current_chunk']}/{status['total_chunks']}",
+                                    "progress": progress,
+                                    "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                }, f)
+                        except Exception as e:
+                            thread_safe_log(f"Không thể lưu tiến trình huấn luyện: {e}")
                     
-                    # Lưu thông tin về Binance server time vào session state
+                    # Lưu thông tin về Binance server time vào file
                     try:
                         from utils.data_collector_factory import create_data_collector
                         collector = create_data_collector()
@@ -594,15 +654,17 @@ def fetch_historical_data_thread():
                         server_time_ms = server_time['serverTime']
                         binance_time = datetime.fromtimestamp(server_time_ms / 1000)
                         
-                        if 'binance_server_time' not in st.session_state:
-                            st.session_state.binance_server_time = {}
+                        # Lưu thông tin vào file
+                        import json
+                        with open("binance_time.json", "w") as f:
+                            json.dump({
+                                "time": binance_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            }, f)
                             
-                        st.session_state.binance_server_time = {
-                            "time": binance_time.strftime("%Y-%m-%d %H:%M:%S"),
-                            "update_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        }
+                        thread_safe_log(f"Binance server time: {binance_time.strftime('%Y-%m-%d %H:%M:%S')}")
                     except Exception as e:
-                        print(f"Error getting Binance server time: {e}")
+                        thread_safe_log(f"Lỗi khi lấy Binance server time: {e}")
                 
                 time.sleep(10)  # Kiểm tra mỗi 10 giây
             except Exception as e:

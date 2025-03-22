@@ -202,7 +202,7 @@ class ContinuousTrainer:
             progress = min(100, int((self.current_chunk / self.total_chunks) * 100))
             
         # Thêm thông tin về current_chunk và total_chunks cho update_status
-        return {
+        status_data = {
             "enabled": config.CONTINUOUS_TRAINING,
             "in_progress": self.training_in_progress,
             "last_training_time": self.last_training_time.strftime("%Y-%m-%d %H:%M:%S") if self.last_training_time else None,
@@ -216,6 +216,16 @@ class ContinuousTrainer:
             "total_chunks": self.total_chunks,
             "status": "Training in progress" if self.training_in_progress else "Idle"
         }
+        
+        # Lưu trạng thái vào file để thread chính có thể đọc được
+        try:
+            import json
+            with open("training_status.json", "w") as f:
+                json.dump(status_data, f)
+        except Exception as e:
+            logger.error(f"Error saving training status to file: {e}")
+            
+        return status_data
         
     def _is_training_scheduled(self):
         """
@@ -1091,11 +1101,14 @@ class ContinuousTrainer:
             self._add_log(f"Training models for {timeframe}")
             thread_safe_log(f"Training models for {timeframe}")
             
-            # QUAN TRỌNG: SỬA LỖI Ở ĐÂY
-            # Hàm train_all_models chỉ trả về một giá trị (models), không trả về hai giá trị (models, histories)
-            # Thay vì: models, histories = model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
-            # Sửa thành:
-            models = model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+            # Gọi hàm train_all_models với xử lý đúng giá trị trả về
+            result = model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+            
+            # Kiểm tra xem result có phải là tuple không (models, histories)
+            if isinstance(result, tuple) and len(result) >= 1:
+                models = result[0]  # Lấy models từ tuple
+            else:
+                models = result  # Nếu không phải tuple, result chính là models
             
             if models:
                 self._add_log(f"Models trained successfully for {timeframe}")
