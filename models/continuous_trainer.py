@@ -375,7 +375,16 @@ class ContinuousTrainer:
             logger.info(f"Processing data for timeframe: {timeframe}")
             
             # Process each monthly chunk for this timeframe
-            for i, (start_date, end_date) in enumerate(self.monthly_chunks):
+            for i, chunk in enumerate(self.monthly_chunks):
+                # Đảm bảo chunk là tuple với 2 phần tử
+                if isinstance(chunk, tuple) and len(chunk) == 2:
+                    start_date, end_date = chunk
+                else:
+                    # Xử lý trường hợp chunk không phải là tuple 2 phần tử
+                    self._add_log(f"⚠️ Định dạng chunk không hợp lệ: {chunk}")
+                    logger.warning(f"Invalid chunk format: {chunk}")
+                    continue
+
                 self.current_chunk += 1
                 chunk_progress = int((self.current_chunk / self.total_chunks) * 100)
                 
