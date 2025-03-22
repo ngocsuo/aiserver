@@ -25,12 +25,17 @@ TRAINING_INTERVAL = 1800  # In seconds (30 minutes)
 SEQUENCE_LENGTH = 60  # Number of periods to use for sequence models
 TEST_SIZE = 0.2
 VALIDATION_SIZE = 0.2
+VALIDATION_SPLIT = VALIDATION_SIZE  # Alias for compatibility
+TEST_SPLIT = TEST_SIZE  # Alias for compatibility
 BATCH_SIZE = 32
 EPOCHS = 20
 CONFIDENCE_THRESHOLD = 0.6
 PRICE_MOVEMENT_THRESHOLD = 0.1  # Phần trăm thay đổi giá tối thiểu (1%)
 MODEL_VERSION = "v1.0"
 CLASSES = ["UP", "DOWN", "NEUTRAL"]  # Các lớp dự đoán
+EARLY_STOPPING_PATIENCE = 5
+DEFAULT_TRAINING_START_DATE = "2022-01-01"
+SECONDARY_TIMEFRAME = "1m"  # Thời gian thứ cấp để lấy dữ liệu
 
 # Data update settings
 DATA_UPDATE_INTERVAL = 60  # In seconds
@@ -50,10 +55,34 @@ for directory in [DATA_DIR, MODELS_DIR, LOGS_DIR]:
 USE_PROXY = True
 PROXY_ROTATION_INTERVAL = 600  # In seconds (10 minutes)
 
+# Additional configuration
+HISTORICAL_START_DATE = "2022-01-01"
+USE_REAL_API = True
+DEFAULT_TIMEFRAME = PRIMARY_TIMEFRAME
+DEFAULT_PREDICTION_HORIZON = "medium"
+PREDICTION_SETTINGS = {
+    "confidence_threshold": 0.65,
+    "minimum_samples": 100,
+    "use_ensemble": True
+}
+
 # Advanced settings
 DEBUG_MODE = True
 ENABLE_LOGGING = True
 LOG_LEVEL = "INFO"
+
+# Training settings
+TRAINING_SCHEDULE = {
+    "frequency": "hourly",
+    "interval": 1,  # Train every 1 hour
+    "start_hour": 0,
+    "end_hour": 23,
+    "days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+}
+CONTINUOUS_TRAINING = True
+MINIMUM_NEW_DATA_POINTS = 100
+CHUNK_BY_MONTHS = True
+UPDATE_INTERVAL = 60  # In seconds
 
 # Feature engineering settings
 TECHNICAL_FEATURES = [
@@ -80,6 +109,9 @@ DEFAULT_TRADING_CONFIG = {
     "trailing_stop": 0.3,  # 0.3%
     "max_positions": 3
 }
+
+TARGET_PNL_THRESHOLD = 0.005  # 0.5% threshold for profit target
+TRADING_SETTINGS = DEFAULT_TRADING_CONFIG  # Alias for compatibility
 
 # If you're using PostgreSQL database
 DB_CONFIG = {
