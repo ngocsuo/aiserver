@@ -9,7 +9,7 @@ from datetime import datetime
 
 def load_custom_css():
     """
-    Tải CSS tùy chỉnh cho giao diện
+    Tải CSS tùy chỉnh cho giao diện và JavaScript để tự động kết nối lại
     """
     custom_css = """
     <style>
@@ -47,6 +47,77 @@ def load_custom_css():
         background-color: #485ec4;
         color: white;
     }
+    
+    /* Thông báo kết nối lại WebSocket */
+    .reconnecting-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #ffeb3b;
+        color: #333;
+        text-align: center;
+        padding: 5px;
+        z-index: 9999;
+        font-weight: bold;
+        display: none;
+    }
+    </style>
+    
+    <div id="reconnecting-banner" class="reconnecting-banner">
+        Kết nối đã bị mất. Đang kết nối lại...
+    </div>
+    
+    <script>
+    // Theo dõi WebSocket và tự động kết nối lại khi bị mất kết nối
+    document.addEventListener('DOMContentLoaded', function() {
+        const maxReconnectAttempts = 5;
+        let reconnectAttempts = 0;
+        let reconnectTimeout = null;
+        const banner = document.getElementById('reconnecting-banner');
+        
+        // Theo dõi tất cả WebSocket
+        const origWebSocket = window.WebSocket;
+        window.WebSocket = function(url, protocols) {
+            const ws = new origWebSocket(url, protocols);
+            
+            ws.addEventListener('close', function(event) {
+                console.log('WebSocket closed, attempting to reconnect...');
+                banner.style.display = 'block';
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    
+                    // Tăng thời gian chờ giữa các lần thử
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 10000);
+                    
+                    // Dọn dẹp timeout trước đó nếu có
+                    if (reconnectTimeout) {
+                        clearTimeout(reconnectTimeout);
+                    }
+                    
+                    // Đặt timeout mới
+                    reconnectTimeout = setTimeout(function() {
+                        window.location.reload();
+                    }, delay);
+                }
+            });
+            
+            ws.addEventListener('open', function() {
+                console.log('WebSocket connection established');
+                reconnectAttempts = 0;
+                banner.style.display = 'none';
+                
+                if (reconnectTimeout) {
+                    clearTimeout(reconnectTimeout);
+                    reconnectTimeout = null;
+                }
+            });
+            
+            return ws;
+        };
+    });
+    </script>
     
     /* Style cho các container */
     div[data-testid="stVerticalBlock"] > div {
