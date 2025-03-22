@@ -7,7 +7,13 @@ from datetime import datetime, timedelta
 # Binance API settings
 SYMBOL = "ETHUSDT"
 PRIMARY_TIMEFRAME = "5m"
-TIMEFRAMES = ["1m", "5m"]
+SECONDARY_TIMEFRAME = "1m"
+TIMEFRAMES = {
+    "primary": PRIMARY_TIMEFRAME,
+    "secondary": [SECONDARY_TIMEFRAME]
+}
+BINANCE_API_KEY = os.environ.get("BINANCE_API_KEY", "")
+BINANCE_API_SECRET = os.environ.get("BINANCE_API_SECRET", "")
 LOOKBACK_PERIODS = 1000
 HISTORICAL_DAYS = 30  # For initial training data
 
