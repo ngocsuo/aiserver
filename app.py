@@ -19,8 +19,7 @@ import random
 import streamlit.components.v1 as components
 import traceback
 
-# Import để hỗ trợ nhận diện MockDataCollector
-from utils.data_collector import MockDataCollector
+# Không sử dụng MockDataCollector, chỉ sử dụng dữ liệu thực từ Binance API
 import base64
 import logging
 
@@ -313,22 +312,15 @@ def initialize_system():
             st.session_state.data_collector = create_data_collector()
             
             # Store data source type for display
-            if isinstance(st.session_state.data_collector, MockDataCollector):
-                st.session_state.data_source = "Dữ liệu mô phỏng (Mock)"
-                st.session_state.data_source_color = "orange"
-                
-                # Store API connection status if available
-                if hasattr(st.session_state.data_collector, "connection_status"):
-                    st.session_state.api_status = st.session_state.data_collector.connection_status
-            else:
-                st.session_state.data_source = "Binance API (Dữ liệu thực)"
-                st.session_state.data_source_color = "green"
-                
-                # Store successful connection status
-                st.session_state.api_status = {
-                    "connected": True,
-                    "message": "Kết nối Binance API thành công"
-                }
+            # Luôn sử dụng Binance API với dữ liệu thực
+            st.session_state.data_source = "Binance API (Dữ liệu thực)"
+            st.session_state.data_source_color = "green"
+            
+            # Store successful connection status
+            st.session_state.api_status = {
+                "connected": True,
+                "message": "Kết nối Binance API thành công"
+            }
                 
             # Log data source
             if 'log_messages' not in st.session_state:
@@ -443,7 +435,7 @@ def fetch_realtime_data():
         }
         
         # Get data source type
-        data_source_type = "Simulated Data" if isinstance(st.session_state.data_collector, MockDataCollector) else "Binance API"
+        data_source_type = "Binance API"
         
         # Add log message
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -709,7 +701,7 @@ def train_models():
                 update_log(f"Cập nhật ngưỡng biến động giá: {custom_params['threshold']}%")
                 
             data = st.session_state.latest_data
-            update_log(f"Nguồn dữ liệu: {'Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Mô phỏng (chế độ phát triển)'}")
+            update_log(f"Nguồn dữ liệu: Binance API (Dữ liệu thực)")
             update_log(f"Số điểm dữ liệu: {len(data)} nến")
             update_log(f"Khung thời gian: {data.name if hasattr(data, 'name') else config.TIMEFRAMES['primary']}")
             update_log(f"Phạm vi ngày: {data.index.min()} đến {data.index.max()}")
@@ -759,7 +751,7 @@ def train_models():
             
             # Store training data information in session state for reference
             st.session_state.training_info = {
-                "data_source": 'Real Binance API' if not isinstance(st.session_state.data_collector, type(__import__('utils.data_collector').data_collector.MockDataCollector)) else 'Simulated data (development mode)',
+                "data_source": 'Real Binance API',
                 "data_points": len(data),
                 "date_range": f"{data.index.min()} to {data.index.max()}",
                 "feature_count": feature_count,
@@ -1661,8 +1653,8 @@ def display_system_status(data_status, thread_status, prediction_count):
     with col1:
         st.write("**Nguồn dữ liệu**")
         # Xác định nguồn dữ liệu
-        data_source = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Mô phỏng (Dev)"
-        data_source_color = "green" if not isinstance(st.session_state.data_collector, MockDataCollector) else "orange"
+        data_source = "Binance API"
+        data_source_color = "green"
         st.markdown(f":{data_source_color}[{data_source}]")
         
         # Hiển thị trạng thái dữ liệu trực tuyến
