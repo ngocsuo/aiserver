@@ -792,10 +792,18 @@ class ContinuousTrainer:
                 
                 # Train all models
                 self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình với {len(processed_data)} điểm dữ liệu")
+                
+                # Xử lý kết quả từ train_all_models (không còn trả về tuple nữa)
                 models = self.model_trainer.train_all_models(sequence_data, image_data)
                 
-                self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình")
-                logger.info(f"Trained {len(models)} models with {len(processed_data)} data points")
+                # Kiểm tra kết quả trả về
+                if models is not None:
+                    num_models = len(models) if isinstance(models, dict) else 0
+                    self._add_log(f"✅ Đã huấn luyện thành công {num_models} mô hình")
+                    logger.info(f"Trained {num_models} models with {len(processed_data)} data points")
+                else:
+                    self._add_log("❌ Không thể huấn luyện mô hình: kết quả trả về trống")
+                    logger.error("No models returned from training")
             else:
                 self._add_log("❌ Không thể thu thập dữ liệu lịch sử cho việc huấn luyện")
                 logger.error("No data collected for training")

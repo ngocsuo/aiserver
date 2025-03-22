@@ -3,9 +3,27 @@ Main Streamlit application for ETHUSDT prediction dashboard.
 Enhanced with improved UI, advanced technical analysis, and multi-source data integration.
 Added support for proxy configuration to overcome geographic restrictions.
 """
-import streamlit as st
-import pandas as pd
-import numpy as np
+# Thêm logging chi tiết để debug
+import sys
+import traceback
+
+with open("app.log", "a") as f:
+    f.write("Starting application at " + str(__import__("datetime").datetime.now()) + "\n")
+    f.flush()
+
+# Main imports
+try:
+    import streamlit as st
+    import pandas as pd
+    import numpy as np
+    with open("app.log", "a") as f:
+        f.write("Successfully imported main libraries\n")
+        f.flush()
+except Exception as e:
+    with open("app.log", "a") as f:
+        f.write(f"Error importing main libraries: {str(e)}\n")
+        f.write(traceback.format_exc())
+        f.flush()
 import time
 import threading
 import os
