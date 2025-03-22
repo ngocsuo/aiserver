@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script đồng bộ code từ Replit sang server
+# Script đồng bộ ETHUSDT Dashboard từ Replit lên server
 
 # Màu sắc đầu ra
 GREEN='\033[0;32m'
@@ -7,100 +7,81 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-# SSH password sẽ được nhập thủ công khi script chạy
+# Thông tin server
 SERVER="45.76.196.13"
 USER="root"
 REMOTE_DIR="/root/ethusdt_dashboard"
-LOCAL_DIR="."
 
-echo -e "${YELLOW}Đồng bộ code từ Replit sang server $SERVER...${NC}"
+echo -e "${YELLOW}=== ĐỒNG BỘ ETHUSDT DASHBOARD LÊN SERVER ===${NC}"
 
-# Kiểm tra kết nối server
+# Kiểm tra kết nối đến server
 echo -e "${YELLOW}Kiểm tra kết nối đến server...${NC}"
-ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no $USER@$SERVER "echo 'Kết nối thành công!'" || {
+if ! ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no $USER@$SERVER "echo 'Kết nối thành công!'" &> /dev/null; then
     echo -e "${RED}Không thể kết nối đến server. Kiểm tra lại kết nối mạng hoặc thông tin đăng nhập.${NC}"
     exit 1
-}
-
-# Đồng bộ các file Python và thư mục
-echo -e "${YELLOW}Đồng bộ mã nguồn...${NC}"
-rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
-  --include="*.py" \
-  --include="*.html" \
-  --include="*.css" \
-  --include="*.js" \
-  --include="*.json" \
-  --include="*.md" \
-  --include="*.txt" \
-  --include="*.sh" \
-  --include="utils/" \
-  --include="utils/**" \
-  --include="models/" \
-  --include="models/**" \
-  --include="prediction/" \
-  --include="prediction/**" \
-  --include="dashboard/" \
-  --include="dashboard/**" \
-  --include="deployment/" \
-  --include="deployment/**" \
-  --include="automation_scripts/" \
-  --include="automation_scripts/**" \
-  --exclude=".git/" \
-  --exclude="venv/" \
-  --exclude="__pycache__/" \
-  --exclude="*.pyc" \
-  --exclude=".streamlit/" \
-  --exclude="logs/" \
-  --exclude="data/" \
-  --exclude="saved_models/" \
-  $LOCAL_DIR/* $USER@$SERVER:$REMOTE_DIR/
-
-# Cụ thể đồng bộ file requirements_server.txt và server_setup.sh
-echo -e "${YELLOW}Đồng bộ file cài đặt...${NC}"
-rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
-  requirements_server.txt server_setup.sh \
-  $USER@$SERVER:$REMOTE_DIR/
-
-# Chuyển API keys từ Replit sang server
-echo "Cấu hình API keys trên server..."
-ssh -o StrictHostKeyChecking=no $USER@$SERVER "
-cat > $REMOTE_DIR/setup_api_keys.sh << 'EOF'
-#!/bin/bash
-# Script thiết lập API keys
-
-# Cập nhật .bashrc
-grep -q 'BINANCE_API_KEY' /root/.bashrc || cat >> /root/.bashrc << 'ENVVARS'
-
-# Binance API Credentials
-export BINANCE_API_KEY=\"$BINANCE_API_KEY\"
-export BINANCE_API_SECRET=\"$BINANCE_API_SECRET\"
-ENVVARS
-
-# Cập nhật biến môi trường tạm thời
-export BINANCE_API_KEY=\"$BINANCE_API_KEY\"
-export BINANCE_API_SECRET=\"$BINANCE_API_SECRET\"
-
-# Cập nhật script restart.sh
-if grep -q 'BINANCE_API_KEY' $REMOTE_DIR/restart.sh; then
-  # API key đã tồn tại trong restart.sh, cập nhật chúng
-  sed -i \"s|export BINANCE_API_KEY=.*|export BINANCE_API_KEY=\\\"$BINANCE_API_KEY\\\"|g\" $REMOTE_DIR/restart.sh
-  sed -i \"s|export BINANCE_API_SECRET=.*|export BINANCE_API_SECRET=\\\"$BINANCE_API_SECRET\\\"|g\" $REMOTE_DIR/restart.sh
-else
-  # Thêm API key vào script restart.sh
-  sed -i '/# Khởi động ứng dụng/i # Cài đặt biến môi trường\nexport BINANCE_API_KEY=\\\"$BINANCE_API_KEY\\\"\nexport BINANCE_API_SECRET=\\\"$BINANCE_API_SECRET\\\"\n' $REMOTE_DIR/restart.sh
 fi
 
-echo \"API keys đã được thiết lập thành công!\"
+# Tạo thư mục trên server nếu chưa tồn tại
+echo -e "${YELLOW}Tạo thư mục trên server nếu chưa tồn tại...${NC}"
+ssh -o StrictHostKeyChecking=no $USER@$SERVER "mkdir -p $REMOTE_DIR"
+
+# Tạo danh sách file cần đồng bộ (loại trừ các file và thư mục không cần thiết)
+echo -e "${YELLOW}Chuẩn bị danh sách file cần đồng bộ...${NC}"
+cat > .rsync-exclude.txt << EOF
+.git/
+.gitignore
+.env
+*.log
+*.md
+__pycache__/
+*.pyc
+*.pyo
+venv/
+node_modules/
+.pytest_cache/
+.coverage
+.rsync-exclude.txt
 EOF
 
-chmod +x $REMOTE_DIR/setup_api_keys.sh
-export BINANCE_API_KEY=\"$BINANCE_API_KEY\"
-export BINANCE_API_SECRET=\"$BINANCE_API_SECRET\"
-$REMOTE_DIR/setup_api_keys.sh
-"
+# Đồng bộ mã nguồn
+echo -e "${YELLOW}Đồng bộ mã nguồn lên server...${NC}"
+rsync -avz --exclude-from=.rsync-exclude.txt \
+    --delete \
+    -e "ssh -o StrictHostKeyChecking=no" \
+    ./ $USER@$SERVER:$REMOTE_DIR/
+
+# Chuyển Binance API keys từ biến môi trường của Replit sang server
+echo -e "${YELLOW}Chuyển API keys lên server...${NC}"
+if [ -n "$BINANCE_API_KEY" ] && [ -n "$BINANCE_API_SECRET" ]; then
+    ssh -o StrictHostKeyChecking=no $USER@$SERVER "cat > $REMOTE_DIR/.env << EOF
+BINANCE_API_KEY=$BINANCE_API_KEY
+BINANCE_API_SECRET=$BINANCE_API_SECRET
+EOF"
+    echo -e "${GREEN}API keys đã được đồng bộ lên server.${NC}"
+else
+    echo -e "${RED}Không tìm thấy BINANCE_API_KEY hoặc BINANCE_API_SECRET trong biến môi trường.${NC}"
+    echo -e "${YELLOW}Truy cập vào server và tạo file .env với BINANCE_API_KEY và BINANCE_API_SECRET.${NC}"
+fi
+
+# Thiết lập quyền thực thi cho các script
+echo -e "${YELLOW}Thiết lập quyền thực thi cho các script...${NC}"
+ssh -o StrictHostKeyChecking=no $USER@$SERVER "chmod +x $REMOTE_DIR/*.sh $REMOTE_DIR/automation_scripts/*.sh"
+
+# Kiểm tra requirements_server.txt và cài đặt nếu cần
+echo -e "${YELLOW}Kiểm tra requirements_server.txt để cài đặt thư viện mới...${NC}"
+ssh -o StrictHostKeyChecking=no $USER@$SERVER "if [ -f \"$REMOTE_DIR/venv/bin/pip\" ] && [ -f \"$REMOTE_DIR/requirements_server.txt\" ]; then 
+    $REMOTE_DIR/venv/bin/pip install -r $REMOTE_DIR/requirements_server.txt
+fi"
 
 # Khởi động lại ứng dụng trên server
-echo "Khởi động lại ứng dụng..."
-ssh -o StrictHostKeyChecking=no $USER@$SERVER "cd $REMOTE_DIR && ./restart.sh"
+echo -e "${YELLOW}Khởi động lại ứng dụng trên server...${NC}"
+ssh -o StrictHostKeyChecking=no $USER@$SERVER "$REMOTE_DIR/restart.sh" || {
+    echo -e "${RED}Không thể khởi động lại ứng dụng. Có thể cần thiết lập môi trường lần đầu.${NC}"
+    echo -e "${YELLOW}Kết nối SSH vào server và chạy: $REMOTE_DIR/server_setup.sh${NC}"
+}
 
-echo "Đồng bộ hoàn tất và ứng dụng đã được khởi động lại!"
+# Xóa file exclude tạm thời
+rm -f .rsync-exclude.txt
+
+echo -e "${GREEN}=== ĐỒNG BỘ HOÀN TẤT ===${NC}"
+echo -e "${GREEN}Truy cập ứng dụng tại: http://$SERVER:5000${NC}"

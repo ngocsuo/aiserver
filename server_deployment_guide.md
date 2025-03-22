@@ -1,125 +1,148 @@
-# Hướng dẫn triển khai ETHUSDT Dashboard lên server
+# Hướng dẫn triển khai ETHUSDT Dashboard lên Server
 
-## 1. Chuẩn bị package triển khai
+Tài liệu này cung cấp hướng dẫn chi tiết để triển khai ứng dụng ETHUSDT Dashboard từ Replit lên server Ubuntu của bạn.
 
-Để đóng gói ứng dụng và triển khai lên server của bạn, hãy sử dụng script `prepare_for_server.py`:
+## Yêu cầu hệ thống
 
-```bash
-# Tạo package cơ bản
-./prepare_for_server.py
+- Server Ubuntu 20.04 hoặc cao hơn
+- Quyền truy cập SSH với tài khoản root
+- Đã cài đặt các công cụ cơ bản: git, curl, wget, rsync
+- Cổng 5000 đã được mở trong firewall
+- API key Binance hợp lệ
 
-# Tạo package bao gồm dữ liệu hiện có
-./prepare_for_server.py --include-data
+## Quy trình triển khai
 
-# Chỉ định tên file đầu ra
-./prepare_for_server.py --output ethusdt_dashboard.zip
-```
+### 1. Đồng bộ mã nguồn từ Replit lên server
 
-Script này sẽ tạo một file zip có tên theo định dạng `ethusdt_dashboard_deploy_YYYYMMDD_HHMMSS.zip` hoặc theo tên bạn chỉ định.
-
-## 2. Chuyển package lên server
-
-Sử dụng SCP hoặc SFTP để chuyển file zip lên server của bạn:
+Thực hiện lệnh sau trong Replit để đồng bộ mã nguồn lên server:
 
 ```bash
-scp ethusdt_dashboard_deploy_YYYYMMDD_HHMMSS.zip user@your-server-ip:/path/to/destination/
+./sync_to_server.sh
 ```
 
-## 3. Triển khai trên server
+Script này sẽ:
+- Kiểm tra kết nối đến server
+- Sao chép tất cả các file nguồn cần thiết
+- Tự động chuyển API keys từ Replit sang server
+- Khởi động lại ứng dụng trên server
 
-Đăng nhập vào server và thực hiện các bước sau:
+### 2. Cài đặt môi trường lần đầu trên server
+
+Nếu đây là lần đầu bạn triển khai ứng dụng lên server, cần thực hiện script cài đặt để chuẩn bị môi trường. SSH vào server và chạy:
 
 ```bash
-# Di chuyển đến thư mục đích
-cd /path/to/destination
-
-# Giải nén file zip
-unzip ethusdt_dashboard_deploy_YYYYMMDD_HHMMSS.zip
-
-# Di chuyển vào thư mục giải nén
-cd ethusdt_dashboard
-
-# Chạy script cài đặt
-./install.sh
+cd /root/ethusdt_dashboard
+./server_setup.sh
 ```
 
-Nếu bạn có quyền root, script cài đặt sẽ tự động cấu hình systemd service để ứng dụng chạy như một dịch vụ và tự động khởi động lại khi cần.
+Script này sẽ:
+- Cập nhật hệ thống
+- Cài đặt Python và các gói phụ thuộc
+- Tạo môi trường ảo Python
+- Cài đặt các thư viện từ requirements_server.txt
+- Cấu hình Streamlit
+- Tạo và kích hoạt service systemd
+- Tạo script khởi động lại
 
-## 4. Kiểm tra trạng thái (nếu đã cài đặt systemd service)
+### 3. Kiểm tra kết nối Binance API trên server
+
+Để đảm bảo Binance API hoạt động đúng trên server, chạy lệnh sau trong Replit:
 
 ```bash
-systemctl status ethusdt-dashboard.service
+./automation_scripts/test_binance_connection.sh
 ```
 
-## 5. Xem log
+### 4. Kiểm tra trạng thái ứng dụng trên server
+
+Để kiểm tra trạng thái của ứng dụng và server, chạy:
 
 ```bash
-# Xem log ứng dụng
-tail -f logs/app.log
-
-# Xem log dịch vụ triển khai
-tail -f deployment/deploy.log
-
-# Xem log hệ thống
-tail -f deployment/logs/system.log
+./automation_scripts/check_server_status.sh
 ```
 
-## 6. Cấu hình
+### 5. Truy cập ứng dụng
 
-Các file cấu hình chính:
-
-- `config.py`: Cấu hình tổng thể của ứng dụng
-- `deployment/deploy_service.py`: Cấu hình dịch vụ triển khai
-
-## 7. Truy cập ứng dụng
-
-Sau khi triển khai, ứng dụng sẽ chạy tại:
+Sau khi triển khai, bạn có thể truy cập ứng dụng tại:
 
 ```
-http://your-server-ip:5000
+http://SERVER_IP:5000
 ```
 
-## 8. Khắc phục sự cố
+Với SERVER_IP là địa chỉ IP của server của bạn (45.76.196.13).
 
-### 8.1. Nếu ứng dụng không khởi động
+## Quản lý ứng dụng trên server
+
+### Khởi động lại ứng dụng
 
 ```bash
-# Kiểm tra logs
-tail -f logs/app.log
-tail -f deployment/deploy.log
-
-# Khởi động thủ công
-python run_clean.py --mode direct
+ssh root@45.76.196.13 "/root/ethusdt_dashboard/restart.sh"
 ```
 
-### 8.2. Nếu gặp vấn đề về bộ nhớ
+### Kiểm tra logs
 
 ```bash
-# Dọn dẹp logs và cache
-python deployment/optimize_logs.py --all
-
-# Khởi động lại với ít tính năng hơn
-python run_clean.py --mode direct
+ssh root@45.76.196.13 "tail -f /root/ethusdt_dashboard/logs/streamlit.log"
 ```
 
-### 8.3. Nếu gặp vấn đề về kết nối API
+### Kiểm tra trạng thái service
 
 ```bash
-# Kiểm tra kết nối Binance API
-python test_binance_connection.py
+ssh root@45.76.196.13 "systemctl status ethusdt-dashboard"
 ```
 
-## 9. Nâng cấp
-
-Để nâng cấp ứng dụng, tạo package mới và thực hiện lại các bước triển khai:
+### Dừng ứng dụng
 
 ```bash
-# Dừng dịch vụ hiện tại
-systemctl stop ethusdt-dashboard.service
-
-# Triển khai phiên bản mới
-# (Giải nén và cài đặt như các bước ở trên)
-
-# Khởi động lại dịch vụ
-systemctl start ethusdt-dashboard.service
+ssh root@45.76.196.13 "systemctl stop ethusdt-dashboard"
 ```
+
+### Khởi động ứng dụng
+
+```bash
+ssh root@45.76.196.13 "systemctl start ethusdt-dashboard"
+```
+
+## Cập nhật ứng dụng
+
+Khi bạn muốn cập nhật ứng dụng với phiên bản mới từ Replit:
+
+1. Cập nhật mã nguồn trên Replit
+2. Chạy `./sync_to_server.sh` để đồng bộ thay đổi lên server
+3. Script sẽ tự động khởi động lại ứng dụng
+
+## Xử lý sự cố
+
+### Ứng dụng không khởi động
+
+Kiểm tra logs:
+
+```bash
+ssh root@45.76.196.13 "journalctl -u ethusdt-dashboard -n 50"
+```
+
+### Vấn đề kết nối Binance API
+
+Kiểm tra trạng thái proxy và API key:
+
+```bash
+./automation_scripts/test_binance_connection.sh
+```
+
+### Sửa lỗi hệ thống
+
+Nếu cần khởi động lại toàn bộ server:
+
+```bash
+ssh root@45.76.196.13 "reboot"
+```
+
+## Bảo mật
+
+- Đảm bảo cổng 22 (SSH) được bảo vệ bằng key authentication
+- Chỉ mở cổng 5000 cho Streamlit
+- Đặt mật khẩu mạnh cho tài khoản root
+- Cân nhắc thiết lập tường lửa nếu cần
+
+## Thông tin liên hệ
+
+Nếu bạn gặp vấn đề khi triển khai, vui lòng liên hệ hỗ trợ.
