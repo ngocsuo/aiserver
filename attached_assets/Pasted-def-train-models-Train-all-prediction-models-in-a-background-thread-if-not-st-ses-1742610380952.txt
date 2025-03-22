@@ -1,0 +1,240 @@
+def train_models():
+    """Train all prediction models in a background thread"""
+    if not st.session_state.initialized or st.session_state.latest_data is None:
+        st.warning("Hệ thống chưa được khởi tạo hoặc không có dữ liệu")
+        show_toast("Hệ thống chưa được khởi tạo hoặc không có dữ liệu", "warning")
+        return False
+    
+    # Thông báo cho người dùng
+    progress_placeholder = st.empty()
+    progress_placeholder.info("Quá trình huấn luyện bắt đầu trong nền. Bạn có thể tiếp tục sử dụng ứng dụng.")
+    
+    # Progress bar
+    progress_bar = st.progress(0)
+    
+    # Add log message
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    log_message = f"{timestamp} - 🧠 Bắt đầu quá trình huấn luyện AI trong nền..."
+    if 'log_messages' not in st.session_state:
+        st.session_state.log_messages = []
+    st.session_state.log_messages.append(log_message)
+    
+    # Kiểm tra xem có thông số tùy chỉnh không
+    custom_params = st.session_state.get('custom_training_params', None)
+    if custom_params:
+        log_message = f"{timestamp} - 🔧 Sử dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs"
+        st.session_state.log_messages.append(log_message)
+        show_toast(f"Huấn luyện với cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['epochs']} epochs", "info")
+    
+    # Hàm cập nhật log riêng
+    def update_log(message):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_message = f"{timestamp} - {message}"
+        st.session_state.log_messages.append(log_message)
+        # Cập nhật thông báo hiển thị cho người dùng
+        if "Step" in message or "Bước" in message:
+            progress_placeholder.info(message)
+            # Cập nhật progress bar
+            if "1/5" in message:
+                progress_bar.progress(10)
+            elif "2/5" in message:
+                progress_bar.progress(30)
+            elif "3/5" in message:
+                progress_bar.progress(50)
+            elif "4/5" in message:
+                progress_bar.progress(70)
+            elif "5/5" in message:
+                progress_bar.progress(90)
+            elif "success" in message.lower() or "hoàn tất" in message.lower() or "thành công" in message.lower():
+                progress_bar.progress(100)
+                progress_placeholder.success("Huấn luyện mô hình thành công!")
+                
+        if "Error" in message or "ERROR" in message or "Lỗi" in message:
+            show_toast(message, "error", 5000)
+    
+    # Import thread-safe logging functions
+    from thread_safe_logging import thread_safe_log, read_logs_from_file
+    
+    # Tạo hàm huấn luyện chạy ngầm trong thread
+    def train_models_background():
+        from utils.thread_safe_logging import thread_safe_log
+    
+    try:
+        thread_safe_log("Bắt đầu huấn luyện mô hình AI trong thread riêng...")
+        thread_safe_log("LƯU Ý: Đang sử dụng phiên bản an toàn thread, tránh truy cập session_state")
+        
+        # QUAN TRỌNG: KHÔNG truy cập st.session_state trong thread này!
+        # Thay vì lấy dữ liệu từ session_state, chúng ta sẽ tải dữ liệu mới
+        
+        from utils.data_collector import create_data_collector
+        from utils.data_processor import DataProcessor
+        from models.model_trainer import ModelTrainer
+        import config
+        
+        thread_safe_log("Tạo data collector...")
+        data_collector = create_data_collector()
+        
+        thread_safe_log("Tạo data processor và model trainer...")
+        data_processor = DataProcessor()
+        model_trainer = ModelTrainer()
+        
+        thread_safe_log("Thu thập dữ liệu lịch sử...")
+        if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+            data = data_collector.collect_historical_data(
+                timeframe=config.TIMEFRAMES["primary"],
+                start_date=config.HISTORICAL_START_DATE
+            )
+        else:
+            data = data_collector.collect_historical_data(
+                timeframe=config.TIMEFRAMES["primary"],
+                limit=config.LOOKBACK_PERIODS
+            )
+        
+        if data is None or len(data) == 0:
+            thread_safe_log("KHÔNG THỂ thu thập dữ liệu cho huấn luyện")
+            return
+            
+        thread_safe_log(f"Đã thu thập {len(data)} nến dữ liệu")
+        
+        # Tiếp tục quy trình huấn luyện mô hình với dữ liệu mới thu thập
+        thread_safe_log("Xử lý dữ liệu...")
+        processed_data = data_processor.process_data(data)
+        
+        # Display feature information
+        feature_count = len(processed_data.columns) - 1  # Exclude target column
+        thread_safe_log(f"Đã tạo {feature_count} chỉ báo kỹ thuật và tính năng")
+        thread_safe_log(f"Mẫu huấn luyện: {len(processed_data)}")
+        
+        # Prepare data for models
+        thread_safe_log("Chuẩn bị dữ liệu chuỗi cho LSTM và Transformer...")
+        sequence_data = data_processor.prepare_sequence_data(processed_data)
+        
+        thread_safe_log("Chuẩn bị dữ liệu hình ảnh cho CNN...")
+        image_data = data_processor.prepare_cnn_data(processed_data)
+        
+        # Huấn luyện từng mô hình riêng biệt
+        thread_safe_log("Huấn luyện mô hình LSTM...")
+        lstm_model, lstm_history = model_trainer.train_lstm(sequence_data)
+        
+        thread_safe_log("Huấn luyện mô hình Transformer...")
+        transformer_model, transformer_history = model_trainer.train_transformer(sequence_data)
+        
+        thread_safe_log("Huấn luyện mô hình CNN...")
+        cnn_model, cnn_history = model_trainer.train_cnn(image_data)
+        
+        thread_safe_log("Huấn luyện mô hình Similarity lịch sử...")
+        historical_model, _ = model_trainer.train_historical_similarity(sequence_data)
+        
+        thread_safe_log("Huấn luyện mô hình Meta-Learner...")
+        meta_model, _ = model_trainer.train_meta_learner(sequence_data, image_data)
+        
+        thread_safe_log("Huấn luyện thành công tất cả các mô hình!")
+        
+        # Lưu trạng thái huấn luyện vào file
+        try:
+            import json
+            import datetime
+            training_result = {
+                "success": True,
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "message": "Huấn luyện thành công tất cả các mô hình"
+            }
+            with open('training_result.json', 'w') as f:
+                json.dump(training_result, f)
+                
+            # Thông báo đã huấn luyện thành công - set flag cho main thread
+            with open('training_completed.txt', 'w') as f:
+                f.write('success')
+        except Exception as e:
+            thread_safe_log(f"Lỗi lưu kết quả huấn luyện: {str(e)}")
+                
+    except Exception as e:
+        from utils.thread_safe_logging import thread_safe_log
+        thread_safe_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
+        
+        # Lưu thông tin lỗi vào file
+        try:
+            import datetime
+            import json
+            training_result = {
+                "success": False,
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "error": str(e)
+            }
+            with open('training_result.json', 'w') as f:
+                json.dump(training_result, f)
+                
+            # Thông báo lỗi cho main thread
+            with open('training_completed.txt', 'w') as f:
+                f.write('error')
+        except Exception:
+            pass
+   
+    # Hàm hỗ trợ ghi log
+    def update_log(message):
+        """Log training progress to session state and to local list"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_msg = f"{timestamp} - {message}"
+        
+        # Thêm vào training logs
+        if 'training_log_messages' not in st.session_state:
+            st.session_state.training_log_messages = []
+        st.session_state.training_log_messages.append(log_msg)
+        
+        # Thêm vào system logs
+        if 'log_messages' in st.session_state:
+            st.session_state.log_messages.append(log_msg)
+        
+        # Hiển thị toast notification cho người dùng
+        if ("thành công" in message or 
+            "hoàn thành" in message or 
+            "độ chính xác" in message):
+            show_toast(message, "success", 3000)
+        elif "Lỗi" in message or "LỖI" in message:
+            show_toast(f"Lỗi huấn luyện: {message}", "error", 5000)
+    
+    # Hiển thị thông báo huấn luyện đang bắt đầu
+    show_toast("Đang bắt đầu quá trình huấn luyện mô hình AI...", "info", 3000)
+    
+    # Thêm log messages để hiển thị trong tab Training Logs
+    training_logs = []
+    
+    # Tạo progress bar chỉ trong phạm vi function này
+    progress_placeholder = st.empty()
+    progress_bar = st.progress(0)
+    
+    def update_log(message):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        log_msg = f"{timestamp} - {message}"
+        
+        # Thêm vào training_logs cho tab Training Logs
+        if 'training_log_messages' not in st.session_state:
+            st.session_state.training_log_messages = []
+        st.session_state.training_log_messages.append(log_msg)
+        
+        # Thêm vào log_messages chung
+        if 'log_messages' not in st.session_state:
+            st.session_state.log_messages = []
+        st.session_state.log_messages.append(log_msg)
+        
+        # Lưu lại local cho function này
+        training_logs.append(log_msg)
+        
+        # Hiển thị toast notification cho các thông báo quan trọng
+        if "Step" in message or "model trained" in message:
+            show_toast(message, "info", 3000)
+        elif "Error" in message or "ERROR" in message:
+            show_toast(message, "error", 5000)
+    
+    # Bắt đầu huấn luyện trong thread
+    training_thread = threading.Thread(target=train_models_background)
+    training_thread.daemon = True  # Thread sẽ tự đóng khi chương trình chính kết thúc
+    training_thread.start()
+    
+    # Xóa các thành phần UI hiển thị lên
+    if 'progress_bar' in locals():
+        progress_bar.empty()
+    if 'progress_placeholder' in locals():
+        progress_placeholder.empty()
+    
+    return True
