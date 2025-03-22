@@ -425,3 +425,52 @@
 2025-03-22 19:44:56 - Binance server time: 2025-03-22 19:44:56
 2025-03-22 19:45:05 - Binance server time: 2025-03-22 19:45:05
 2025-03-22 19:45:09 - Binance server time: 2025-03-22 19:45:09
+2025-03-22 19:46:47 - Tiến trình huấn luyện: 100% (78/78 chunks)
+2025-03-22 19:46:47 - Tiến trình huấn luyện: 100% (78/78 chunks)
+2025-03-22 19:46:49 - Binance server time: 2025-03-22 19:46:49
+2025-03-22 19:46:50 - Binance server time: 2025-03-22 19:46:50
+2025-03-22 19:47:02 - Binance server time: 2025-03-22 19:47:02
+2025-03-22 19:47:02 - Binance server time: 2025-03-22 19:47:02
+2025-03-22 19:47:14 - Binance server time: 2025-03-22 19:47:14
+2025-03-22 19:47:14 - Tiến trình huấn luyện: 100% (78/78 chunks)
+2025-03-22 19:47:15 - Binance server time: 2025-03-22 19:47:15
+2025-03-22 19:47:17 - Binance server time: 2025-03-22 19:47:17
+2025-03-22 19:47:27 - Binance server time: 2025-03-22 19:47:27
+2025-03-22 19:47:27 - Binance server time: 2025-03-22 19:47:27
+2025-03-22 19:47:30 - Binance server time: 2025-03-22 19:47:29
+2025-03-22 19:47:39 - Binance server time: 2025-03-22 19:47:39
+2025-03-22 19:47:40 - Binance server time: 2025-03-22 19:47:40
+2025-03-22 19:47:42 - Binance server time: 2025-03-22 19:47:42
+2025-03-22 19:47:52 - Binance server time: 2025-03-22 19:47:52
+2025-03-22 19:47:52 - Binance server time: 2025-03-22 19:47:52
+2025-03-22 19:47:55 - Binance server time: 2025-03-22 19:47:55
+2025-03-22 19:48:04 - Binance server time: 2025-03-22 19:48:04
+2025-03-22 19:48:05 - Binance server time: 2025-03-22 19:48:04
+2025-03-22 19:48:07 - Binance server time: 2025-03-22 19:48:07
+2025-03-22 19:48:10 - Bắt đầu huấn luyện mô hình AI trong thread riêng...
+2025-03-22 19:48:10 - LƯU Ý: Đang sử dụng phiên bản an toàn thread, tránh truy cập session_state
+2025-03-22 19:48:10 - Tạo data collector...
+2025-03-22 19:48:11 - Tạo data processor và model trainer...
+2025-03-22 19:48:11 - Thu thập dữ liệu lịch sử...
+2025-03-22 19:48:17 - Binance server time: 2025-03-22 19:48:17
+2025-03-22 19:48:17 - Binance server time: 2025-03-22 19:48:17
+2025-03-22 19:48:20 - Binance server time: 2025-03-22 19:48:19
+2025-03-22 19:48:29 - Binance server time: 2025-03-22 19:48:29
+2025-03-22 19:48:30 - Binance server time: 2025-03-22 19:48:30
+2025-03-22 19:48:32 - Binance server time: 2025-03-22 19:48:32
+2025-03-22 19:48:42 - Binance server time: 2025-03-22 19:48:42
+2025-03-22 19:48:42 - Binance server time: 2025-03-22 19:48:42
+2025-03-22 19:48:45 - Binance server time: 2025-03-22 19:48:44
+2025-03-22 19:48:54 - Binance server time: 2025-03-22 19:48:54
+2025-03-22 19:48:56 - Binance server time: 2025-03-22 19:48:56
+2025-03-22 19:48:57 - Binance server time: 2025-03-22 19:48:57
+2025-03-22 19:49:07 - Binance server time: 2025-03-22 19:49:07
+2025-03-22 19:49:08 - Binance server time: 2025-03-22 19:49:08
+2025-03-22 19:49:10 - Binance server time: 2025-03-22 19:49:10
+2025-03-22 19:49:19 - Binance server time: 2025-03-22 19:49:19
+2025-03-22 19:49:21 - Binance server time: 2025-03-22 19:49:20
+2025-03-22 19:49:22 - Binance server time: 2025-03-22 19:49:22
+2025-03-22 19:49:32 - Binance server time: 2025-03-22 19:49:32
+2025-03-22 19:49:33 - Binance server time: 2025-03-22 19:49:33
+2025-03-22 19:49:35 - Binance server time: 2025-03-22 19:49:35
+2025-03-22 19:50:43 - Tiến trình huấn luyện: 0% (0/78 chunks)
