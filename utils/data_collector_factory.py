@@ -40,9 +40,9 @@ def create_data_collector():
             raise Exception(f"Could not connect to Binance API: {collector.connection_status['message']}")
             
     except Exception as e:
-        logger.warning(f"Could not connect to Binance API: {e}")
+        logger.error(f"Could not connect to Binance API: {e}")
         
-        # Trả về MockDataCollector nếu cần
-        from utils.data_collector import MockDataCollector
-        logger.info("Falling back to MockDataCollector")
-        return MockDataCollector()
+        # Không sử dụng MockDataCollector mà báo lỗi để người dùng biết
+        error_message = f"Không thể kết nối đến Binance API: {e}"
+        logger.error(error_message)
+        raise Exception(error_message)

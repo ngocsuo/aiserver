@@ -306,7 +306,6 @@ def initialize_system():
         try:
             # Initialize data collector with factory function
             from utils.data_collector_factory import create_data_collector
-            from utils.data_collector_factory import create_data_collector
             
             # Create the appropriate data collector based on config
             st.session_state.data_collector = create_data_collector()
