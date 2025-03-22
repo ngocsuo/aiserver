@@ -795,3 +795,5 @@
 2025-03-22 21:03:02 - Binance server time: 2025-03-22 21:03:02
 2025-03-22 21:03:12 - Binance server time: 2025-03-22 21:03:12
 2025-03-22 21:03:15 - Binance server time: 2025-03-22 21:03:15
+2025-03-22 21:03:58 - 🚨 YÊU CẦU HUẤN LUYỆN THỦ CÔNG - Kích hoạt trực tiếp
+2025-03-22 21:05:32 - Tiến trình huấn luyện: 0% (0/30 chunks)
