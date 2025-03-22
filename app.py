@@ -2735,6 +2735,13 @@ elif st.session_state.selected_tab == "Cài đặt":
                     
                     config.TRAINING_SCHEDULE["interval_minutes"] = frequency_minutes[training_frequency]
                     
+                    # Lưu thiết lập vào config.py để duy trì giữa các phiên
+                    new_interval_minutes = frequency_minutes[training_frequency]
+                    update_config_value("TRAINING_SCHEDULE", {
+                        "frequency": training_frequency,
+                        "interval_minutes": new_interval_minutes
+                    })
+                    
                     st.success("Đã lưu cài đặt huấn luyện thành công!")
             
             with col2:
@@ -2858,8 +2865,11 @@ elif st.session_state.selected_tab == "Cài đặt":
                 help="Chọn nguồn dữ liệu cho hệ thống"
             )
             
-            # Cập nhật thiết lập USE_REAL_API
-            config.USE_REAL_API = (data_source == "Binance API (thực)")
+            # Cập nhật thiết lập USE_REAL_API và lưu vào config.py
+            use_real_api = (data_source == "Binance API (thực)")
+            config.USE_REAL_API = use_real_api
+            # Lưu thiết lập vào config.py để duy trì giữa các phiên
+            update_config_value("USE_REAL_API", use_real_api)
             
             # Cài đặt kết nối
             with st.expander("🌐 Cài đặt Kết nối", expanded=True):
@@ -2887,8 +2897,10 @@ elif st.session_state.selected_tab == "Cài đặt":
                 help="Thời gian giữa các lần cập nhật dữ liệu tự động"
             )
             
-            # Cập nhật thiết lập UPDATE_INTERVAL
+            # Cập nhật thiết lập UPDATE_INTERVAL và lưu vào config.py để duy trì giữa các phiên
             config.UPDATE_INTERVAL = update_interval
+            # Lưu giá trị vào config.py để duy trì giữa các phiên
+            update_config_value("UPDATE_INTERVAL", update_interval)
             
             # Thêm expander cho tính năng nâng cao
             with st.expander("🧹 Xóa dữ liệu và khởi động lại hệ thống", expanded=False):
