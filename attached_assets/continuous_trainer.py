@@ -643,8 +643,7 @@ class ContinuousTrainer:
             logger.info(f"No cached data found for period {start_date} to {end_date}")
         except Exception as e:
             logger.error(f"Error loading cached data: {e}")
-        
-        return None
+            return None
         
         # Sau khi xử lý toàn bộ dữ liệu cho tất cả các khung thời gian
         model_results = {}
@@ -675,7 +674,7 @@ class ContinuousTrainer:
                         if isinstance(data_dict[key], dict):
                             data_dict[key]['timeframe'] = timeframe
                 
-                models = self.model_trainer.train_all_models(sequence_data, image_data)
+                models = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
                 model_results[timeframe] = models
                 
                 self._add_log(f"✅ Đã huấn luyện thành công {len(models)} mô hình cho {timeframe}")
