@@ -639,3 +639,42 @@
 2025-03-22 20:36:49 - Binance server time: 2025-03-22 20:36:49
 2025-03-22 20:36:49 - Tiến trình huấn luyện: 100% (30/30 chunks)
 2025-03-22 20:36:52 - Binance server time: 2025-03-22 20:36:52
+2025-03-22 20:37:01 - Đã tạo 80 chỉ báo kỹ thuật và tính năng
+2025-03-22 20:37:01 - Mẫu huấn luyện: 128166
+2025-03-22 20:37:01 - Chuẩn bị dữ liệu chuỗi cho LSTM và Transformer...
+2025-03-22 20:37:02 - Binance server time: 2025-03-22 20:37:02
+2025-03-22 20:37:05 - Binance server time: 2025-03-22 20:37:04
+2025-03-22 20:40:22 - Tiến trình huấn luyện: 0% (0/30 chunks)
+2025-03-22 20:40:24 - Binance server time: 2025-03-22 20:40:24
+2025-03-22 20:40:34 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:40:36 - Binance server time: 2025-03-22 20:40:36
+2025-03-22 20:40:48 - Bắt đầu huấn luyện mô hình AI trong thread riêng...
+2025-03-22 20:40:48 - LƯU Ý: Đang sử dụng phiên bản an toàn thread, tránh truy cập session_state
+2025-03-22 20:40:48 - Tạo data collector...
+2025-03-22 20:40:49 - Binance server time: 2025-03-22 20:40:49
+2025-03-22 20:40:49 - Tạo data processor và model trainer...
+2025-03-22 20:40:49 - Thu thập dữ liệu lịch sử...
+2025-03-22 20:41:01 - Binance server time: 2025-03-22 20:41:01
+2025-03-22 20:41:14 - Binance server time: 2025-03-22 20:41:14
+2025-03-22 20:41:26 - Binance server time: 2025-03-22 20:41:26
+2025-03-22 20:41:39 - Binance server time: 2025-03-22 20:41:39
+2025-03-22 20:41:51 - Binance server time: 2025-03-22 20:41:51
+2025-03-22 20:42:00 - Đã thu thập 128839 nến dữ liệu
+2025-03-22 20:42:00 - Xử lý dữ liệu...
+2025-03-22 20:42:04 - Binance server time: 2025-03-22 20:42:04
+2025-03-22 20:42:33 - Tiến trình huấn luyện: 0% (0/30 chunks)
+2025-03-22 20:42:36 - Binance server time: 2025-03-22 20:42:36
+2025-03-22 20:42:39 - Bắt đầu huấn luyện mô hình AI trong thread riêng...
+2025-03-22 20:42:39 - LƯU Ý: Đang sử dụng phiên bản an toàn thread, tránh truy cập session_state
+2025-03-22 20:42:39 - Tạo data collector...
+2025-03-22 20:42:41 - Tạo data processor và model trainer...
+2025-03-22 20:42:41 - Thu thập dữ liệu lịch sử...
+2025-03-22 20:42:43 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:42:45 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:42:45 - Binance server time: 2025-03-22 20:42:45
+2025-03-22 20:42:46 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:42:47 - Binance server time: 2025-03-22 20:42:47
+2025-03-22 20:42:48 - Binance server time: 2025-03-22 20:42:48
+2025-03-22 20:42:58 - Binance server time: 2025-03-22 20:42:58
+2025-03-22 20:43:00 - Binance server time: 2025-03-22 20:43:00
+2025-03-22 20:43:01 - Binance server time: 2025-03-22 20:43:01
