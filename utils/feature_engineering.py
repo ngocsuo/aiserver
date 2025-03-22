@@ -781,6 +781,11 @@ class FeatureEngineer:
             # Extract features to normalize
             features = df_norm[scale_columns].values
             
+            # Kiểm tra xem features có dữ liệu không trước khi chuẩn hóa
+            if features.shape[0] == 0:
+                logger.warning("Empty dataset received for normalization. Skipping normalization.")
+                return df_norm
+                
             # Normalize features
             scaler = self.scalers.get(method, self.scalers['minmax'])
             

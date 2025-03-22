@@ -933,21 +933,31 @@ class ContinuousTrainer:
                     
                     # SỬA LỖI: Xử lý lỗi "too many values to unpack (expected 2)"
                     try:
+                        # Ghi log để debug
+                        self._add_log(f"🔍 Bắt đầu gọi train_all_models với timeframe={timeframe}")
+                        
                         # Lưu kết quả vào biến tạm trước để kiểm tra loại dữ liệu
                         result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
                         
-                        # Kiểm tra xem kết quả có phải là tuple không, nếu có thì lấy phần tử đầu tiên
-                        if isinstance(result, tuple) and len(result) > 0:
-                            models = result[0]  # Lấy phần tử đầu tiên (models)
-                            self._add_log(f"⚠️ Đã tự động xử lý kết quả tuple từ train_all_models")
+                        self._add_log(f"📋 Kết quả trả về từ train_all_models: {type(result)}")
+                        
+                        # Kiểm tra kỹ hơn xem kết quả có phải là tuple không và có chiều dài đủ không
+                        if result is not None:
+                            if isinstance(result, tuple) and len(result) > 0:
+                                models = result[0]  # Lấy phần tử đầu tiên (models)
+                                self._add_log(f"⚠️ Đã tự động xử lý kết quả tuple từ train_all_models")
+                            else:
+                                # Nếu không phải tuple, sử dụng kết quả trực tiếp
+                                models = result
+                                
+                            # Đảm bảo models không None trước khi lưu vào kết quả
+                            if models is not None:
+                                model_results[timeframe] = models
+                                self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                            else:
+                                self._add_log(f"❌ Kết quả models là None sau khi xử lý")
                         else:
-                            # Nếu không phải tuple, sử dụng kết quả trực tiếp
-                            models = result
-                            
-                        # Đảm bảo models không None trước khi lưu vào kết quả
-                        if models is not None:
-                            model_results[timeframe] = models
-                            self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                            self._add_log(f"❌ train_all_models trả về None cho {timeframe}")
                         else:
                             self._add_log(f"⚠️ Huấn luyện cho {timeframe} trả về None")
                             model_results[timeframe] = {}
