@@ -304,7 +304,7 @@ def initialize_system():
         try:
             # Initialize data collector with factory function
             from utils.data_collector_factory import create_data_collector
-            from utils.data_collector import MockDataCollector
+            from utils.data_collector_factory import create_data_collector
             
             # Create the appropriate data collector based on config
             st.session_state.data_collector = create_data_collector()
@@ -2031,8 +2031,9 @@ if st.session_state.selected_tab == "Live Dashboard":
         status_col1, status_col2, status_col3, status_col4, status_col5 = status_container.columns(5)
         
         with status_col1:
-            source_color = "green" if not isinstance(st.session_state.data_collector, MockDataCollector) else "orange"
-            source_text = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Mô phỏng"
+            # Check if using real data or mock data for color coding
+            source_color = "green" if hasattr(st.session_state, 'data_source') and "Binance API" in st.session_state.data_source else "orange"
+            source_text = "Binance API" if hasattr(st.session_state, 'data_source') and "Binance API" in st.session_state.data_source else "Mô phỏng"
             st.markdown(f"**Nguồn dữ liệu:** :{source_color}[{source_text}]")
             
         with status_col2:
