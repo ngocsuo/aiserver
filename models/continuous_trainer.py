@@ -648,7 +648,7 @@ class ContinuousTrainer:
             for data_range in existing_ranges:
                 try:
                     # Xử lý trường hợp data_range có thể có 2 hoặc 3 phần tử
-                    if len(data_range) >= 2:
+                    if isinstance(data_range, (list, tuple)) and len(data_range) >= 2:
                         exist_start = data_range[0]
                         exist_end = data_range[1]
                         
@@ -671,7 +671,8 @@ class ContinuousTrainer:
                     
         except Exception as e:
             logger.error(f"Lỗi khi kiểm tra khoảng dữ liệu {start_date} - {end_date}: {e}")
-            
+            # Trước đây trả về giá trị 0 gây lỗi "too many values to unpack (expected 2)"
+            # Trả về False để xử lý lỗi một cách an toàn
         return False
     
     def _save_cached_data(self, data, start_date, end_date, timeframe=None):
