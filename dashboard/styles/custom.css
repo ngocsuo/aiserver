@@ -1,0 +1,193 @@
+/* Main CSS Styles for ETHUSDT Prediction Dashboard */
+
+/* Card Styles */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.card-header {
+    font-size: 1.2em;
+    color: #1E3A8A;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 5px;
+}
+
+/* Table Styles */
+div[data-testid="stDataFrame"] table {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+div[data-testid="stDataFrame"] th {
+    background-color: #485ec4 !important;
+    color: white !important;
+    font-weight: normal;
+    padding: 10px;
+    text-align: left;
+}
+
+div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+div[data-testid="stDataFrame"] tr:hover td {
+    background-color: #e5e9f5;
+}
+
+/* Metric Value styles */
+.metric-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2563EB;
+}
+
+.metric-label {
+    font-size: 14px;
+    color: #64748B;
+}
+
+/* Training Status Styles */
+.training-status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.status-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-in-progress {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-waiting {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+
+.status-error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Prediction styles */
+.prediction-up {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.prediction-down {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Progress bar styles */
+div[data-testid="stProgress"] > div {
+    height: 15px !important;
+    border-radius: 10px !important;
+}
+
+div[data-testid="stProgress"] > div > div {
+    background-color: #2563EB !important;
+}
+
+/* Tabs container */
+div[data-testid="stTabs"] {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+div[data-testid="stTabs"] button[data-baseweb="tab"] {
+    padding: 8px 16px;
+    color: #4b5563;
+    font-weight: normal;
+}
+
+div[data-testid="stTabs"] button[aria-selected="true"] {
+    color: #2563EB;
+    font-weight: bold;
+    border-bottom-color: #2563EB !important;
+}
+
+/* Container backgrounds */
+div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+/* Chart styles */
+div[data-testid="stChart"] {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Button styles */
+div[data-testid="stButton"] button {
+    background-color: #2563EB;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+div[data-testid="stButton"] button:hover {
+    background-color: #1D4ED8;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Training statistics specific styles */
+.training-statistics-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.model-performance-chart {
+    height: 400px;
+    margin-top: 15px;
+}
+
+.training-log-container {
+    height: 300px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: monospace;
+    margin-top: 15px;
+}
+
+.training-log-entry {
+    margin: 0;
+    padding: 3px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.log-info {
+    color: #2563EB;
+}
+
+.log-warning {
+    color: #f59e0b;
+}
+
+.log-error {
+    color: #dc2626;
+}

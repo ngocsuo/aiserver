@@ -1,583 +1,196 @@
 """
-Tệp này chứa các phần CSS tùy chỉnh và hàm tạo các thành phần giao diện đẹp mắt
+Module cung cấp các hàm định dạng CSS cho giao diện
 """
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-from datetime import datetime
 
 def load_custom_css():
     """
-    Tải CSS tùy chỉnh cho giao diện và JavaScript để tự động kết nối lại
-    """
-    custom_css = """
-    <style>
-    /* Cải thiện màu sắc chủ đạo */
-    .main {
-        background-color: #f7f9fc;
-    }
-    
-    /* Tùy chỉnh thanh tiêu đề */
-    .css-1dp5vir {
-        background-image: linear-gradient(90deg, #4f8bf9, #485ec4);
-    }
-    
-    /* Làm cho các thẻ và bảng hiển thị đẹp hơn */
-    .stTabs {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        padding: 10px;
-    }
-    
-    /* Tùy chỉnh kiểu dáng các thẻ */
-    .stTab {
-        background-color: #f0f2f6;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-    }
-    
-    .stTab:hover {
-        background-color: #e1e5ed;
-    }
-    
-    /* Làm cho các thẻ active nổi bật */
-    .stTab [data-baseweb="tab"][aria-selected="true"] {
-        background-color: #485ec4;
-        color: white;
-    }
-    
-    /* Thông báo kết nối lại WebSocket */
-    .reconnecting-banner {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #ffeb3b;
-        color: #333;
-        text-align: center;
-        padding: 5px;
-        z-index: 9999;
-        font-weight: bold;
-        display: none;
-    }
-    </style>
-    
-    <div id="reconnecting-banner" class="reconnecting-banner">
-        Kết nối đã bị mất. Đang kết nối lại...
-    </div>
-    
-    <script>
-    // Theo dõi WebSocket và tự động kết nối lại khi bị mất kết nối
-    document.addEventListener('DOMContentLoaded', function() {
-        const maxReconnectAttempts = 5;
-        let reconnectAttempts = 0;
-        let reconnectTimeout = null;
-        const banner = document.getElementById('reconnecting-banner');
-        
-        // Theo dõi tất cả WebSocket
-        const origWebSocket = window.WebSocket;
-        window.WebSocket = function(url, protocols) {
-            const ws = new origWebSocket(url, protocols);
-            
-            ws.addEventListener('close', function(event) {
-                console.log('WebSocket closed, attempting to reconnect...');
-                banner.style.display = 'block';
-                
-                if (reconnectAttempts < maxReconnectAttempts) {
-                    reconnectAttempts++;
-                    
-                    // Tăng thời gian chờ giữa các lần thử
-                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 10000);
-                    
-                    // Dọn dẹp timeout trước đó nếu có
-                    if (reconnectTimeout) {
-                        clearTimeout(reconnectTimeout);
-                    }
-                    
-                    // Đặt timeout mới
-                    reconnectTimeout = setTimeout(function() {
-                        window.location.reload();
-                    }, delay);
-                }
-            });
-            
-            ws.addEventListener('open', function() {
-                console.log('WebSocket connection established');
-                reconnectAttempts = 0;
-                banner.style.display = 'none';
-                
-                if (reconnectTimeout) {
-                    clearTimeout(reconnectTimeout);
-                    reconnectTimeout = null;
-                }
-            });
-            
-            return ws;
-        };
-    });
-    </script>
-    
-    /* Style cho các container */
-    div[data-testid="stVerticalBlock"] > div {
-        background-color: white;
-        border-radius: 8px;
-        padding: 5px;
-        margin-bottom: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    /* Làm cho metrics đẹp hơn */
-    [data-testid="stMetric"] {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 15px 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
-    }
-    
-    [data-testid="stMetric"]:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    /* Styling cho bảng */
-    .dataframe {
-        border-collapse: collapse;
-        width: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .dataframe th {
-        background-color: #485ec4;
-        color: white;
-        font-weight: normal;
-        padding: 12px;
-        text-align: left;
-    }
-    
-    .dataframe td {
-        padding: 10px;
-        border-bottom: 1px solid #eaeaea;
-    }
-    
-    .dataframe tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    
-    .dataframe tr:hover {
-        background-color: #f0f2f6;
-    }
-    
-    /* Đẹp hơn cho các expander */
-    .streamlit-expanderHeader {
-        background-color: #f0f2f6;
-        border-radius: 5px;
-    }
-    
-    /* Tùy chỉnh thanh progress */
-    .stProgress > div > div {
-        background-image: linear-gradient(to right, #4f8bf9, #485ec4);
-    }
-    
-    /* Tùy chỉnh các card */
-    div.card {
-        background-color: white;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    div.card-buy {
-        border-left: 4px solid #2ecc71;
-    }
-    
-    div.card-sell {
-        border-left: 4px solid #e74c3c;
-    }
-    
-    div.card-neutral {
-        border-left: 4px solid #95a5a6;
-    }
-    
-    /* Tùy chỉnh màu sắc cho các chỉ báo dự đoán */
-    .indicator-long {
-        color: #2ecc71;
-        font-weight: bold;
-    }
-    
-    .indicator-short {
-        color: #e74c3c;
-        font-weight: bold;
-    }
-    
-    .indicator-neutral {
-        color: #95a5a6;
-        font-weight: bold;
-    }
-    
-    /* Animation cho loading */
-    @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-    }
-    
-    .loading-pulse {
-        animation: pulse 1.5s infinite ease-in-out;
-    }
-    
-    /* Custom gauge chart */
-    .gauge-value {
-        font-size: 24px;
-        font-weight: bold;
-    }
-    
-    /* Nút đẹp */
-    div.stButton > button {
-        background-color: #485ec4;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 15px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-    
-    div.stButton > button:hover {
-        background-color: #4f8bf9;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
-    }
-    
-    /* Thông báo đẹp */
-    div.stAlert {
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    </style>
-    """
-    st.markdown(custom_css, unsafe_allow_html=True)
-
-def create_metric_card(title, value, subtitle=None, icon=None, color="blue", is_percent=False):
-    """
-    Tạo một card hiển thị số liệu đẹp mắt
-    
-    Args:
-        title (str): Tiêu đề card
-        value: Giá trị chính hiển thị
-        subtitle (str): Tiêu đề phụ (có thể là None)
-        icon (str): Biểu tượng (ví dụ: "📈")
-        color (str): Màu sắc của card
-        is_percent (bool): Có hiển thị dạng % không
+    Tải CSS tùy chỉnh từ file
     """
     try:
-        # Xử lý giá trị an toàn
-        if title is None:
-            title = "Không xác định"
-        else:
-            title = str(title)
-        
-        # Xử lý giá trị
-        if value is None:
-            value_str = "N/A"
-        elif is_percent:
-            try:
-                value_str = f"{float(value):.2f}%"
-            except (ValueError, TypeError):
-                value_str = f"{value}%"
-        else:
-            value_str = str(value)
-        
-        # Màu sắc cho từng loại metrics
-        color_map = {
-            "blue": "#485ec4",
-            "green": "#2ecc71",
-            "red": "#e74c3c",
-            "yellow": "#f1c40f",
-            "gray": "#95a5a6"
-        }
-        border_color = color_map.get(color, "#485ec4")
-        
-        # Sử dụng các thành phần tiêu chuẩn của Streamlit
-        col1, col2 = st.columns([5, 1])
-        
-        with col1:
-            st.markdown(f"**{title}**")
-            st.markdown(f"<h3 style='margin-top: -10px; color: {border_color};'>{value_str}</h3>", unsafe_allow_html=True)
-            if subtitle:
-                st.caption(subtitle)
-        
-        with col2:
-            if icon:
-                st.markdown(f"<div style='text-align: center; font-size: 28px; margin-top: 10px;'>{icon}</div>", unsafe_allow_html=True)
-    
+        with open("dashboard/styles/custom.css", "r") as f:
+            custom_css = f.read()
+            st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
     except Exception as e:
-        # Hiển thị phiên bản dự phòng nếu có lỗi
-        st.warning(f"{title}: {str(value)}")
-        print(f"Error in create_metric_card: {str(e)}")
+        st.warning(f"Không thể tải CSS: {e}")
+        # Sử dụng CSS mặc định khi không tìm thấy file
+        default_css = """
+        div[data-testid="stDataFrame"] table {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        div[data-testid="stDataFrame"] th {
+            background-color: #485ec4 !important;
+            color: white !important;
+            font-weight: normal;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        div[data-testid="stDataFrame"] tr:hover td {
+            background-color: #e5e9f5;
+        }
+        """
+        st.markdown(f"<style>{default_css}</style>", unsafe_allow_html=True)
 
-def create_price_card(price, change, change_percent, last_update=None):
+def create_metric_card(label, value, delta=None, help_text=None, prefix="", suffix=""):
     """
-    Tạo card hiển thị giá và % thay đổi đẹp mắt
+    Tạo card hiển thị số liệu với định dạng đẹp
+    
+    Args:
+        label (str): Nhãn của card
+        value (str/float): Giá trị hiển thị
+        delta (float, optional): Giá trị thay đổi
+        help_text (str, optional): Văn bản hỗ trợ
+        prefix (str): Tiền tố cho giá trị
+        suffix (str): Hậu tố cho giá trị
+    """
+    st.metric(
+        label=label,
+        value=f"{prefix}{value}{suffix}",
+        delta=delta,
+        help=help_text
+    )
+
+def create_price_card(price, change_24h, change_7d, high_24h, low_24h):
+    """
+    Tạo card hiển thị giá với các thông tin chi tiết
     
     Args:
         price (float): Giá hiện tại
-        change (float): Thay đổi so với giá trước
-        change_percent (float): Phần trăm thay đổi
-        last_update (str): Thời gian cập nhật cuối
+        change_24h (float): Thay đổi 24 giờ
+        change_7d (float): Thay đổi 7 ngày
+        high_24h (float): Giá cao nhất 24 giờ
+        low_24h (float): Giá thấp nhất 24 giờ
     """
-    try:
-        # Sử dụng các thành phần tiêu chuẩn của Streamlit
-        col1, col2 = st.columns([4, 1])
-        
-        with col1:
-            st.markdown("### ETHUSDT")
-            st.markdown(f"<span style='font-size: 32px; font-weight: bold;'>${price:.2f}</span>", unsafe_allow_html=True)
-            
-            # Hiển thị sự thay đổi với màu sắc phù hợp
-            color = '#2ecc71' if change >= 0 else '#e74c3c'
-            st.markdown(
-                f"<span style='color: {color}; font-size: 16px;'>${change:.2f} ({change_percent:.2f}%)</span>", 
-                unsafe_allow_html=True
-            )
-            
-            if last_update:
-                st.caption(f"Cập nhật: {last_update}")
-                
-        with col2:
-            # Biểu tượng xu hướng
-            icon = "📈" if change >= 0 else "📉"
-            st.markdown(f"<div style='font-size: 48px; text-align: center;'>{icon}</div>", unsafe_allow_html=True)
-    
-    except Exception as e:
-        # Phiên bản dự phòng nếu có lỗi
-        st.info(f"ETHUSDT: ${price:.2f} ({change_percent:.2f}%)")
-        print(f"Error in create_price_card: {str(e)}")
+    st.markdown(f"""
+    <div style="background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0; color: #333;">${price:.2f}</h3>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+            <div>
+                <p style="margin: 0; color: {'green' if change_24h >= 0 else 'red'};">
+                    {change_24h:.2f}% (24h)
+                </p>
+                <p style="margin: 0; color: {'green' if change_7d >= 0 else 'red'};">
+                    {change_7d:.2f}% (7d)
+                </p>
+            </div>
+            <div>
+                <p style="margin: 0; color: #555;">
+                    High: ${high_24h:.2f}
+                </p>
+                <p style="margin: 0; color: #555;">
+                    Low: ${low_24h:.2f}
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-def create_prediction_card(prediction):
+def create_prediction_card(prediction, confidence, time_horizon, reasoning=None):
     """
-    Tạo card hiển thị kết quả dự đoán đẹp mắt
+    Tạo card hiển thị dự đoán với định dạng đẹp
     
     Args:
-        prediction (dict): Thông tin dự đoán
+        prediction (str): Dự đoán ("Tăng"/"Giảm")
+        confidence (float): Độ tin cậy (0-100%)
+        time_horizon (str): Khung thời gian dự đoán
+        reasoning (str, optional): Lý do dự đoán
     """
-    if not prediction:
-        st.info("Chưa có dự đoán")
-        return
+    # Xác định màu sắc dựa trên dự đoán
+    color = "green" if prediction == "Tăng" else "red"
+    # Định dạng độ tin cậy
+    confidence_text = f"{confidence:.1f}%" if isinstance(confidence, (int, float)) else confidence
     
-    try:
-        # Xác định màu sắc và biểu tượng dựa trên xu hướng
-        trend_colors = {"LONG": "#2ecc71", "SHORT": "#e74c3c", "NEUTRAL": "#95a5a6"}
-        trend_icons = {"LONG": "📈", "SHORT": "📉", "NEUTRAL": "📊"}
-        
-        # Đảm bảo prediction là một dict hợp lệ và trend có giá trị hợp lệ
-        if not isinstance(prediction, dict):
-            st.error("Dữ liệu dự đoán không hợp lệ")
-            return
-            
-        trend = prediction.get("trend", "NEUTRAL")
-        if not isinstance(trend, str):
-            trend = "NEUTRAL"
-            
-        color = trend_colors.get(trend, "#95a5a6")
-        icon = trend_icons.get(trend, "📊")
-        
-        # Tính toán hiển thị thời gian
-        timestamp = prediction.get("timestamp", "")
-        time_diff = ""
-        if timestamp and isinstance(timestamp, str):
-            try:
-                pred_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-                now = datetime.now()
-                diff = (now - pred_time).total_seconds() / 60
-                if diff < 60:
-                    time_diff = f"{int(diff)} phút trước"
-                else:
-                    time_diff = f"{int(diff/60)} giờ {int(diff%60)} phút trước"
-            except Exception as e:
-                time_diff = "Không rõ"
-                print(f"Error parsing timestamp: {e}")
-        
-        # Xử lý các giá trị số an toàn
-        try:
-            price = float(prediction.get('price', 0))
-        except (ValueError, TypeError):
-            price = 0.0
-            
-        try:
-            target_price = float(prediction.get('target_price', 0))
-        except (ValueError, TypeError):
-            target_price = 0.0
-            
-        try:
-            confidence = float(prediction.get('confidence', 0))
-        except (ValueError, TypeError):
-            confidence = 0.0
-            
-        try:
-            valid_minutes_left = float(prediction.get('valid_minutes_left', 0))
-        except (ValueError, TypeError):
-            valid_minutes_left = 0.0
-            
-        try:
-            valid_for_minutes = float(prediction.get('valid_for_minutes', 30))
-        except (ValueError, TypeError):
-            valid_for_minutes = 30.0
-            
-        # Tính toán phần trăm thời gian còn lại một cách an toàn
-        if valid_for_minutes > 0:
-            percent_time_left = min(valid_minutes_left/valid_for_minutes*100, 100)
-        else:
-            percent_time_left = 0
-        
-        # Sử dụng các thành phần tiêu chuẩn của Streamlit
-        st.markdown(f"<h3 style='color: {color}; margin-bottom: 0;'>{icon} {trend} <small style='color: #7f8c8d; font-size: 14px;'>{time_diff}</small></h3>", unsafe_allow_html=True)
-        
-        # Phần thông tin giá
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("**Giá hiện tại**")
-            st.markdown(f"<p style='font-size: 18px; font-weight: bold;'>${price:.2f}</p>", unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown("**Giá mục tiêu**")
-            st.markdown(f"<p style='font-size: 18px; font-weight: bold;'>${target_price:.2f}</p>", unsafe_allow_html=True)
-            
-        with col3:
-            st.markdown("**Độ tin cậy**")
-            st.markdown(f"<p style='font-size: 18px; font-weight: bold;'>{confidence*100:.1f}%</p>", unsafe_allow_html=True)
-        
-        # Phần tiến trình thời gian
-        st.markdown("**Thời gian dự đoán**")
-        progress_bar = st.progress(float(percent_time_left / 100))
-        st.markdown(f"<div style='display: flex; justify-content: space-between;'><span>0 phút</span><span>{int(valid_for_minutes)} phút</span></div>", unsafe_allow_html=True)
-        
-    except Exception as e:
-        st.error(f"Lỗi khi tạo card dự đoán: {str(e)}")
-        print(f"Error creating prediction card: {str(e)}")
+    # Tạo thẻ dự đoán
+    st.markdown(f"""
+    <div style="background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; color: {color};">{prediction}</h3>
+                <p style="margin: 0; color: #666;">Khung thời gian: {time_horizon}</p>
+            </div>
+            <div style="text-align: right;">
+                <h4 style="margin: 0; color: #333;">Độ tin cậy</h4>
+                <p style="margin: 0; font-size: 18px; color: {color};">{confidence_text}</p>
+            </div>
+        </div>
+        {f'<div style="margin-top: 10px;"><p style="margin: 0; color: #555;">{reasoning}</p></div>' if reasoning else ''}
+    </div>
+    """, unsafe_allow_html=True)
 
-def create_gauge_chart(value, title="Độ tin cậy", min_value=0, max_value=1, color_thresholds=None):
-    """
-    Tạo biểu đồ đồng hồ đo gauge để hiển thị độ tin cậy
+def create_gauge_chart(confidence, trend="Tăng"):
+    """Tạo biểu đồ đồng hồ hiển thị độ tin cậy dự đoán"""
+    # Xác định màu sắc dựa trên xu hướng
+    color = "green" if trend == "Tăng" else "red"
     
-    Args:
-        value (float): Giá trị cần hiển thị (0-1)
-        title (str): Tiêu đề của biểu đồ
-        min_value (float): Giá trị tối thiểu của thang đo
-        max_value (float): Giá trị tối đa của thang đo
-        color_thresholds (list): Danh sách các ngưỡng màu sắc [(giá_trị, màu),...]
-    """
-    if color_thresholds is None:
-        color_thresholds = [
-            (0.3, "red"),
-            (0.7, "orange"),
-            (1.0, "green")
-        ]
-    
-    # Xác định màu dựa trên ngưỡng
-    color = color_thresholds[-1][1]  # Màu mặc định (màu cuối cùng)
-    for threshold, threshold_color in color_thresholds:
-        if value <= threshold:
-            color = threshold_color
-            break
-    
-    # Tạo biểu đồ gauge
+    # Tạo biểu đồ đồng hồ
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
-        value=value,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': title, 'font': {'size': 16}},
+        value=confidence,
+        title={"text": f"Độ tin cậy ({trend})", "font": {"color": color}},
         gauge={
-            'axis': {'range': [min_value, max_value], 'tickwidth': 1},
-            'bar': {'color': color},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [threshold_range[0], threshold_range[1]], 'color': threshold_color}
-                for threshold_range, threshold_color in zip(
-                    [(min_value, t) for t, _ in color_thresholds],
-                    [c for _, c in color_thresholds]
-                )
+            "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "darkblue"},
+            "bar": {"color": color},
+            "bgcolor": "white",
+            "borderwidth": 2,
+            "bordercolor": "gray",
+            "steps": [
+                {"range": [0, 30], "color": "#ffcccc"},
+                {"range": [30, 70], "color": "#ffff99"},
+                {"range": [70, 100], "color": "#b3ffb3"}
             ],
-            'threshold': {
-                'line': {'color': "black", 'width': 4},
-                'thickness': 0.75,
-                'value': value
-            }
-        },
-        number={'suffix': "", 'font': {'size': 20}}
+        }
     ))
     
-    # Cập nhật layout cho phù hợp
+    # Cấu hình bố cục biểu đồ
     fig.update_layout(
-        height=200,
-        margin=dict(l=10, r=10, t=50, b=10),
-        paper_bgcolor="rgba(0,0,0,0)"
+        height=250,
+        margin=dict(l=20, r=20, t=50, b=20),
+        paper_bgcolor="white",
+        font={"color": "darkblue", "family": "Arial"}
     )
     
     return fig
 
-def create_header():
-    """
-    Tạo header đẹp mắt cho ứng dụng
-    """
-    # Tạo header theo cách tiêu chuẩn của Streamlit, không sử dụng HTML trực tiếp
-    col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        st.title("AI CRYPTO PREDICTION")
-        st.caption("Dự đoán tự động ETH/USDT với AI nâng cao")
-    
-    with col2:
-        st.write("")
-        st.write("")
-        st.markdown("""
-            <div style="background: rgba(73, 96, 201, 0.2); 
-                border-radius: 5px; 
-                padding: 5px 10px; 
-                text-align: center; 
-                color: rgb(73, 96, 201); 
-                font-weight: bold;
-                display: inline-block;">
-                Phiên bản 2.0
-            </div>
-        """, unsafe_allow_html=True)
+def create_header(title, subtitle=None):
+    """Tạo tiêu đề trang với định dạng tùy chỉnh"""
+    st.markdown(f"""
+    <h1 style="color: #1E3A8A; margin-bottom: 0;">{title}</h1>
+    {f'<p style="color: #64748B; font-size: 1.2em; margin-top: 0;">{subtitle}</p>' if subtitle else ''}
+    <hr style="margin: 0.5em 0 1em 0; border: none; height: 2px; background-color: #E2E8F0;">
+    """, unsafe_allow_html=True)
 
-def create_section_header(title, subtitle=None, icon=None):
+def create_section_header(title, description=None):
+    """Tạo tiêu đề phần với định dạng tùy chỉnh"""
+    st.markdown(f"""
+    <h2 style="color: #2563EB; margin-bottom: 0; font-size: 1.5em;">{title}</h2>
+    {f'<p style="color: #64748B; margin-top: 0.2em;">{description}</p>' if description else ''}
+    """, unsafe_allow_html=True)
+
+def create_stats_row(stats_data):
     """
-    Tạo tiêu đề cho một phần trong giao diện
+    Tạo hàng hiển thị thống kê
     
     Args:
-        title (str): Tiêu đề chính
-        subtitle (str): Tiêu đề phụ (có thể là None)
-        icon (str): Biểu tượng (ví dụ: "📈")
+        stats_data (list): Danh sách các dict với các khóa:
+                          'label', 'value', 'delta' (optional), 'color' (optional)
     """
-    # Sử dụng cách tiếp cận tiêu chuẩn của Streamlit
-    if icon:
-        title = f"{icon} {title}"
-    
-    st.subheader(title)
-    
-    if subtitle:
-        st.markdown(f"<p style='color: #7f8c8d; margin-top: -5px;'>{subtitle}</p>", unsafe_allow_html=True)
-
-def create_stats_row(stats):
-    """
-    Tạo một hàng hiển thị các thống kê
-    
-    Args:
-        stats (list): Danh sách các thống kê dạng [(label, value, icon, color), ...]
-    """
-    # Tính toán số cột
-    cols = st.columns(len(stats))
-    
-    # Hiển thị từng thống kê trong một cột
-    for i, (label, value, icon, color) in enumerate(stats):
+    cols = st.columns(len(stats_data))
+    for i, stat in enumerate(stats_data):
+        color = stat.get('color', 'blue')
+        delta = stat.get('delta', None)
+        delta_str = f" ({delta:+.2f}%)" if delta else ""
+        
         with cols[i]:
-            create_metric_card(label, value, icon=icon, color=color)
+            st.markdown(f"""
+            <div style="background-color: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <p style="margin: 0; color: #666; font-size: 0.9em;">{stat['label']}</p>
+                <h3 style="margin: 0; color: {color};">{stat['value']}{delta_str}</h3>
+            </div>
+            """, unsafe_allow_html=True)

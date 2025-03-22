@@ -177,29 +177,19 @@ def render_training_status_tab():
 
     st.subheader("Nhật ký huấn luyện")
     
-    # Thêm CSS với phương pháp đơn giản hơn
-    css = """
-        <style>
-            div[data-testid="stDataFrame"] table {
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            
-            div[data-testid="stDataFrame"] th {
-                background-color: #485ec4 !important;
-                color: white !important;
-                font-weight: normal;
-                padding: 10px;
-                text-align: left;
-            }
-            
-            div[data-testid="stDataFrame"] tr:hover td {
-                background-color: #e5e9f5;
-            }
-        </style>
-    """
-    st.write(css, unsafe_allow_html=True)
+    try:
+        # Tải CSS qua module custom_style để đảm bảo spójność
+        from dashboard.components.custom_style import load_custom_css
+        load_custom_css()
+    except Exception as e:
+        st.warning(f"Không thể tải CSS: {e}")
+        # Fallback: thử tải trực tiếp
+        try:
+            with open("dashboard/styles/custom.css", "r") as f:
+                custom_css = f.read()
+                st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
+        except Exception as file_e:
+            st.error(f"Lỗi khi tải CSS: {file_e}")
     
     logs = get_latest_logs(50)
     if logs:

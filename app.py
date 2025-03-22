@@ -37,6 +37,14 @@ import random
 import streamlit.components.v1 as components
 import traceback
 
+# Thêm module CSS tùy chỉnh
+try:
+    from dashboard.components.custom_style import load_custom_css
+except Exception as e:
+    with open("app.log", "a") as f:
+        f.write(f"Error importing custom_style: {str(e)}\n")
+        f.flush()
+
 # Không sử dụng MockDataCollector, chỉ sử dụng dữ liệu thực từ Binance API
 import base64
 import logging
