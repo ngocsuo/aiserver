@@ -4010,8 +4010,9 @@ def render_main_interface():
     # Áp dụng CSS tùy chỉnh
     load_custom_css()
     
-    # Tạo header đẹp mắt
-    create_header()
+    # Tạo header đẹp mắt bằng markdown trực tiếp
+    st.markdown("# AI TRADING ORACLE")
+    st.markdown("### Hệ Thống Dự Đoán ETHUSDT Tự Động")
     
     # Tạo sidebar menu
     with st.sidebar:
