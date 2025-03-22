@@ -607,3 +607,35 @@
 2025-03-22 20:22:02 - Binance server time: 2025-03-22 20:22:02
 2025-03-22 20:23:46 - Tiến trình huấn luyện: 0% (0/30 chunks)
 2025-03-22 20:23:49 - Binance server time: 2025-03-22 20:23:49
+2025-03-22 20:23:56 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:23:58 - Binance server time: 2025-03-22 20:23:58
+2025-03-22 20:23:59 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:24:02 - Binance server time: 2025-03-22 20:24:02
+2025-03-22 20:24:11 - Binance server time: 2025-03-22 20:24:11
+2025-03-22 20:24:15 - Binance server time: 2025-03-22 20:24:15
+2025-03-22 20:24:24 - Binance server time: 2025-03-22 20:24:23
+2025-03-22 20:24:27 - Binance server time: 2025-03-22 20:24:27
+2025-03-22 20:24:36 - Binance server time: 2025-03-22 20:24:36
+2025-03-22 20:24:40 - Binance server time: 2025-03-22 20:24:40
+2025-03-22 20:24:49 - Binance server time: 2025-03-22 20:24:49
+2025-03-22 20:34:52 - Tiến trình huấn luyện: 0% (0/30 chunks)
+2025-03-22 20:34:55 - Binance server time: 2025-03-22 20:34:55
+2025-03-22 20:35:05 - Bắt đầu huấn luyện mô hình AI trong thread riêng...
+2025-03-22 20:35:05 - LƯU Ý: Đang sử dụng phiên bản an toàn thread, tránh truy cập session_state
+2025-03-22 20:35:05 - Tạo data collector...
+2025-03-22 20:35:05 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:35:07 - Tạo data processor và model trainer...
+2025-03-22 20:35:07 - Thu thập dữ liệu lịch sử...
+2025-03-22 20:35:08 - Binance server time: 2025-03-22 20:35:08
+2025-03-22 20:35:20 - Binance server time: 2025-03-22 20:35:20
+2025-03-22 20:35:33 - Binance server time: 2025-03-22 20:35:33
+2025-03-22 20:35:46 - Binance server time: 2025-03-22 20:35:46
+2025-03-22 20:35:58 - Binance server time: 2025-03-22 20:35:58
+2025-03-22 20:36:11 - Binance server time: 2025-03-22 20:36:11
+2025-03-22 20:36:17 - Đã thu thập 128838 nến dữ liệu
+2025-03-22 20:36:17 - Xử lý dữ liệu...
+2025-03-22 20:36:23 - Binance server time: 2025-03-22 20:36:23
+2025-03-22 20:36:36 - Binance server time: 2025-03-22 20:36:36
+2025-03-22 20:36:49 - Binance server time: 2025-03-22 20:36:49
+2025-03-22 20:36:49 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 20:36:52 - Binance server time: 2025-03-22 20:36:52
