@@ -177,7 +177,6 @@ st.set_page_config(
     page_title="ETHUSDT AI Prediction System",
     page_icon="📈",
     layout="wide",
-    layout="wide",
     initial_sidebar_state="expanded"
 )
 
@@ -674,134 +673,189 @@ def train_models():
             show_toast(message, "error", 5000)
     
     # Import thread-safe logging functions
-    from thread_safe_logging import thread_safe_log, read_logs_from_file
+    try:
+        from utils.thread_safe_logging import thread_safe_log, read_logs_from_file
+    except ImportError:
+        # Nếu không có, tạo module thread-safe logging
+        if not os.path.exists("utils"):
+            os.makedirs("utils")
+            
+        with open("utils/thread_safe_logging.py", "w") as f:
+            f.write("""
+\"\"\"
+Thread-safe logging functions for AI Trading System
+\"\"\"
+import os
+import sys
+import time
+import threading
+from datetime import datetime
+
+_log_lock = threading.Lock()
+
+def log_to_file(message, log_file="training_logs.txt"):
+    \"\"\"Thread-safe function to log messages to a file\"\"\"
+    with _log_lock:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_file, "a") as f:
+            f.write(f"{timestamp} - {message}\\n")
+            f.flush()
+
+def log_to_console(message):
+    \"\"\"Thread-safe function to log messages to console\"\"\"
+    with _log_lock:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"{timestamp} - {message}")
+        sys.stdout.flush()
+
+def thread_safe_log(message, log_file="training_logs.txt"):
+    \"\"\"Combined logging function that logs to both file and console\"\"\"
+    log_to_file(message, log_file)
+    log_to_console(message)
+
+def read_logs_from_file(log_file="training_logs.txt", max_lines=100):
+    \"\"\"Read log entries from file with a maximum number of lines\"\"\"
+    if not os.path.exists(log_file):
+        return []
+        
+    with open(log_file, "r") as f:
+        lines = f.readlines()
+        
+    # Return last N lines (most recent)
+    return lines[-max_lines:]
+""")
+        
+        # Tạo file log trống
+        with open("training_logs.txt", "w") as f:
+            f.write("")
+            
+        # Import lại sau khi tạo
+        from utils.thread_safe_logging import thread_safe_log, read_logs_from_file
     
-    # Tạo hàm huấn luyện chạy ngầm trong thread
+    # Tạo hàm huấn luyện chạy ngầm trong thread an toàn
     def train_models_background():
+        """Hàm huấn luyện chạy trong thread riêng biệt"""
+        from utils.thread_safe_logging import thread_safe_log
+        
         try:
-            # Ghi log bắt đầu huấn luyện (sử dụng thread_safe_log thay vì update_log)
-            thread_safe_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
+            thread_safe_log("Bắt đầu huấn luyện mô hình AI trong thread riêng...")
+            thread_safe_log("LƯU Ý: Đang sử dụng phiên bản an toàn thread, tránh truy cập session_state")
             
-            # Step 1: Process data for training
-            thread_safe_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
+            # QUAN TRỌNG: KHÔNG truy cập st.session_state trong thread này!
+            # Thay vì lấy dữ liệu từ session_state, chúng ta sẽ tải dữ liệu mới
             
-            # Kiểm tra xem có sử dụng tham số tùy chỉnh không
-            custom_params = st.session_state.get('custom_training_params', None)
-            if custom_params:
-                update_log(f"🔧 Đang áp dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs")
-                # TODO: Áp dụng các tham số tùy chỉnh vào quá trình huấn luyện
-                # Nếu người dùng chọn khung thời gian khác
-                if custom_params['timeframe'] != config.TIMEFRAMES['primary']:
-                    update_log(f"Chuyển sang khung thời gian {custom_params['timeframe']} theo cài đặt tùy chỉnh")
-                    # Cần lấy dữ liệu cho khung thời gian được chọn
-                    try:
-                        if hasattr(st.session_state, 'data_collector'):
-                            update_log(f"Đang tải dữ liệu khung thời gian {custom_params['timeframe']}...")
-                            custom_data = st.session_state.data_collector.collect_historical_data(
-                                symbol=config.SYMBOL,
-                                timeframe=custom_params['timeframe'],
-                                limit=config.LOOKBACK_PERIODS
-                            )
-                            if custom_data is not None and not custom_data.empty:
-                                data = custom_data
-                                update_log(f"Đã tải {len(data)} nến dữ liệu {custom_params['timeframe']}")
-                            else:
-                                update_log(f"⚠️ Không thể tải dữ liệu cho khung thời gian {custom_params['timeframe']}, dùng dữ liệu mặc định")
-                    except Exception as e:
-                        update_log(f"❌ Lỗi khi tải dữ liệu tùy chỉnh: {str(e)}")
-                
-                # Cập nhật số epochs theo cài đặt
-                config.EPOCHS = custom_params['epochs']
-                update_log(f"Cập nhật số epochs huấn luyện: {config.EPOCHS}")
-                
-                # Cập nhật ngưỡng biến động giá
-                config.PRICE_MOVEMENT_THRESHOLD = custom_params['threshold'] / 100  # Chuyển % thành tỷ lệ thập phân
-                update_log(f"Cập nhật ngưỡng biến động giá: {custom_params['threshold']}%")
-                
-            data = st.session_state.latest_data
-            update_log(f"Nguồn dữ liệu: Binance API (Dữ liệu thực)")
-            update_log(f"Số điểm dữ liệu: {len(data)} nến")
-            update_log(f"Khung thời gian: {data.name if hasattr(data, 'name') else config.TIMEFRAMES['primary']}")
-            update_log(f"Phạm vi ngày: {data.index.min()} đến {data.index.max()}")
+            from utils.data_collector import create_data_collector
+            from utils.data_processor import DataProcessor
+            from models.model_trainer import ModelTrainer
+            import config
             
-            # Step 2: Preprocess data
-            update_log("Bước 2/5: Tiền xử lý dữ liệu và tính toán chỉ báo kỹ thuật...")
-            processed_data = st.session_state.data_processor.process_data(data)
+            thread_safe_log("Tạo data collector...")
+            data_collector = create_data_collector()
+            
+            thread_safe_log("Tạo data processor và model trainer...")
+            data_processor = DataProcessor()
+            model_trainer = ModelTrainer()
+            
+            thread_safe_log("Thu thập dữ liệu lịch sử...")
+            if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+                data = data_collector.collect_historical_data(
+                    timeframe=config.TIMEFRAMES["primary"],
+                    start_date=config.HISTORICAL_START_DATE
+                )
+            else:
+                data = data_collector.collect_historical_data(
+                    timeframe=config.TIMEFRAMES["primary"],
+                    limit=config.LOOKBACK_PERIODS
+                )
+            
+            if data is None or len(data) == 0:
+                thread_safe_log("KHÔNG THỂ thu thập dữ liệu cho huấn luyện")
+                return
+                
+            thread_safe_log(f"Đã thu thập {len(data)} nến dữ liệu")
+            
+            # Tiếp tục quy trình huấn luyện mô hình với dữ liệu mới thu thập
+            thread_safe_log("Xử lý dữ liệu...")
+            processed_data = data_processor.process_data(data)
             
             # Display feature information
             feature_count = len(processed_data.columns) - 1  # Exclude target column
-            update_log(f"Đã tạo {feature_count} chỉ báo kỹ thuật và tính năng")
-            update_log(f"Mẫu huấn luyện: {len(processed_data)} (sau khi loại bỏ giá trị NaN)")
+            thread_safe_log(f"Đã tạo {feature_count} chỉ báo kỹ thuật và tính năng")
+            thread_safe_log(f"Mẫu huấn luyện: {len(processed_data)}")
             
-            # Display class distribution
-            if 'target_class' in processed_data.columns:
-                class_dist = processed_data['target_class'].value_counts()
-                update_log(f"Phân phối lớp: SHORT={class_dist.get(0, 0)}, NEUTRAL={class_dist.get(1, 0)}, LONG={class_dist.get(2, 0)}")
+            # Prepare data for models
+            thread_safe_log("Chuẩn bị dữ liệu chuỗi cho LSTM và Transformer...")
+            sequence_data = data_processor.prepare_sequence_data(processed_data)
             
-            # Step 3: Prepare sequence and image data
-            update_log("Bước 3/5: Chuẩn bị dữ liệu chuỗi cho mô hình LSTM và Transformer...")
-            sequence_data = st.session_state.data_processor.prepare_sequence_data(processed_data)
+            thread_safe_log("Chuẩn bị dữ liệu hình ảnh cho CNN...")
+            image_data = data_processor.prepare_cnn_data(processed_data)
             
-            update_log("Chuẩn bị dữ liệu hình ảnh cho mô hình CNN...")
-            image_data = st.session_state.data_processor.prepare_cnn_data(processed_data)
+            # Huấn luyện từng mô hình riêng biệt
+            thread_safe_log("Huấn luyện mô hình LSTM...")
+            lstm_model, lstm_history = model_trainer.train_lstm(sequence_data)
             
-            # Step 4: Train all models
-            update_log("Bước 4/5: Huấn luyện mô hình LSTM...")
-            lstm_model, lstm_history = st.session_state.model_trainer.train_lstm(sequence_data)
-            update_log(f"Mô hình LSTM đã huấn luyện với độ chính xác: {lstm_history.get('val_accuracy', [-1])[-1]:.4f}")
+            thread_safe_log("Huấn luyện mô hình Transformer...")
+            transformer_model, transformer_history = model_trainer.train_transformer(sequence_data)
             
-            update_log("Huấn luyện mô hình Transformer...")
-            transformer_model, transformer_history = st.session_state.model_trainer.train_transformer(sequence_data)
-            update_log(f"Mô hình Transformer đã huấn luyện với độ chính xác: {transformer_history.get('val_accuracy', [-1])[-1]:.4f}")
+            thread_safe_log("Huấn luyện mô hình CNN...")
+            cnn_model, cnn_history = model_trainer.train_cnn(image_data)
             
-            update_log("Huấn luyện mô hình CNN...")
-            cnn_model, cnn_history = st.session_state.model_trainer.train_cnn(image_data)
-            update_log(f"Mô hình CNN đã huấn luyện với độ chính xác: {cnn_history.get('val_accuracy', [-1])[-1]:.4f}")
+            thread_safe_log("Huấn luyện mô hình Similarity lịch sử...")
+            historical_model, _ = model_trainer.train_historical_similarity(sequence_data)
             
-            update_log("Huấn luyện mô hình Similarity lịch sử...")
-            historical_model, _ = st.session_state.model_trainer.train_historical_similarity(sequence_data)
+            thread_safe_log("Huấn luyện mô hình Meta-Learner...")
+            meta_model, _ = model_trainer.train_meta_learner(sequence_data, image_data)
             
-            update_log("Bước 5/5: Huấn luyện mô hình Meta-Learner...")
-            meta_model, _ = st.session_state.model_trainer.train_meta_learner(sequence_data, image_data)
+            thread_safe_log("Huấn luyện thành công tất cả các mô hình!")
             
-            # Finalize
-            update_log("Tất cả các mô hình đã huấn luyện thành công!")
-            
-            # Store training data information in session state for reference
-            st.session_state.training_info = {
-                "data_source": 'Real Binance API',
-                "data_points": len(data),
-                "date_range": f"{data.index.min()} to {data.index.max()}",
-                "feature_count": feature_count,
-                "training_samples": len(processed_data),
-                "class_distribution": {
-                    "SHORT": class_dist.get(0, 0) if 'target_class' in processed_data.columns and class_dist is not None else 0,
-                    "NEUTRAL": class_dist.get(1, 0) if 'target_class' in processed_data.columns and class_dist is not None else 0,
-                    "LONG": class_dist.get(2, 0) if 'target_class' in processed_data.columns and class_dist is not None else 0
-                },
-                "model_performance": {
-                    "lstm": lstm_history.get('val_accuracy', [-1])[-1],
-                    "transformer": transformer_history.get('val_accuracy', [-1])[-1],
-                    "cnn": cnn_history.get('val_accuracy', [-1])[-1],
-                    "historical_similarity": 0.65,
-                    "meta_learner": 0.85
-                },
-                "training_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            
-            # Set models as trained
-            st.session_state.model_trained = True
-            
-            # Show toast notification
-            show_toast("Tất cả các mô hình AI đã được huấn luyện thành công!", "success", duration=5000)
-            
-            return True
+            # Lưu trạng thái huấn luyện vào file
+            try:
+                import json
+                from datetime import datetime
+                
+                models = {
+                    'lstm': lstm_model,
+                    'transformer': transformer_model,
+                    'cnn': cnn_model,
+                    'historical_similarity': historical_model,
+                    'meta_learner': meta_model
+                }
+                
+                # Lưu models vào file
+                import os
+                import pickle
+                
+                if not os.path.exists("saved_models"):
+                    os.makedirs("saved_models")
+                    
+                with open("saved_models/models.pkl", "wb") as f:
+                    pickle.dump(models, f)
+                    
+                # Lưu metadata về quá trình huấn luyện
+                training_status = {
+                    'last_training_time': datetime.now().isoformat(),
+                    'data_points': len(data),
+                    'feature_count': feature_count,
+                    'training_samples': len(processed_data),
+                    'model_version': config.MODEL_VERSION if hasattr(config, 'MODEL_VERSION') else "1.0.0",
+                    'training_complete': True
+                }
+                
+                with open("saved_models/training_status.json", "w") as f:
+                    json.dump(training_status, f)
+                    
+                thread_safe_log("Đã lưu tất cả mô hình vào saved_models/models.pkl")
+                
+                return True
+            except Exception as e:
+                thread_safe_log(f"Lỗi khi lưu mô hình: {str(e)}")
+                return False
+                
         except Exception as e:
             # Log error using thread-safe function
-            thread_safe_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
-            
-            # Show toast notification
-            show_toast(f"Lỗi trong quá trình huấn luyện: {str(e)}", "error", duration=5000)
+            thread_safe_log(f"❌ LỖI trong quá trình huấn luyện: {str(e)}")
+            import traceback
+            thread_safe_log(f"Chi tiết lỗi: {traceback.format_exc()}")
             return False
         
     # Hàm hỗ trợ ghi log
