@@ -66,7 +66,7 @@ DEFAULT_TIMEFRAME = "1m"
 DEFAULT_PREDICTION_HORIZON = "10m"
 
 # Data Collection Configuration
-LOOKBACK_PERIODS = 5000  # Number of candles to collect initially
+LOOKBACK_PERIODS = 1000  # Number of candles to collect initially (Giảm xuống 1000 để tránh lỗi API)
 
 # Cấu hình thời gian dữ liệu
 DATA_RANGE_OPTIONS = {

@@ -553,13 +553,15 @@ class BinanceDataCollector:
         Args:
             symbol (str): Trading pair symbol
             timeframe (str): Candle timeframe
-            limit (int): Number of candles to collect
+            limit (int): Number of candles to collect, maximum 1000 per request
             start_date (str, optional): Start date for historical data in format "YYYY-MM-DD"
             end_date (str, optional): End date for historical data in format "YYYY-MM-DD"
             
         Returns:
             pd.DataFrame: DataFrame with OHLCV data
         """
+        # Đảm bảo limit không vượt quá 1000 theo yêu cầu của Binance API
+        limit = min(limit, 1000)
         try:
             # If start_date is provided, use it instead of limit
             if start_date is not None:
@@ -632,10 +634,12 @@ class BinanceDataCollector:
                 logger.info(f"Fetching {limit} {timeframe} candles for {symbol} from Binance")
                 
                 # Get klines from Binance with limit
+                # Đảm bảo limit không vượt quá 1000
+                adjusted_limit = min(limit, 1000)
                 klines = self.client.get_historical_klines(
                     symbol=symbol,
                     interval=timeframe,
-                    limit=limit
+                    limit=adjusted_limit
                 )
             
             # Convert to DataFrame
