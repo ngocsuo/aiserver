@@ -749,8 +749,8 @@ def train_models():
             
             return True
         except Exception as e:
-            # Log error
-            update_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
+            # Log error using thread-safe function
+            thread_safe_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
             
             # Show toast notification
             show_toast(f"Lỗi trong quá trình huấn luyện: {str(e)}", "error", duration=5000)
