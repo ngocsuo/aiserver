@@ -17,7 +17,6 @@ from plotly.subplots import make_subplots
 import random
 import streamlit.components.v1 as components
 import traceback
-from utils.thread_safe_logging import thread_safe_log, read_logs_from_file
 import base64
 
 from utils.data_collector import BinanceDataCollector, MockDataCollector
@@ -143,7 +142,6 @@ if 'initialized' not in st.session_state:
     st.session_state.model_trained = False
     st.session_state.data_fetch_status = {"status": "Not started", "last_update": None}
     st.session_state.selected_tab = "Live Dashboard"
-    st.session_state.training_log_messages = []
     st.session_state.update_thread = None
     st.session_state.thread_running = False
     st.session_state.last_update_time = None
@@ -166,8 +164,7 @@ if 'initialized' not in st.session_state:
         "min_confidence": 70.0,         # Độ tin cậy tối thiểu 70%
         "is_trading": False,            # Trạng thái giao dịch
         "position_info": None,          # Thông tin vị thế hiện tại
-        
-}
+    }
     
     # Khởi tạo thiết lập dự đoán và lưu vào session state
     st.session_state.prediction_settings = {
@@ -606,15 +603,7 @@ def train_models():
         show_toast(f"Huấn luyện với cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['epochs']} epochs", "info")
     
     # Hàm cập nhật log riêng
-    # Đảm bảo biến session state đã được khởi tạo
-    if 'training_log_messages' not in st.session_state:
-        st.session_state.training_log_messages = []
-        
-    # Sử dụng thread_safe_log
-    thread_safe_log(message)
     def update_log(message):
-        if 'training_log_messages' not in st.session_state:
-            st.session_state.training_log_messages = []
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_message = f"{timestamp} - {message}"
         st.session_state.log_messages.append(log_message)
@@ -639,33 +628,29 @@ def train_models():
         if "Error" in message or "ERROR" in message or "Lỗi" in message:
             show_toast(message, "error", 5000)
     
+    # Import thread-safe logging functions
+    from thread_safe_logging import thread_safe_log, read_logs_from_file
+    
     # Tạo hàm huấn luyện chạy ngầm trong thread
-def train_models_background():
-    try:
-        # Thay vì sử dụng update_log, dùng thread_safe_log
-        thread_safe_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
-        
-        # Step 1: Process data for training
-        thread_safe_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
-        
-        # Kiểm tra xem có sử dụng tham số tùy chỉnh không
-        custom_params = None 
+    def train_models_background():
         try:
-            # Truy cập session_state an toàn bằng cách dùng biến global
-            if 'custom_training_params' in globals():
-                custom_params = custom_training_params
-            # Không gọi st.session_state trực tiếp trong thread
-        except Exception:
-            thread_safe_log("Không tìm thấy thông số huấn luyện tùy chỉnh, sử dụng cài đặt mặc định.")
+            # Ghi log bắt đầu huấn luyện (sử dụng thread_safe_log thay vì update_log)
+            thread_safe_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
             
-        if custom_params:
-            thread_safe_log(f"🔧 Đang áp dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs")
-            # TODO: Áp dụng các tham số tùy chỉnh vào quá trình huấn luyện
-            # Nếu người dùng chọn khung thời gian khác
-            if custom_params['timeframe'] != config.TIMEFRAMES['primary']:
-                thread_safe_log(f"Chuyển sang khung thời gian {custom_params['timeframe']} theo cài đặt tùy chỉnh")
-                # Cần lấy dữ liệu cho khung thời gian được chọn
-                try:
+            # Step 1: Process data for training
+            thread_safe_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
+            
+            # Kiểm tra xem có sử dụng tham số tùy chỉnh không
+            custom_params = st.session_state.get('custom_training_params', None)
+            if custom_params:
+                update_log(f"🔧 Đang áp dụng cài đặt tùy chỉnh: {custom_params['timeframe']}, {custom_params['range']}, ngưỡng {custom_params['threshold']}%, {custom_params['epochs']} epochs")
+                # TODO: Áp dụng các tham số tùy chỉnh vào quá trình huấn luyện
+                # Nếu người dùng chọn khung thời gian khác
+                if custom_params['timeframe'] != config.TIMEFRAMES['primary']:
+                    update_log(f"Chuyển sang khung thời gian {custom_params['timeframe']} theo cài đặt tùy chỉnh")
+                    # Cần lấy dữ liệu cho khung thời gian được chọn
+                    try:
+                        if hasattr(st.session_state, 'data_collector'):
                             update_log(f"Đang tải dữ liệu khung thời gian {custom_params['timeframe']}...")
                             custom_data = st.session_state.data_collector.collect_historical_data(
                                 symbol=config.SYMBOL,
@@ -767,22 +752,11 @@ def train_models_background():
             
             return True
         except Exception as e:
-            # Log error
-            update_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
+            # Log error using thread-safe function
+            thread_safe_log(f"LỖI trong quá trình huấn luyện: {str(e)}")
+            
             # Show toast notification
             show_toast(f"Lỗi trong quá trình huấn luyện: {str(e)}", "error", duration=5000)
-            try:
-            # An toàn hơn khi gọi update_log
-                update_log(f"Lỗi trong quá trình huấn luyện: {str(e)}")
-    # Đảm bảo biến session state đã được khởi tạo
-    if 'training_log_messages' not in st.session_state:
-        st.session_state.training_log_messages = []
-        
-    # Sử dụng thread_safe_log
-    thread_safe_log(message)
-            except Exception:
-                pass
-
             return False
         
     # Hàm hỗ trợ ghi log
@@ -806,21 +780,11 @@ def train_models_background():
             "độ chính xác" in message):
             show_toast(message, "success", 3000)
         elif "Lỗi" in message or "LỖI" in message:
-    # Đảm bảo biến session state đã được khởi tạo
-    if 'training_log_messages' not in st.session_state:
-        st.session_state.training_log_messages = []
-        
-    # Sử dụng thread_safe_log
-    thread_safe_log(message)
             show_toast(f"Lỗi huấn luyện: {message}", "error", 5000)
     
     # Hiển thị thông báo huấn luyện đang bắt đầu
     show_toast("Đang bắt đầu quá trình huấn luyện mô hình AI...", "info", 3000)
     
-    # Đọc logs từ file
-    logs_from_file = read_logs_from_file("training_logs.txt", max_lines=100)
-    for log in logs_from_file:
-        st.text(log.strip())
     # Thêm log messages để hiển thị trong tab Training Logs
     training_logs = []
     
@@ -828,10 +792,6 @@ def train_models_background():
     progress_placeholder = st.empty()
     progress_bar = st.progress(0)
     
-    # Đọc logs từ file
-    logs_from_file = read_logs_from_file("training_logs.txt", max_lines=100)
-    for log in logs_from_file:
-        st.text(log.strip())
     def update_log(message):
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_msg = f"{timestamp} - {message}"
@@ -2066,10 +2026,6 @@ if st.session_state.selected_tab == "Live Dashboard":
         with status_col4:
             model_status = "✅ Đã huấn luyện" if st.session_state.model_trained else "❌ Chưa huấn luyện"
             model_color = "green" if st.session_state.model_trained else "red"
-    # Đọc logs từ file
-    logs_from_file = read_logs_from_file("training_logs.txt", max_lines=100)
-    for log in logs_from_file:
-        st.text(log.strip())
             st.markdown(f"**Mô hình AI:** :{model_color}[{model_status}]")
             
         with status_col5:
@@ -2231,10 +2187,6 @@ if st.session_state.selected_tab == "Live Dashboard":
                         
                         # Add styling to the dataframe
                         def style_trend(val):
-    # Đọc logs từ file
-    logs_from_file = read_logs_from_file("training_logs.txt", max_lines=100)
-    for log in logs_from_file:
-        st.text(log.strip())
                             color = 'green' if val == 'LONG' else 'red' if val == 'SHORT' else 'gray'
                             return f'background-color: {color}; color: white'
                         
@@ -2938,10 +2890,6 @@ elif st.session_state.selected_tab == "Models & Training":
                 # Thêm log message
                 timestamp = datetime.now().strftime("%H:%M:%S")
                 log_message = f"{timestamp} - 🚀 Bắt đầu huấn luyện với cài đặt tùy chỉnh: {selected_timeframe}, {training_range} ngày, ngưỡng {training_threshold}%, {training_epochs} epochs"
-    # Đọc logs từ file
-    logs_from_file = read_logs_from_file("training_logs.txt", max_lines=100)
-    for log in logs_from_file:
-        st.text(log.strip())
                 if 'log_messages' not in st.session_state:
                     st.session_state.log_messages = []
                 st.session_state.log_messages.append(log_message)
@@ -4065,8 +4013,9 @@ def render_main_interface():
     # Áp dụng CSS tùy chỉnh
     load_custom_css()
     
-    # Tạo header đẹp mắt
-    create_header()
+    # Tạo header đẹp mắt bằng markdown trực tiếp
+    st.markdown("# AI TRADING ORACLE")
+    st.markdown("### Hệ Thống Dự Đoán ETHUSDT Tự Động")
     
     # Tạo sidebar menu
     with st.sidebar:
@@ -4158,10 +4107,6 @@ def render_main_interface():
             if timeframe != st.session_state.prediction_settings.get("timeframe"):
                 st.session_state.prediction_settings["timeframe"] = timeframe
                 
-    # Đọc logs từ file
-    logs_from_file = read_logs_from_file("training_logs.txt", max_lines=100)
-    for log in logs_from_file:
-        st.text(log.strip())
             # Chọn khoảng thời gian biểu đồ
             chart_range = st.selectbox(
                 "Khoảng thời gian hiển thị",
