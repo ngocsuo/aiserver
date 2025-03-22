@@ -323,12 +323,24 @@ class ContinuousTrainer:
                 logger.info(f"Not enough new data ({self.new_data_count} points) for retraining, minimum required: {config.MINIMUM_NEW_DATA_POINTS}")
                 self.training_in_progress = False
                 return
+            
+            # Lưu trữ kết quả mô hình    
+            model_results = {}
                 
             # Train by monthly chunks if enabled
             if config.CHUNK_BY_MONTHS and self.chunk_start_dates:
-                self._train_by_monthly_chunks()
+                # SỬA LỖI TẠI ĐÂY: _train_by_monthly_chunks trả về model_results, không trả về 2 giá trị
+                model_results = self._train_by_monthly_chunks()
             else:
-                self._train_with_all_data()
+                # Có thể _train_with_all_data cũng trả về model_results
+                model_results = self._train_with_all_data()
+                
+            # Ghi nhật ký kết quả
+            if model_results:
+                timeframes = list(model_results.keys())
+                models_count = sum(len(models) for models in model_results.values() if isinstance(models, dict))
+                self._add_log(f"✅ Đã huấn luyện thành công {models_count} mô hình cho {len(timeframes)} khung thời gian")
+                logger.info(f"Trained {models_count} models for {timeframes}")
                 
             # Record training event
             end_time = datetime.now()
@@ -878,54 +890,125 @@ class ContinuousTrainer:
         """Train models using all data at once."""
         logger.info("Training with all data at once")
         
+        # Dictionary để lưu trữ kết quả mô hình cho mỗi khung thời gian
+        model_results = {}
+        
         try:
-            # Collect all historical data
-            raw_data = None
-            
-            self._add_log("🔄 Đang thu thập dữ liệu lịch sử...")
-            
-            if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
-                raw_data = self.data_collector.collect_historical_data(
-                    timeframe=config.TIMEFRAMES["primary"],
-                    start_date=config.HISTORICAL_START_DATE
-                )
-            else:
-                raw_data = self.data_collector.collect_historical_data(
-                    timeframe=config.TIMEFRAMES["primary"],
-                    limit=config.LOOKBACK_PERIODS
-                )
+            # Lặp qua từng khung thời gian để huấn luyện
+            for timeframe in self.timeframes_to_train:
+                # Collect all historical data
+                raw_data = None
                 
-            if raw_data is not None and not raw_data.empty:
-                # Process the data
-                self._add_log(f"🔧 Đang xử lý {len(raw_data)} điểm dữ liệu lịch sử...")
-                processed_data = self.data_processor.process_data(raw_data)
+                self._add_log(f"🔄 Đang thu thập dữ liệu lịch sử cho {timeframe}...")
                 
-                # Prepare data for different model types
-                self._add_log("📊 Đang chuẩn bị dữ liệu đầu vào cho các mô hình...")
-                sequence_data = self.data_processor.prepare_sequence_data(processed_data)
-                image_data = self.data_processor.prepare_cnn_data(processed_data)
-                
-                # Train all models
-                self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình với {len(processed_data)} điểm dữ liệu")
-                
-                # Xử lý kết quả từ train_all_models (không còn trả về tuple nữa)
-                models = self.model_trainer.train_all_models(sequence_data, image_data)
-                
-                # Kiểm tra kết quả trả về
-                if models is not None:
-                    num_models = len(models) if isinstance(models, dict) else 0
-                    self._add_log(f"✅ Đã huấn luyện thành công {num_models} mô hình")
-                    logger.info(f"Trained {num_models} models with {len(processed_data)} data points")
+                if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
+                    raw_data = self.data_collector.collect_historical_data(
+                        timeframe=timeframe,
+                        start_date=config.HISTORICAL_START_DATE
+                    )
                 else:
-                    self._add_log("❌ Không thể huấn luyện mô hình: kết quả trả về trống")
-                    logger.error("No models returned from training")
-            else:
-                self._add_log("❌ Không thể thu thập dữ liệu lịch sử cho việc huấn luyện")
-                logger.error("No data collected for training")
+                    raw_data = self.data_collector.collect_historical_data(
+                        timeframe=timeframe,
+                        limit=config.LOOKBACK_PERIODS
+                    )
+                    
+                if raw_data is not None and not raw_data.empty:
+                    # Process the data
+                    self._add_log(f"🔧 Đang xử lý {len(raw_data)} điểm dữ liệu lịch sử cho {timeframe}...")
+                    processed_data = self.data_processor.process_data(raw_data)
+                    
+                    # Prepare data for different model types
+                    self._add_log(f"📊 Đang chuẩn bị dữ liệu đầu vào cho các mô hình ({timeframe})...")
+                    sequence_data = self.data_processor.prepare_sequence_data(processed_data)
+                    image_data = self.data_processor.prepare_cnn_data(processed_data)
+                    
+                    # Lưu thông tin về khung thời gian vào dữ liệu huấn luyện
+                    for data_dict in [sequence_data, image_data]:
+                        for key in data_dict:
+                            if isinstance(data_dict[key], dict):
+                                data_dict[key]['timeframe'] = timeframe
+                    
+                    # Train all models
+                    self._add_log(f"🧠 Bắt đầu huấn luyện các mô hình cho {timeframe} với {len(processed_data)} điểm dữ liệu")
+                    
+                    # SỬA LỖI: Xử lý lỗi "too many values to unpack (expected 2)"
+                    try:
+                        # Lưu kết quả vào biến tạm trước để kiểm tra loại dữ liệu
+                        result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                        
+                        # Kiểm tra xem kết quả có phải là tuple không, nếu có thì lấy phần tử đầu tiên
+                        if isinstance(result, tuple) and len(result) > 0:
+                            models = result[0]  # Lấy phần tử đầu tiên (models)
+                            self._add_log(f"⚠️ Đã tự động xử lý kết quả tuple từ train_all_models")
+                        else:
+                            # Nếu không phải tuple, sử dụng kết quả trực tiếp
+                            models = result
+                            
+                        # Đảm bảo models không None trước khi lưu vào kết quả
+                        if models is not None:
+                            model_results[timeframe] = models
+                            self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                        else:
+                            self._add_log(f"⚠️ Huấn luyện cho {timeframe} trả về None")
+                            model_results[timeframe] = {}
+                            
+                    except ValueError as e:
+                        # Xử lý lỗi 'too many values to unpack' nếu vẫn xảy ra
+                        if "too many values to unpack" in str(e):
+                            self._add_log(f"⚠️ Lỗi định dạng kết quả: {str(e)}")
+                            logger.warning(f"Value unpacking error in train_all_models: {str(e)}")
+                            
+                            try:
+                                # Lấy kết quả trực tiếp, không chuyển sang list
+                                result = self.model_trainer.train_all_models(sequence_data, image_data, timeframe=timeframe)
+                                
+                                # Kiểm tra trường hợp kết quả là một tuple
+                                if isinstance(result, tuple) and len(result) > 0:
+                                    models = result[0]  # Lấy phần tử đầu tiên nếu là tuple
+                                else:
+                                    models = result  # Sử dụng kết quả trực tiếp nếu không phải tuple
+                                    
+                                if models is not None:
+                                    model_results[timeframe] = models
+                                    self._add_log(f"✅ Đã khắc phục lỗi và huấn luyện thành công mô hình cho {timeframe}")
+                                else:
+                                    self._add_log(f"⚠️ Kết quả huấn luyện rỗng cho {timeframe}")
+                                    model_results[timeframe] = {}
+                            except Exception as inner_e:
+                                self._add_log(f"❌ Lỗi khi xử lý kết quả huấn luyện: {str(inner_e)}")
+                                logger.error(f"Error processing training result: {inner_e}")
+                                model_results[timeframe] = {}
+                        else:
+                            # Lỗi ValueError khác
+                            self._add_log(f"❌ Lỗi không xác định: {str(e)}")
+                            logger.error(f"Unknown error in train_all_models: {e}")
+                            model_results[timeframe] = {}
+                    except Exception as e:
+                        # Xử lý các ngoại lệ khác
+                        self._add_log(f"❌ Lỗi trong quá trình huấn luyện: {str(e)}")
+                        logger.error(f"Error in training process: {e}")
+                        model_results[timeframe] = {}
+                    
+                    # Thông báo kết quả sau khi xử lý
+                    if timeframe in model_results and model_results[timeframe]:
+                        try:
+                            model_count = len(model_results[timeframe])
+                            self._add_log(f"✅ Đã huấn luyện thành công {model_count} mô hình cho {timeframe}")
+                        except:
+                            self._add_log(f"✅ Đã huấn luyện thành công mô hình cho {timeframe}")
+                    else:
+                        self._add_log(f"⚠️ Không có mô hình nào được huấn luyện cho {timeframe}")
+                
+                else:
+                    self._add_log(f"❌ Không thể thu thập dữ liệu lịch sử cho khung thời gian {timeframe}")
+                    logger.error(f"No data collected for training timeframe {timeframe}")
+                    model_results[timeframe] = {}
                 
         except Exception as e:
             self._add_log(f"❌ Lỗi huấn luyện: {str(e)}")
             logger.error(f"Error training with all data: {e}")
+            
+        return model_results
             
     def increment_new_data_count(self, count=1):
         """
