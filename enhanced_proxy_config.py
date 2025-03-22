@@ -81,12 +81,12 @@ def test_proxy(proxy_config, test_url="https://api.binance.com/api/v3/ping"):
         if proxy_config["auth"]:
             proxies = {
                 "http": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}",
-                "https": f"https://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
+                "https": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
             }
         else:
             proxies = {
                 "http": f"http://{proxy_config['host']}:{proxy_config['port']}",
-                "https": f"https://{proxy_config['host']}:{proxy_config['port']}"
+                "https": f"http://{proxy_config['host']}:{proxy_config['port']}"
             }
             
         # Thử kết nối đến URL test qua proxy
@@ -155,12 +155,12 @@ def get_proxy_format(proxy_config):
     if proxy_config["auth"]:
         return {
             "http": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}",
-            "https": f"https://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
+            "https": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
         }
     else:
         return {
             "http": f"http://{proxy_config['host']}:{proxy_config['port']}",
-            "https": f"https://{proxy_config['host']}:{proxy_config['port']}"
+            "https": f"http://{proxy_config['host']}:{proxy_config['port']}"
         }
 
 def get_proxy_url_format(proxy_config):
@@ -177,9 +177,9 @@ def get_proxy_url_format(proxy_config):
         return None
         
     if proxy_config["auth"]:
-        return f"https://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
+        return f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
     else:
-        return f"https://{proxy_config['host']}:{proxy_config['port']}"
+        return f"http://{proxy_config['host']}:{proxy_config['port']}"
 
 def configure_enhanced_proxy():
     """
