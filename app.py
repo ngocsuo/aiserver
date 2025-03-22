@@ -2190,8 +2190,18 @@ if st.session_state.selected_tab == "Live Dashboard":
                             color = 'green' if val == 'LONG' else 'red' if val == 'SHORT' else 'gray'
                             return f'background-color: {color}; color: white'
                         
-                        # Use Styler.map instead of deprecated applymap
-                        styled_df = recent_preds.style.map(style_trend, subset=['trend'])
+                        # Sử dụng cách thay thế tương thích với nhiều phiên bản pandas
+                        try:
+                            # Thử cách 1: sử dụng style.applymap (pandas cũ)
+                            styled_df = recent_preds.style.applymap(style_trend, subset=['trend'])
+                        except AttributeError:
+                            # Thử cách 2: sử dụng style.apply với hàm khác
+                            def highlight_trend(s):
+                                return ['background-color: green; color: white' if x == 'LONG' 
+                                        else 'background-color: red; color: white' if x == 'SHORT'
+                                        else 'background-color: gray; color: white' for x in s]
+                            
+                            styled_df = recent_preds.style.apply(highlight_trend, subset=['trend'])
                         st.dataframe(styled_df, use_container_width=True)
                 else:
                     st.info("No predictions match your filters")
