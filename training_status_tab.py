@@ -177,32 +177,28 @@ def render_training_status_tab():
 
     st.subheader("Nhật ký huấn luyện")
     
-    # Thêm CSS tùy chỉnh để hiển thị logs đẹp hơn
-    st.markdown("""
+    # Load CSS tùy chỉnh bằng cơ chế an toàn của Streamlit
+    st.markdown('''
     <style>
-    /* Style cho bảng logs */
-    [data-testid="stDataFrame"] {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    [data-testid="stDataFrame"] table {
+        background-color: #f8f9fa !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
     }
     
-    /* Làm đẹp header của bảng */
     [data-testid="stDataFrame"] th {
-        background-color: #485ec4;
-        color: white;
-        font-weight: normal;
-        padding: 10px;
-        text-align: left;
+        background-color: #485ec4 !important;
+        color: white !important;
+        font-weight: normal !important;
+        padding: 10px !important;
+        text-align: left !important;
     }
     
-    /* Hiệu ứng khi hover dòng */
-    [data-testid="stDataFrame"] tr:hover {
-        background-color: #e5e9f5;
+    [data-testid="stDataFrame"] tr:hover td {
+        background-color: #e5e9f5 !important;
     }
     </style>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
     
     logs = get_latest_logs(50)
     if logs:

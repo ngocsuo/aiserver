@@ -234,3 +234,14 @@
 2025-03-22 19:20:09 - Binance server time: 2025-03-22 19:20:09
 2025-03-22 19:20:20 - Tiến trình huấn luyện: 0% (0/78 chunks)
 2025-03-22 19:20:22 - Binance server time: 2025-03-22 19:20:22
+2025-03-22 19:20:32 - Tiến trình huấn luyện: 100% (78/78 chunks)
+2025-03-22 19:20:35 - Binance server time: 2025-03-22 19:20:35
+2025-03-22 19:20:47 - Lỗi khi lấy Binance server time: Không thể kết nối đến Binance API: HTTPSConnectionPool(host='api.binance.com', port=443): Max retries exceeded with url: /api/v3/ping (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1006)')))
+2025-03-22 19:20:59 - Binance server time: 2025-03-22 19:20:59
+2025-03-22 19:21:12 - Binance server time: 2025-03-22 19:21:12
+2025-03-22 19:21:24 - Binance server time: 2025-03-22 19:21:24
+2025-03-22 19:21:37 - Binance server time: 2025-03-22 19:21:37
+2025-03-22 19:21:53 - Tiến trình huấn luyện: 0% (0/78 chunks)
+2025-03-22 19:21:56 - Binance server time: 2025-03-22 19:21:56
+2025-03-22 19:21:56 - Binance server time: 2025-03-22 19:21:56
+2025-03-22 19:21:58 - Binance server time: 2025-03-22 19:21:58
