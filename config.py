@@ -137,7 +137,7 @@ TECHNICAL_INDICATORS = {
     'atr': {'window': 14},
     'vwap': {'window': 14},
     'supertrend': {'period': 10, 'multiplier': 3},
-    'ichimoku': {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'displacement': 26},
+    'ichimoku': {'tenkan_period': 9, 'kijun_period': 26, 'senkou_b_period': 52, 'displacement': 26},
     'adx': {'window': 14},
     'pivot_points': {'method': 'standard'},
     'volume_profile': {'divisions': 10},
