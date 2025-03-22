@@ -132,8 +132,8 @@ TECHNICAL_FEATURES = [
 TECHNICAL_INDICATORS = {
     'rsi': {'window': 14},
     'ema': {'windows': [9, 21, 50]},
-    'macd': {'fast_period': 12, 'slow_period': 26, 'signal_period': 9},
-    'bbands': {'period': 20, 'dev_up': 2, 'dev_down': 2},
+    'macd': {'fast': 12, 'slow': 26, 'signal': 9},
+    'bbands': {'window': 20, 'std_dev': 2},
     'atr': {'window': 14},
     'vwap': {'window': 14},
     'supertrend': {'period': 10, 'multiplier': 3},
