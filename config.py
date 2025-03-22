@@ -8,8 +8,11 @@ from datetime import datetime
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 
-# Proxy Configuration đã bị xóa
-USE_PROXY = False  # Tắt proxy, kết nối trực tiếp đến Binance
+# Proxy Configuration
+USE_PROXY = True  # Bật proxy để kết nối đến Binance
+PROXY_URL = "64.176.51.107:3128"  # URL của proxy (host:port)
+PROXY_USERNAME = None  # Username nếu proxy yêu cầu xác thực
+PROXY_PASSWORD = None  # Password nếu proxy yêu cầu xác thực
 
 # Feature flags
 USE_REAL_API = True  # Luôn sử dụng real Binance API, không dùng mock data
