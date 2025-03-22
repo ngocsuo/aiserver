@@ -2796,18 +2796,11 @@ elif st.session_state.selected_tab == "Cài đặt":
                 st.success(f"Đã lưu thiết lập hệ thống: Nguồn dữ liệu = {data_source}, cập nhật mỗi {update_interval} giây")
                 
                 # Nếu thay đổi nguồn dữ liệu, cần khởi động lại hệ thống
-                if data_source == "Binance API (thực)" and isinstance(st.session_state.data_collector, MockDataCollector):
-                    st.warning("Cần khởi động lại hệ thống để áp dụng thay đổi nguồn dữ liệu")
-                    if st.button("🔄 Khởi động lại hệ thống", use_container_width=True):
-                        st.session_state.initialized = False
-                        initialize_system()
-                        st.rerun()
-                elif data_source == "Mô phỏng (giả lập)" and not isinstance(st.session_state.data_collector, MockDataCollector):
-                    st.warning("Cần khởi động lại hệ thống để áp dụng thay đổi nguồn dữ liệu")
-                    if st.button("🔄 Khởi động lại hệ thống", use_container_width=True):
-                        st.session_state.initialized = False
-                        initialize_system()
-                        st.rerun()
+                # Sử dụng nguồn dữ liệu Binance API thực
+                if st.button("🔄 Khởi động lại hệ thống", use_container_width=True):
+                    st.session_state.initialized = False
+                    initialize_system()
+                    st.rerun()
 
 elif st.session_state.selected_tab == "Models & Training":
     st.title("AI Models & Training")
@@ -3476,11 +3469,11 @@ elif st.session_state.selected_tab == "System Status":
             # API status
             st.write("### API Connection Status")
             try:
-                if isinstance(st.session_state.data_collector, MockDataCollector):
-                    st.warning("Using simulated data (MockDataCollector)")
-                    
-                    # Check if we have API status information
-                    if hasattr(st.session_state, 'api_status'):
+                # Sử dụng dữ liệu thực từ Binance API
+                st.success("Using real data from Binance API")
+                
+                # Check if we have API status information
+                if hasattr(st.session_state, 'api_status'):
                         # If we tried to connect to the API but failed
                         if 'error' in st.session_state.api_status and st.session_state.api_status['error']:
                             st.error(f"API Connection Error: {st.session_state.api_status['message']}")
@@ -3494,21 +3487,9 @@ elif st.session_state.selected_tab == "System Status":
                             with st.expander("API Connection Details"):
                                 st.write("**Error Type:**", st.session_state.api_status.get('error', 'Unknown'))
                                 st.write("**Last Check:**", st.session_state.api_status.get('last_check', 'Unknown'))
-                                st.write("**Try using the mock data collector for development purposes**")
                         else:
-                            st.info("The system is configured to use mock data")
-                            
-                            # Show toggle in expander
-                            with st.expander("Data Source Configuration"):
-                                st.write("To use real Binance API data, update the following in config.py:")
-                                st.code("""
-# Feature flags
-USE_REAL_API = True  # Set to True to use real Binance API 
-FORCE_MOCK_DATA = False  # Set to False to allow real API usage
-                                """)
-                    else:
-                        st.info("The system is configured to use mock data due to API restrictions in the current environment.")
-                        st.info("Actual API implementation is available in the code for deployment in production environments.")
+                            st.info("The system is using Binance API")
+
                 else:
                     # We're using real Binance API
                     # Test connection to Binance
@@ -4121,7 +4102,7 @@ def render_main_interface():
             # Data tab
             st.subheader("Nguồn dữ liệu")
             
-            data_source = "Binance API" if not isinstance(st.session_state.data_collector, MockDataCollector) else "Dữ liệu mô phỏng"
+            data_source = "Binance API"
             
             data_source_color = "green" if data_source == "Binance API" else "orange"
             st.markdown(f"<div style='color: {data_source_color}; font-weight: bold;'>{data_source}</div>", unsafe_allow_html=True)
