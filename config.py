@@ -72,7 +72,7 @@ PROXY_ROTATION_INTERVAL = 600  # In seconds (10 minutes)
 PROXY_URL = "64.176.51.107:3128:hvnteam:matkhau123"  # Cấu hình proxy
 
 # Additional configuration
-HISTORICAL_START_DATE = "2022-01-01"
+HISTORICAL_START_DATE = "2024-01-01"
 USE_REAL_API = True
 FORCE_MOCK_DATA = False  # Không sử dụng dữ liệu mô phỏng, chỉ dùng dữ liệu thực từ Binance
 DEFAULT_TIMEFRAME = PRIMARY_TIMEFRAME
