@@ -176,10 +176,58 @@ def render_training_status_tab():
             st.warning("Chưa có thông tin về mô hình")
 
     st.subheader("Nhật ký huấn luyện")
+    
+    # Thêm CSS tùy chỉnh để hiển thị logs đẹp hơn
+    st.markdown("""
+    <style>
+    /* Style cho bảng logs */
+    [data-testid="stDataFrame"] {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    /* Làm đẹp header của bảng */
+    [data-testid="stDataFrame"] th {
+        background-color: #485ec4;
+        color: white;
+        font-weight: normal;
+        padding: 10px;
+        text-align: left;
+    }
+    
+    /* Hiệu ứng khi hover dòng */
+    [data-testid="stDataFrame"] tr:hover {
+        background-color: #e5e9f5;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     logs = get_latest_logs(50)
     if logs:
-        logs_df = pd.DataFrame({"Thời gian": [log.split(" - ")[0] for log in logs],
-                              "Thông tin": [log.split(" - ")[1] if " - " in log else log for log in logs]})
+        # Tạo DataFrame cho logs và định dạng lại
+        logs_df = pd.DataFrame({
+            "Thời gian": [log.split(" - ")[0] for log in logs],
+            "Thông tin": [log.split(" - ")[1] if " - " in log else log for log in logs]
+        })
+        
+        # Thêm kiểu cho các loại thông báo khác nhau
+        def style_logs(df):
+            styles = []
+            for i, row in df.iterrows():
+                info = row['Thông tin'].lower()
+                if 'error' in info or 'lỗi' in info:
+                    styles.append('background-color: #ffe6e6')
+                elif 'warning' in info or 'cảnh báo' in info:
+                    styles.append('background-color: #fff7e6')
+                elif 'success' in info or 'thành công' in info:
+                    styles.append('background-color: #e6ffe6')
+                else:
+                    styles.append('')
+            return [''] * len(df.columns) if not styles else styles
+        
+        # Hiển thị DataFrame với style
         st.dataframe(logs_df, hide_index=True)
     else:
         st.info("Chưa có nhật ký huấn luyện")
