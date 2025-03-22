@@ -72,6 +72,17 @@ def parse_proxy_url(proxy_url):
             "password": parts[3]
         }
     else:
+        # Hỗ trợ thêm trường hợp "64.176.51.107:3128" nhưng vẫn cần xác thực
+        # (Binance API thường yêu cầu xác thực kể cả khi URL không có username:password)
+        if len(parts) == 2 and parts[0] == "64.176.51.107" and parts[1] == "3128":
+            logger.info(f"Sử dụng xác thực mặc định cho proxy: {proxy_url}")
+            return {
+                "host": parts[0],
+                "port": int(parts[1]),
+                "auth": True,
+                "username": "hvnteam",
+                "password": "matkhau123"
+            }
         logger.error(f"Không thể phân tích định dạng proxy: {proxy_url}")
         return None
 
