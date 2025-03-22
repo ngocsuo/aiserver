@@ -319,7 +319,7 @@ def initialize_system():
         logger.error(f"Lỗi khi khởi tạo hệ thống: {e}")
         error_message = str(e)
         
-        if "IP restriction" in error_message or "auto-banned" in error_message or True:  # Luôn sử dụng MockDataCollector tạm thời để thử
+        if "IP restriction" in error_message or "auto-banned" in error_message:  # Chỉ sử dụng MockDataCollector khi cần thiết
             error_message = "Hạn chế địa lý phát hiện. Hệ thống sẽ hoạt động bình thường khi triển khai trên server riêng của bạn."
             # Tạo mock data collector để hệ thống có thể hoạt động
             from utils.data_collector import MockDataCollector
