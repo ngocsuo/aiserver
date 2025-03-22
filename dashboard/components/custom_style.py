@@ -218,8 +218,12 @@ def create_header(title, subtitle=None):
     <hr style="margin: 0.5em 0 1em 0; border: none; height: 2px; background-color: #E2E8F0;">
     """, unsafe_allow_html=True)
 
-def create_section_header(title, description=None):
+def create_section_header(title, description=None, icon=None):
     """Tạo tiêu đề phần với định dạng tùy chỉnh"""
+    # Thêm icon vào title nếu được cung cấp
+    if icon:
+        title = f"{icon} {title}"
+        
     st.markdown(f"""
     <h2 style="color: #2563EB; margin-bottom: 0; font-size: 1.5em;">{title}</h2>
     {f'<p style="color: #64748B; margin-top: 0.2em;">{description}</p>' if description else ''}

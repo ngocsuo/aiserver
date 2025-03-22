@@ -87,6 +87,7 @@ from dashboard.components.custom_style import (
 )
 from utils.feature_engineering import FeatureEngineer
 from models.model_trainer import ModelTrainer
+from utils.config_updater import update_config_value
 from utils.pattern_recognition import (
     detect_candlestick_patterns, calculate_support_resistance, analyze_price_trend
 )
@@ -2743,7 +2744,11 @@ elif st.session_state.selected_tab == "Cài đặt":
                         with st.spinner("Đang bắt đầu quá trình huấn luyện..."):
                             # Lưu thiết lập huấn luyện và bắt đầu huấn luyện
                             new_start_date = st.session_state.training_settings["start_date"]
+                            
+                            # Cập nhật cả trong config và lưu vào tập tin config.py
                             config.HISTORICAL_START_DATE = new_start_date
+                            # Lưu giá trị mới vào config.py để giữ lại giữa các phiên
+                            update_config_value("HISTORICAL_START_DATE", new_start_date)
                             
                             # Hiển thị thông báo đang huấn luyện
                             st.success("🚀 Đang bắt đầu huấn luyện mô hình...")
