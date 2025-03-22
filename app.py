@@ -2023,6 +2023,14 @@ with st.sidebar:
         # Các thông tin hệ thống
         st.markdown("---")
         
+        # Hiển thị thông tin tài nguyên hệ thống
+        try:
+            from dashboard.components.system_stats import render_system_stats
+            render_system_stats()
+        except Exception as e:
+            st.error(f"Không thể hiển thị thông tin tài nguyên: {str(e)}")
+            logging.error(f"Lỗi khi hiển thị thông tin tài nguyên: {str(e)}", exc_info=True)
+        
         # Hiển thị Binance server time
         if 'binance_server_time' in st.session_state:
             st.caption(f"Binance Server Time: {st.session_state.binance_server_time.get('time', 'Chưa có')}")

@@ -797,3 +797,32 @@
 2025-03-22 21:03:15 - Binance server time: 2025-03-22 21:03:15
 2025-03-22 21:03:58 - 🚨 YÊU CẦU HUẤN LUYỆN THỦ CÔNG - Kích hoạt trực tiếp
 2025-03-22 21:05:32 - Tiến trình huấn luyện: 0% (0/30 chunks)
+2025-03-22 21:05:35 - Binance server time: 2025-03-22 21:05:35
+2025-03-22 21:05:42 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 21:05:45 - Binance server time: 2025-03-22 21:05:45
+2025-03-22 21:05:45 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 21:05:47 - Binance server time: 2025-03-22 21:05:47
+2025-03-22 21:05:57 - Binance server time: 2025-03-22 21:05:57
+2025-03-22 21:06:00 - Binance server time: 2025-03-22 21:06:00
+2025-03-22 21:06:10 - Binance server time: 2025-03-22 21:06:10
+2025-03-22 21:06:12 - Binance server time: 2025-03-22 21:06:12
+2025-03-22 21:06:22 - Binance server time: 2025-03-22 21:06:22
+2025-03-22 21:06:25 - Binance server time: 2025-03-22 21:06:25
+2025-03-22 21:06:35 - Binance server time: 2025-03-22 21:06:35
+2025-03-22 21:06:38 - Binance server time: 2025-03-22 21:06:37
+2025-03-22 21:12:24 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 21:12:24 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 21:12:27 - Binance server time: 2025-03-22 21:12:27
+2025-03-22 21:12:27 - Binance server time: 2025-03-22 21:12:27
+2025-03-22 21:12:39 - Binance server time: 2025-03-22 21:12:39
+2025-03-22 21:12:39 - Binance server time: 2025-03-22 21:12:39
+2025-03-22 21:12:52 - Binance server time: 2025-03-22 21:12:52
+2025-03-22 21:12:52 - Binance server time: 2025-03-22 21:12:52
+2025-03-22 21:13:04 - Binance server time: 2025-03-22 21:13:04
+2025-03-22 21:13:04 - Binance server time: 2025-03-22 21:13:04
+2025-03-22 21:13:17 - Binance server time: 2025-03-22 21:13:17
+2025-03-22 21:13:17 - Binance server time: 2025-03-22 21:13:17
+2025-03-22 21:13:29 - Binance server time: 2025-03-22 21:13:29
+2025-03-22 21:13:29 - Binance server time: 2025-03-22 21:13:29
+2025-03-22 21:13:44 - Binance server time: 2025-03-22 21:13:44
+2025-03-22 21:13:45 - Binance server time: 2025-03-22 21:13:45
