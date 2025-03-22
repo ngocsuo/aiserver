@@ -628,14 +628,17 @@ def train_models():
         if "Error" in message or "ERROR" in message or "Lỗi" in message:
             show_toast(message, "error", 5000)
     
+    # Import thread-safe logging functions
+    from thread_safe_logging import thread_safe_log, read_logs_from_file
+    
     # Tạo hàm huấn luyện chạy ngầm trong thread
     def train_models_background():
         try:
-            # Ghi log bắt đầu huấn luyện
-            update_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
+            # Ghi log bắt đầu huấn luyện (sử dụng thread_safe_log thay vì update_log)
+            thread_safe_log("Bắt đầu quá trình huấn luyện mô hình AI trong nền...")
             
             # Step 1: Process data for training
-            update_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
+            thread_safe_log("Bước 1/5: Chuẩn bị dữ liệu ETHUSDT...")
             
             # Kiểm tra xem có sử dụng tham số tùy chỉnh không
             custom_params = st.session_state.get('custom_training_params', None)
