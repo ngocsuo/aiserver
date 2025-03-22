@@ -18,6 +18,9 @@ from plotly.subplots import make_subplots
 import random
 import streamlit.components.v1 as components
 import traceback
+
+# Import để hỗ trợ nhận diện MockDataCollector
+from utils.data_collector import MockDataCollector
 import base64
 import logging
 
