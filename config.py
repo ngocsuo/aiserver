@@ -128,6 +128,9 @@ TECHNICAL_FEATURES = [
     "obv", "atr", "adx"
 ]
 
+# Alias for compatibility
+TECHNICAL_INDICATORS = TECHNICAL_FEATURES
+
 CHART_PATTERN_FEATURES = [
     "doji", "hammer", "engulfing_bullish", "engulfing_bearish",
     "three_white_soldiers", "three_black_crows"
