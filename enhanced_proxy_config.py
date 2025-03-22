@@ -12,30 +12,10 @@ import random
 # Thiết lập logging
 logger = logging.getLogger("proxy_config")
 
-# Danh sách proxy dự phòng - Thêm nhiều proxy để tăng khả năng kết nối thành công
+# Danh sách proxy dự phòng - Giới hạn chỉ sử dụng proxy đã xác nhận hoạt động
 BACKUP_PROXIES = [
-    # Proxy mới - các proxy đáng tin cậy và chưa bị Binance phát hiện
-    "146.56.175.38:80",        # Seoul, South Korea
-    "161.82.252.35:4153",      # Dubai, UAE  
-    "51.79.50.22:9300",        # Singapore
-    "156.67.172.185:3128",     # Singapore 
-    "20.81.62.32:3128",        # Tokyo, Japan
-    "103.83.232.122:80",       # Hong Kong
-    "178.18.245.74:8888",      # Tokyo, Japan
-    "45.8.107.73:80",          # Singapore
-    "13.112.197.90:80",        # Tokyo, Japan
-    "169.57.1.85:8123",        # Asia Region
-    "152.67.99.80:80",         # Singapore
-    "142.93.113.81:80",        # Singapore
-    
-    # Proxy cũ (giữ lại phòng trường hợp vẫn dùng được)
-    "64.176.51.107:3128:hvnteam:matkhau123",  # Proxy hiện tại
-    "38.154.227.167:5868:hvnteam:matkhau123", # Proxy dự phòng 1 
-    "45.155.68.129:8133:hvnteam:matkhau123",  # Proxy dự phòng 2
-    "185.199.229.156:7492:hvnteam:matkhau123",# Proxy dự phòng 3
-    "185.199.228.220:7300:hvnteam:matkhau123",# Proxy dự phòng 4
-    "185.199.231.45:8382:hvnteam:matkhau123", # Proxy dự phòng 5
-    "154.95.36.199:6893:hvnteam:matkhau123",  # Proxy dự phòng 6
+    # Proxy chính - Chỉ sử dụng proxy này cho kết nối ổn định
+    "64.176.51.107:3128:hvnteam:matkhau123",  # Proxy chính đã xác định hoạt động tốt
 ]
 
 def parse_proxy_url(proxy_url):
@@ -101,12 +81,12 @@ def test_proxy(proxy_config, test_url="https://api.binance.com/api/v3/ping"):
         if proxy_config["auth"]:
             proxies = {
                 "http": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}",
-                "https": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
+                "https": f"https://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
             }
         else:
             proxies = {
                 "http": f"http://{proxy_config['host']}:{proxy_config['port']}",
-                "https": f"http://{proxy_config['host']}:{proxy_config['port']}"
+                "https": f"https://{proxy_config['host']}:{proxy_config['port']}"
             }
             
         # Thử kết nối đến URL test qua proxy
@@ -142,8 +122,8 @@ def find_working_proxy(proxy_list=None):
     if env_proxy and env_proxy not in proxy_list:
         proxy_list.insert(0, env_proxy)  # Ưu tiên proxy từ biến môi trường
         
-    # Xáo trộn danh sách proxy để thử ngẫu nhiên
-    random.shuffle(proxy_list)
+    # KHÔNG xáo trộn danh sách proxy để ưu tiên proxy chính
+    # random.shuffle(proxy_list)
     
     # Thử từng proxy trong danh sách
     for proxy_url in proxy_list:
@@ -175,12 +155,12 @@ def get_proxy_format(proxy_config):
     if proxy_config["auth"]:
         return {
             "http": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}",
-            "https": f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
+            "https": f"https://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
         }
     else:
         return {
             "http": f"http://{proxy_config['host']}:{proxy_config['port']}",
-            "https": f"http://{proxy_config['host']}:{proxy_config['port']}"
+            "https": f"https://{proxy_config['host']}:{proxy_config['port']}"
         }
 
 def get_proxy_url_format(proxy_config):
@@ -197,9 +177,9 @@ def get_proxy_url_format(proxy_config):
         return None
         
     if proxy_config["auth"]:
-        return f"http://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
+        return f"https://{proxy_config['username']}:{proxy_config['password']}@{proxy_config['host']}:{proxy_config['port']}"
     else:
-        return f"http://{proxy_config['host']}:{proxy_config['port']}"
+        return f"https://{proxy_config['host']}:{proxy_config['port']}"
 
 def configure_enhanced_proxy():
     """
