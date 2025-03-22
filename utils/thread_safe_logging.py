@@ -1,16 +1,16 @@
 """
-Utility module for thread-safe logging in Streamlit applications.
+Thread-safe logging functions for AI Trading System
 """
-import os
 import threading
-from datetime import datetime
+import datetime
+import os
 
-# Global lock for thread safety
+# Thread-safe lock for logging
 log_lock = threading.Lock()
 
 def log_to_file(message, log_file="training_logs.txt"):
     """Thread-safe function to log messages to a file"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_entry = f"{timestamp} - {message}\n"
     
     with log_lock:
@@ -22,7 +22,7 @@ def log_to_file(message, log_file="training_logs.txt"):
 
 def log_to_console(message):
     """Thread-safe function to log messages to console"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_entry = f"{timestamp} - {message}"
     
     with log_lock:
