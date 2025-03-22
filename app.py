@@ -3258,6 +3258,15 @@ elif st.session_state.selected_tab == "Models & Training":
         # Model architecture & performance
         st.header("Model Architecture & Performance")
         
+        # Hiển thị thông tin tài nguyên hệ thống
+        st.header("🖥️ Thông tin tài nguyên hệ thống")
+        try:
+            from dashboard.components.resource_monitor import render_system_resources
+            render_system_resources()
+        except Exception as e:
+            st.error(f"Không thể hiển thị thông tin tài nguyên: {str(e)}")
+            logging.error(f"Lỗi khi hiển thị thông tin tài nguyên: {str(e)}", exc_info=True)
+        
         # Model descriptions with more details
         models_descriptions = {
             "LSTM": "Long Short-Term Memory network for sequence learning from 60 past candles. Specialized in capturing long-term dependencies and sequential patterns in price data. Input: Normalized technical indicators over 60 candles.",
