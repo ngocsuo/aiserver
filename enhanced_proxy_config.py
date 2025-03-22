@@ -14,15 +14,28 @@ logger = logging.getLogger("proxy_config")
 
 # Danh sách proxy dự phòng - Thêm nhiều proxy để tăng khả năng kết nối thành công
 BACKUP_PROXIES = [
+    # Proxy mới - các proxy đáng tin cậy và chưa bị Binance phát hiện
+    "146.56.175.38:80",        # Seoul, South Korea
+    "161.82.252.35:4153",      # Dubai, UAE  
+    "51.79.50.22:9300",        # Singapore
+    "156.67.172.185:3128",     # Singapore 
+    "20.81.62.32:3128",        # Tokyo, Japan
+    "103.83.232.122:80",       # Hong Kong
+    "178.18.245.74:8888",      # Tokyo, Japan
+    "45.8.107.73:80",          # Singapore
+    "13.112.197.90:80",        # Tokyo, Japan
+    "169.57.1.85:8123",        # Asia Region
+    "152.67.99.80:80",         # Singapore
+    "142.93.113.81:80",        # Singapore
+    
+    # Proxy cũ (giữ lại phòng trường hợp vẫn dùng được)
     "64.176.51.107:3128:hvnteam:matkhau123",  # Proxy hiện tại
-    "38.154.227.167:5868:hvnteam:matkhau123", # Proxy dự phòng 1
+    "38.154.227.167:5868:hvnteam:matkhau123", # Proxy dự phòng 1 
     "45.155.68.129:8133:hvnteam:matkhau123",  # Proxy dự phòng 2
     "185.199.229.156:7492:hvnteam:matkhau123",# Proxy dự phòng 3
     "185.199.228.220:7300:hvnteam:matkhau123",# Proxy dự phòng 4
     "185.199.231.45:8382:hvnteam:matkhau123", # Proxy dự phòng 5
     "154.95.36.199:6893:hvnteam:matkhau123",  # Proxy dự phòng 6
-    "84.54.2.196:5566",                       # Proxy dự phòng 7 (không xác thực)
-    "45.10.164.49:8000",                      # Proxy dự phòng 8 (không xác thực)
 ]
 
 def parse_proxy_url(proxy_url):
