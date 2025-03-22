@@ -108,18 +108,28 @@ def create_price_card(price, change_24h, change_7d, high_24h, low_24h):
     </div>
     """, unsafe_allow_html=True)
 
-def create_prediction_card(prediction, confidence, time_horizon, reasoning=None):
+def create_prediction_card(prediction_data, confidence=None, time_horizon=None, reasoning=None):
     """
     Tạo card hiển thị dự đoán với định dạng đẹp
     
     Args:
-        prediction (str): Dự đoán ("Tăng"/"Giảm")
-        confidence (float): Độ tin cậy (0-100%)
-        time_horizon (str): Khung thời gian dự đoán
+        prediction_data: Có thể là một chuỗi ("Tăng"/"Giảm") hoặc một dict chứa thông tin dự đoán
+        confidence (float, optional): Độ tin cậy (0-100%)
+        time_horizon (str, optional): Khung thời gian dự đoán
         reasoning (str, optional): Lý do dự đoán
     """
+    # Xử lý trường hợp prediction_data là một dictionary
+    if isinstance(prediction_data, dict):
+        pred_text = prediction_data.get('prediction', 'N/A')
+        confidence = prediction_data.get('confidence', confidence or 0)
+        time_horizon = prediction_data.get('time_horizon', time_horizon or "N/A")
+        reasoning = prediction_data.get('reasoning', reasoning)
+    else:
+        pred_text = prediction_data
+    
     # Xác định màu sắc dựa trên dự đoán
-    color = "green" if prediction == "Tăng" else "red"
+    color = "green" if pred_text == "Tăng" else "red"
+    
     # Định dạng độ tin cậy
     confidence_text = f"{confidence:.1f}%" if isinstance(confidence, (int, float)) else confidence
     
@@ -128,7 +138,7 @@ def create_prediction_card(prediction, confidence, time_horizon, reasoning=None)
     <div style="background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h3 style="margin: 0; color: {color};">{prediction}</h3>
+                <h3 style="margin: 0; color: {color};">{pred_text}</h3>
                 <p style="margin: 0; color: #666;">Khung thời gian: {time_horizon}</p>
             </div>
             <div style="text-align: right;">
@@ -140,27 +150,53 @@ def create_prediction_card(prediction, confidence, time_horizon, reasoning=None)
     </div>
     """, unsafe_allow_html=True)
 
-def create_gauge_chart(confidence, trend="Tăng"):
-    """Tạo biểu đồ đồng hồ hiển thị độ tin cậy dự đoán"""
+def create_gauge_chart(confidence, trend="Tăng", min_value=0, max_value=100, color_thresholds=None):
+    """
+    Tạo biểu đồ đồng hồ hiển thị độ tin cậy dự đoán
+    
+    Args:
+        confidence (float): Giá trị độ tin cậy để hiển thị
+        trend (str): Xu hướng dự đoán ("Tăng" hoặc "Giảm")
+        min_value (float): Giá trị nhỏ nhất trên thang đo
+        max_value (float): Giá trị lớn nhất trên thang đo
+        color_thresholds (list): Danh sách các ngưỡng màu [(ngưỡng, màu), ...]
+    """
     # Xác định màu sắc dựa trên xu hướng
     color = "green" if trend == "Tăng" else "red"
+    
+    # Tỉ lệ giá trị hiển thị theo thang đo
+    # Nếu thang đo là 0-1, nhưng muốn hiển thị % (0-100), thì nhân với 100
+    display_value = confidence
+    if max_value <= 1 and confidence <= 1:
+        display_value = confidence * 100
+    
+    # Tạo các ngưỡng màu
+    if color_thresholds is None:
+        steps = [
+            {"range": [min_value, min_value + (max_value - min_value) * 0.3], "color": "#ffcccc"},
+            {"range": [min_value + (max_value - min_value) * 0.3, min_value + (max_value - min_value) * 0.7], "color": "#ffff99"},
+            {"range": [min_value + (max_value - min_value) * 0.7, max_value], "color": "#b3ffb3"}
+        ]
+    else:
+        steps = []
+        prev_threshold = min_value
+        for threshold, color_val in color_thresholds:
+            steps.append({"range": [prev_threshold, threshold * (max_value / 1.0)], "color": color_val})
+            prev_threshold = threshold * (max_value / 1.0)
     
     # Tạo biểu đồ đồng hồ
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
-        value=confidence,
-        title={"text": f"Độ tin cậy ({trend})", "font": {"color": color}},
+        value=display_value,
+        title={"text": trend, "font": {"color": color}},
+        number={"suffix": "%", "font": {"color": color}},
         gauge={
             "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "darkblue"},
             "bar": {"color": color},
             "bgcolor": "white",
             "borderwidth": 2,
             "bordercolor": "gray",
-            "steps": [
-                {"range": [0, 30], "color": "#ffcccc"},
-                {"range": [30, 70], "color": "#ffff99"},
-                {"range": [70, 100], "color": "#b3ffb3"}
-            ],
+            "steps": steps,
         }
     ))
     
