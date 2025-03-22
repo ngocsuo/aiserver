@@ -891,3 +891,18 @@
 2025-03-22 21:42:07 - Binance server time: 2025-03-22 21:42:07
 2025-03-22 21:42:30 - Tiến trình huấn luyện: 0% (0/30 chunks)
 2025-03-22 21:42:31 - Tiến trình huấn luyện: 0% (0/30 chunks)
+2025-03-22 21:42:33 - Binance server time: 2025-03-22 21:42:33
+2025-03-22 21:42:34 - Binance server time: 2025-03-22 21:42:34
+2025-03-22 21:42:43 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 21:42:44 - Tiến trình huấn luyện: 100% (30/30 chunks)
+2025-03-22 21:42:45 - Binance server time: 2025-03-22 21:42:45
+2025-03-22 21:42:46 - Binance server time: 2025-03-22 21:42:46
+2025-03-22 21:42:58 - Binance server time: 2025-03-22 21:42:58
+2025-03-22 21:42:59 - Binance server time: 2025-03-22 21:42:59
+2025-03-22 21:43:10 - Binance server time: 2025-03-22 21:43:10
+2025-03-22 21:43:11 - Binance server time: 2025-03-22 21:43:11
+2025-03-22 21:43:23 - Binance server time: 2025-03-22 21:43:23
+2025-03-22 21:43:24 - Binance server time: 2025-03-22 21:43:24
+2025-03-22 21:48:37 - Tiến trình huấn luyện: 0% (0/30 chunks)
+2025-03-22 21:48:39 - Binance server time: 2025-03-22 21:48:39
+2025-03-22 21:48:39 - Binance server time: 2025-03-22 21:48:39
