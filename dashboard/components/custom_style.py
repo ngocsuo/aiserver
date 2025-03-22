@@ -38,7 +38,7 @@ def load_custom_css():
         """
         st.markdown(f"<style>{default_css}</style>", unsafe_allow_html=True)
 
-def create_metric_card(label, value, delta=None, help_text=None, prefix="", suffix=""):
+def create_metric_card(label, value, delta=None, help_text=None, prefix="", suffix="", icon=None, color=None):
     """
     Tạo card hiển thị số liệu với định dạng đẹp
     
@@ -49,13 +49,29 @@ def create_metric_card(label, value, delta=None, help_text=None, prefix="", suff
         help_text (str, optional): Văn bản hỗ trợ
         prefix (str): Tiền tố cho giá trị
         suffix (str): Hậu tố cho giá trị
+        icon (str, optional): Biểu tượng hiển thị (emoji)
+        color (str, optional): Màu sắc của card
     """
-    st.metric(
-        label=label,
-        value=f"{prefix}{value}{suffix}",
-        delta=delta,
-        help=help_text
-    )
+    # Nếu có icon, thêm vào label
+    if icon:
+        label = f"{icon} {label}"
+        
+    # Tạo metric card với hoặc không có màu tùy chỉnh
+    if color:
+        st.markdown(f"""
+        <div style="background-color: white; padding: 10px; border-radius: 5px; border-left: 4px solid {color}; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <p style="color: gray; margin: 0; font-size: 0.8em;">{label}</p>
+            <h3 style="margin: 0; color: #333;">{prefix}{value}{suffix}</h3>
+            {f'<p style="margin: 0; color: {"green" if float(delta) > 0 else "red"};">{delta}</p>' if delta else ''}
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.metric(
+            label=label,
+            value=f"{prefix}{value}{suffix}",
+            delta=delta,
+            help=help_text
+        )
 
 def create_price_card(price, change_24h, change_7d, high_24h, low_24h):
     """
