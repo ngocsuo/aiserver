@@ -80,13 +80,31 @@ DEFAULT_PREDICTION_HORIZON = "medium"
 PREDICTION_SETTINGS = {
     "confidence_threshold": 0.65,
     "minimum_samples": 100,
-    "use_ensemble": True
+    "use_ensemble": True,
+    "1m": {
+        "horizons": {
+            "short": "10m",
+            "medium": "15m",
+            "long": "30m"
+        },
+        "confidence_threshold": 0.65
+    },
+    "5m": {
+        "horizons": {
+            "short": "15m",
+            "medium": "30m",
+            "long": "1h"
+        },
+        "confidence_threshold": 0.70
+    }
 }
 
 # Advanced settings
 DEBUG_MODE = True
 ENABLE_LOGGING = True
 LOG_LEVEL = "INFO"
+BACKTEST_PERIOD_START = "2023-01-01"
+BACKTEST_PERIOD_END = "2023-12-31"
 
 # Training settings
 TRAINING_SCHEDULE = {
