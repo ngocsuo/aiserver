@@ -2460,6 +2460,10 @@ if st.session_state.selected_tab == "Live Dashboard":
                     font-size: 0.9em;
                     line-height: 1.5;
                 }
+                .log-error { color: red; }
+                .log-warning { color: yellow; }
+                .log-success { color: lime; }
+                .log-info { color: #0f9; }
                 </style>
                 """, unsafe_allow_html=True)
                 
@@ -2497,13 +2501,13 @@ if st.session_state.selected_tab == "Live Dashboard":
                     formatted_logs = []
                     for log in training_logs:
                         if "ERROR" in log or "error" in log:
-                            formatted_logs.append(f'<span style="color: red;">{log}</span>')
+                            formatted_logs.append(f'<span class="log-error">{log}</span>')
                         elif "WARNING" in log or "warning" in log:
-                            formatted_logs.append(f'<span style="color: yellow;">{log}</span>')
+                            formatted_logs.append(f'<span class="log-warning">{log}</span>')
                         elif "SUCCESS" in log or "success" in log:
-                            formatted_logs.append(f'<span style="color: lime;">{log}</span>')
+                            formatted_logs.append(f'<span class="log-success">{log}</span>')
                         elif "INFO" in log or "info" in log:
-                            formatted_logs.append(f'<span style="color: #0f9;">{log}</span>')
+                            formatted_logs.append(f'<span class="log-info">{log}</span>')
                         else:
                             formatted_logs.append(log)
                     
@@ -2518,7 +2522,7 @@ if st.session_state.selected_tab == "Live Dashboard":
                 
                 # Add refresh button
                 if st.button("🔄 Làm mới nhật ký"):
-                    st.experimental_rerun()
+                    st.rerun()
             
             with log_col2:
                 # Training Status and Statistics
