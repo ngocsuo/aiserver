@@ -66,7 +66,7 @@ def get_proxy_url_format():
     if not proxy_str:
         return None
         
-    proxy_config = parse_proxy_url(proxy_str)
+    proxy_config = enhanced_parse_proxy_url(proxy_str)
     
     if not proxy_config:
         return None
@@ -100,7 +100,7 @@ def configure_proxy():
         logger.warning("Không tìm thấy cấu hình proxy")
         return None
         
-    proxy_config = parse_proxy_url(proxy_str)
+    proxy_config = enhanced_parse_proxy_url(proxy_str)
     
     if not proxy_config:
         return None
