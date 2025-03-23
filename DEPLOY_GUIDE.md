@@ -14,9 +14,57 @@ Tài liệu này hướng dẫn chi tiết quy trình triển khai ETHUSDT Dashb
 
 ## Phương pháp triển khai
 
-Có hai phương pháp triển khai chính:
+Có nhiều phương pháp triển khai tùy theo nhu cầu của bạn:
 
-### Phương pháp 1: Sử dụng Package Cài Đặt Tự Động
+### Phương pháp 1: Sử dụng Script Triển Khai Tự Động từ GitHub (Khuyến nghị)
+
+Script này tự động hóa toàn bộ quá trình: chuẩn bị môi trường, clone repository, cài đặt dependencies và khởi động dịch vụ.
+
+1. **Tải script triển khai**:
+   ```bash
+   wget https://raw.githubusercontent.com/yourusername/ethusdt-dashboard/main/deploy_from_github.sh
+   chmod +x deploy_from_github.sh
+   ```
+
+2. **Chạy script triển khai**:
+   ```bash
+   ./deploy_from_github.sh [GitHub_URL] [user@server_ip] [password]
+   ```
+
+   Ví dụ:
+   ```bash
+   ./deploy_from_github.sh https://github.com/yourusername/ethusdt-dashboard.git root@192.168.1.100 your_password
+   ```
+
+   - `GitHub_URL`: Đường dẫn đến repository (mặc định là "https://github.com/yourusername/ethusdt-dashboard.git")
+   - `user@server_ip`: Thông tin đăng nhập server (bắt buộc)
+   - `password`: Mật khẩu SSH (tùy chọn, nếu không cung cấp sẽ sử dụng SSH key hoặc hỏi mật khẩu)
+
+### Phương pháp 2: Sử dụng Các Script Riêng Lẻ
+
+Nếu bạn muốn có nhiều kiểm soát hơn hoặc đã thực hiện một số bước, bạn có thể sử dụng các script riêng lẻ:
+
+1. **Cài đặt môi trường**:
+   ```bash
+   ./prepare_server_env.sh
+   ```
+   Script này sẽ:
+   - Cài đặt các gói phụ thuộc hệ thống
+   - Tạo thư mục và người dùng hệ thống
+   - Thiết lập môi trường Python và dịch vụ systemd
+
+2. **Kiểm tra sức khỏe hệ thống**:
+   ```bash
+   ./server_health_check.sh [--detailed]
+   ```
+   Script này sẽ kiểm tra:
+   - Tài nguyên hệ thống (CPU, RAM, disk)
+   - Trạng thái dịch vụ và port
+   - Kết nối Binance API
+   - Thư mục dữ liệu và logs
+   - Trạng thái ứng dụng web
+
+### Phương pháp 3: Sử dụng Package Cài Đặt Tự Động
 
 1. **Tạo Package**:
    ```bash
@@ -37,7 +85,7 @@ Có hai phương pháp triển khai chính:
    bash server_install.sh
    ```
 
-### Phương pháp 2: Sử dụng Script Đồng Bộ Hóa
+### Phương pháp 4: Sử dụng Script Đồng Bộ Hóa
 
 1. **Cập nhật thông tin server**:
    Chỉnh sửa file `sync_to_server.sh`, thay `your_actual_server_ip` bằng địa chỉ IP thực của server
@@ -57,14 +105,14 @@ Có hai phương pháp triển khai chính:
 
 Để dashboard hoạt động, cần cung cấp API key Binance:
 
-1. **Cài đặt qua biến môi trường**:
+1. **Cài đặt qua biến môi trường (với deploy_from_github.sh)**:
    ```bash
-   BINANCE_API_KEY="your_api_key" BINANCE_API_SECRET="your_api_secret" bash server_install.sh
+   BINANCE_API_KEY="your_api_key" BINANCE_API_SECRET="your_api_secret" ./deploy_from_github.sh [GitHub_URL] [user@server_ip]
    ```
 
 2. **Cập nhật thủ công sau khi cài đặt**:
    ```bash
-   nano /root/ethusdt_dashboard/.env
+   sudo nano /opt/ethusdt-dashboard/.env
    ```
    Thêm hoặc cập nhật các dòng:
    ```
@@ -91,13 +139,24 @@ systemctl restart ethusdt-dashboard
 journalctl -fu ethusdt-dashboard
 ```
 
+### Kiểm tra sức khỏe hệ thống:
+```bash
+cd /opt/ethusdt-dashboard
+./server_health_check.sh
+```
+
+Để xem thông tin chi tiết hơn:
+```bash
+./server_health_check.sh --detailed
+```
+
 ## Xử lý Sự Cố
 
 ### Lỗi không thể kết nối Binance API:
 
 1. Kiểm tra API keys:
    ```bash
-   cat /root/ethusdt_dashboard/.env
+   cat /opt/ethusdt-dashboard/.env
    ```
 
 2. Kiểm tra kết nối mạng:
@@ -114,35 +173,45 @@ journalctl -fu ethusdt-dashboard
 
 1. Kiểm tra cài đặt Python và các thư viện:
    ```bash
-   cd /root/ethusdt_dashboard
+   cd /opt/ethusdt-dashboard
    source venv/bin/activate
    pip list | grep streamlit
    ```
 
 2. Thử chạy ứng dụng thủ công:
    ```bash
-   cd /root/ethusdt_dashboard
+   cd /opt/ethusdt-dashboard
    source venv/bin/activate
    streamlit run app.py
    ```
 
+3. Kiểm tra lỗi dependencies:
+   ```bash
+   cd /opt/ethusdt-dashboard
+   source venv/bin/activate
+   pip install -r requirements_server.txt
+   ```
+
 ## Cập Nhật Phiên Bản
 
-Để cập nhật lên phiên bản mới:
+### Cập nhật bằng deploy_from_github.sh:
+```bash
+./deploy_from_github.sh [GitHub_URL] [user@server_ip]
+```
 
-1. **Sử dụng script đồng bộ**:
-   ```bash
-   ./sync_to_server.sh
-   ```
+### Cập nhật bằng script đồng bộ:
+```bash
+./sync_to_server.sh
+```
 
-2. **Hoặc tải lên package mới**:
-   ```bash
-   scp ethusdt_dashboard.zip root@your_server_ip:/root/
-   ssh root@your_server_ip
-   cd /root
-   unzip -o ethusdt_dashboard.zip
-   bash server_install.sh
-   ```
+### Cập nhật bằng package mới:
+```bash
+scp ethusdt_dashboard.zip root@your_server_ip:/root/
+ssh root@your_server_ip
+cd /root
+unzip -o ethusdt_dashboard.zip
+bash server_install.sh
+```
 
 ## Tham Khảo
 
