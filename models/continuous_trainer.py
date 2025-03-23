@@ -470,7 +470,7 @@ class ContinuousTrainer:
                     # Dữ liệu đã tồn tại, sử dụng lại
                     log_msg = f"⏩ Bỏ qua đoạn {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): từ {start_date} đến {end_date} - đã có dữ liệu"
                     self._add_log(log_msg)
-                    logger.info(f"Skipping chunk {i+1}/{len(self.monthly_chunks)} ({timeframe}): {start_date} to {end_date} - data already exists")
+                    logger.info(f"Skipping chunk {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): {start_date} to {end_date} - data already exists")
                     
                     # Tải dữ liệu đã lưu từ tệp cache
                     try:
