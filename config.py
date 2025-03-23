@@ -108,10 +108,9 @@ BACKTEST_PERIOD_END = "2023-12-31"
 
 # Training settings
 TRAINING_SCHEDULE = {
-    "frequency": "30 phút", 
-    "interval_minutes": 30,
     "hourly_frequency": "hourly",
     "interval": 1,  # Train every 1 hour
+    "interval_minutes": 30,
     "start_hour": 0,
     "end_hour": 23,
     "days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
