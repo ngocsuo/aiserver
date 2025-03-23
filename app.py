@@ -677,7 +677,7 @@ def read_logs_from_file(log_file="training_logs.txt", max_lines=100):
                 
                 time.sleep(10)  # Kiểm tra mỗi 10 giây
             except Exception as e:
-                print(f"Error updating historical data status: {e}")
+                thread_safe_log(f"Lỗi cập nhật trạng thái dữ liệu lịch sử: {e}")
                 time.sleep(30)  # Nếu lỗi, đợi lâu hơn
     
     # Bắt đầu luồng theo dõi tiến độ

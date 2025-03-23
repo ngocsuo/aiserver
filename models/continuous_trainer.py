@@ -240,23 +240,21 @@ class ContinuousTrainer:
         now = datetime.now()
         schedule = config.TRAINING_SCHEDULE
         
-        if schedule["frequency"] == "hourly":
-            # Check if the current minute matches the scheduled minute
-            return now.minute == schedule["minute"]
-            
-        elif schedule["frequency"] == "daily":
-            # Check if the current hour and minute match the scheduled time
-            return (now.hour == schedule["hour"] and 
-                    now.minute == schedule["minute"])
-                    
-        elif schedule["frequency"] == "weekly":
-            # Check if the current day, hour, and minute match the scheduled time
-            # Note: schedule uses Monday=0, Sunday=6, but datetime uses Monday=0, Sunday=6
-            return (now.weekday() == schedule["day_of_week"] and
-                    now.hour == schedule["hour"] and 
-                    now.minute == schedule["minute"])
+        # Kiểm tra các khóa cần thiết có trong schedule không
+        required_keys = ["interval_minutes"]
+        for key in required_keys:
+            if key not in schedule:
+                logger.error(f"Missing required key '{key}' in TRAINING_SCHEDULE")
+                return False
         
-        return False
+        # Frequency được xác định theo interval_minutes
+        # Nếu đã qua đủ số phút kể từ lần huấn luyện cuối thì trả về True
+        if self.last_training_time is not None:
+            minutes_since_last_training = (now - self.last_training_time).total_seconds() / 60
+            return minutes_since_last_training >= schedule["interval_minutes"]
+        
+        # Nếu chưa có lần huấn luyện nào trước đó thì trả về True để huấn luyện ngay lập tức
+        return True
         
     def _training_loop(self):
         """Main training loop that runs in a background thread."""
