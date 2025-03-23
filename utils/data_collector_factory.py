@@ -1,10 +1,9 @@
 """
-Factory module cho data collector hỗ trợ proxy
+Factory module cho data collector - Đã loại bỏ toàn bộ proxy cho triển khai server
 """
 import os
 import logging
 from utils.data_collector_proxy import BinanceDataCollector
-from utils.proxy_config import configure_proxy, get_proxy_url_format
 import config
 
 # Set up logging
@@ -19,19 +18,9 @@ def create_data_collector():
     """
     logger.info("Attempting to use Binance API data collector")
     
-    # Kiểm tra config.USE_PROXY trước
-    if not config.USE_PROXY:
-        logger.info("Proxy đã bị vô hiệu hóa trong cấu hình (USE_PROXY = False). Sẽ kết nối trực tiếp.")
-        logger.info(f"Connecting directly to Binance API")
-    else:
-        # Cấu hình proxy nếu có và USE_PROXY = True
-        proxies = configure_proxy()
-        proxy_url = get_proxy_url_format()
-        
-        if proxies and proxy_url:
-            logger.info(f"Connecting to Binance API using proxy")
-        else:
-            logger.info(f"Connecting directly to Binance API")
+    # Luôn sử dụng kết nối trực tiếp (proxy được cấu hình ở cấp server)
+    logger.info("Proxy được quản lý ở cấp hệ thống/server.")
+    logger.info("Connecting directly to Binance API")
     
     try:
         # Tạo và trả về data collector

@@ -1,5 +1,6 @@
 """
-Module thu thập dữ liệu tích hợp proxy cho Binance API
+Module thu thập dữ liệu từ Binance API - Đã loại bỏ hoàn toàn proxy
+Proxy được cấu hình ở cấp hệ thống/server thay vì trong code
 """
 
 import time
@@ -11,14 +12,10 @@ import random
 import os
 import requests
 import json
-import socket
 
 # Import Binance client
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
-
-# Import proxy config
-from utils.proxy_config import configure_proxy, configure_socket_proxy, get_proxy_url_format
 
 import config
 
@@ -27,10 +24,11 @@ logger = logging.getLogger("data_collector")
 
 class BinanceDataCollector:
     """
-    Thu thập dữ liệu OHLCV từ Binance Futures API với hỗ trợ proxy
+    Thu thập dữ liệu OHLCV từ Binance Futures API
+    (Proxy được quản lý ở cấp hệ thống, không trong code)
     """
     def __init__(self):
-        """Khởi tạo collector với cấu hình proxy"""
+        """Khởi tạo collector với kết nối trực tiếp"""
         self.last_update = None
         
         # Khởi tạo trạng thái kết nối
@@ -54,48 +52,17 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
             
-            # Kiểm tra cài đặt USE_PROXY trước
-            if not config.USE_PROXY:
-                logger.info("Proxy đã bị vô hiệu hóa trong cấu hình (USE_PROXY = False). Kết nối trực tiếp đến Binance API.")
-                self.connection_status["using_proxy"] = False
-                
-                # Kết nối trực tiếp không qua proxy
-                self.client = Client(
-                    config.BINANCE_API_KEY, 
-                    config.BINANCE_API_SECRET,
-                    {"timeout": 30}
-                )
-            else:
-                # Cấu hình proxy từ utils/proxy_config.py nếu USE_PROXY = True
-                proxies = configure_proxy()
-                proxy_url = get_proxy_url_format()
-                
-                if proxies and proxy_url:
-                    logger.info(f"Connecting to Binance API using proxy")
-                    self.connection_status["using_proxy"] = True
-                    
-                    # Cấu hình proxy cho Socket nếu cần
-                    configure_socket_proxy()
-                    
-                    # Cấu hình client với proxy
-                    self.client = Client(
-                        config.BINANCE_API_KEY, 
-                        config.BINANCE_API_SECRET,
-                        {"timeout": 30, "proxies": proxies}
-                    )
-                else:
-                    logger.info("Connecting directly to Binance API without proxy")
-                    # Kết nối trực tiếp nếu không có proxy
-                    self.client = Client(
-                        config.BINANCE_API_KEY, 
-                        config.BINANCE_API_SECRET,
-                        {"timeout": 30}
-                    )
+            # Kết nối trực tiếp đến Binance API (proxy được quản lý ở cấp hệ thống)
+            logger.info("Connecting directly to Binance API without proxy")
             
-            # Test kết nối với timeout tăng cường
-            original_timeout = socket.getdefaulttimeout()
-            socket.setdefaulttimeout(20)  # 20 giây timeout
+            # Kết nối đến Binance API
+            self.client = Client(
+                config.BINANCE_API_KEY, 
+                config.BINANCE_API_SECRET,
+                {"timeout": 30}
+            )
             
+            # Test kết nối
             try:
                 self.client.ping()
                 logger.info("Binance API connection successful")
@@ -132,33 +99,21 @@ class BinanceDataCollector:
                 self.connection_status["error"] = str(e)
                 self.connection_status["message"] = f"API Error: {str(e)}"
                 
+                # Báo lỗi đặc biệt cho vấn đề hạn chế địa lý
                 if 'APIError(code=0)' in str(e) or 'restricted location' in str(e).lower():
-                    # Lỗi hạn chế địa lý
-                    if self.connection_status["using_proxy"]:
-                        # Nếu đang sử dụng proxy, có thể tiếp tục
-                        logger.warning("Geographic restriction detected but we're using proxy, continuing...")
-                        logger.info(f"Original error message: {e}")
-                        # Không raise exception nữa vì proxy đã xử lý vấn đề này
-                        self.connection_status["connected"] = True
-                        self.connection_status["message"] = "Connected to Binance Futures API via proxy"
-                        return
-                    else:
-                        # Nếu không sử dụng proxy (USE_PROXY = False), báo lỗi rõ ràng
-                        logger.error("Geographic restriction detected and proxy is disabled (USE_PROXY = False)")
-                        self.connection_status["connected"] = False
-                        self.connection_status["message"] = "Cannot connect to Binance API: Geographic restriction and proxy is disabled"
-                        raise Exception("Cannot connect to Binance API from your location with proxy disabled. Enable proxy by setting USE_PROXY = True in config.py")
-                else:
-                    # Các lỗi API khác
-                    raise
+                    logger.error("Geographic restriction detected. Please configure proxy at SYSTEM level")
+                    self.connection_status["message"] = (
+                        "Lỗi kết nối do hạn chế địa lý. Vui lòng cấu hình proxy ở cấp hệ thống/server. "
+                        "Không cần chỉnh sửa code."
+                    )
+                
+                # Các lỗi API khác
+                raise
             except Exception as e:
                 logger.error(f"Error initializing BinanceDataCollector: {e}")
                 self.connection_status["error"] = str(e)
                 self.connection_status["message"] = f"Connection error: {str(e)}"
                 raise
-            finally:
-                # Khôi phục timeout mặc định
-                socket.setdefaulttimeout(original_timeout)
                 
         except Exception as e:
             logger.error(f"Error initializing BinanceDataCollector: {e}")
@@ -186,25 +141,30 @@ class BinanceDataCollector:
             
             df = pd.DataFrame(klines, columns=columns)
             
-            # Chuyển đổi kiểu dữ liệu
+            # Chuyển đổi timestamp sang datetime
             df['open_time'] = pd.to_datetime(df['open_time'], unit='ms')
             df['close_time'] = pd.to_datetime(df['close_time'], unit='ms')
             
-            for col in ['open', 'high', 'low', 'close', 'volume', 
-                        'quote_asset_volume', 'taker_buy_base_asset_volume', 
-                        'taker_buy_quote_asset_volume']:
+            # Chuyển đổi cột số sang float
+            numeric_columns = ['open', 'high', 'low', 'close', 'volume', 'quote_asset_volume',
+                              'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume']
+            
+            for col in numeric_columns:
                 df[col] = df[col].astype(float)
-                
-            # Đặt index
-            df.set_index('open_time', inplace=True)
+            
+            # Chuyển đổi số giao dịch sang int
+            df['number_of_trades'] = df['number_of_trades'].astype(int)
+            
+            # Xóa cột ignore
+            df = df.drop(columns=['ignore'])
             
             return df
             
         except Exception as e:
             logger.error(f"Error converting klines to DataFrame: {e}")
-            return pd.DataFrame()
-    
-    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.PRIMARY_TIMEFRAME, 
+            raise
+            
+    def collect_historical_data(self, symbol=config.SYMBOL, timeframe=config.TIMEFRAMES["primary"], 
                               limit=config.LOOKBACK_PERIODS, start_date=None, end_date=None):
         """
         Thu thập dữ liệu lịch sử OHLCV từ Binance.
@@ -219,52 +179,53 @@ class BinanceDataCollector:
         Returns:
             pd.DataFrame: DataFrame với dữ liệu OHLCV
         """
-        if not self.connection_status["connected"]:
-            logger.warning(f"Cannot collect data: {self.connection_status['message']}")
-            return None
-        
         try:
-            # Nếu có ngày bắt đầu và kết thúc, ưu tiên dùng nó
+            if not self.connection_status["connected"]:
+                logger.warning("Attempting to collect data without established connection")
+                return None
+                
+            logger.info(f"Collecting historical data for {symbol}, timeframe {timeframe}")
+            
+            # Nếu chỉ định ngày bắt đầu và kết thúc
             if start_date and end_date:
-                logger.info(f"Collecting historical data for {symbol} {timeframe} from {start_date} to {end_date}")
+                logger.info(f"Date range: {start_date} to {end_date}")
+                start_ts = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000)
+                end_ts = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp() * 1000)
                 
-                # Chuyển đổi định dạng ngày thành timestamp
-                start_timestamp = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000)
-                end_timestamp = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp() * 1000)
-                
-                # Lấy dữ liệu
                 klines = self.client.futures_klines(
                     symbol=symbol,
                     interval=timeframe,
-                    startTime=start_timestamp,
-                    endTime=end_timestamp
+                    startTime=start_ts,
+                    endTime=end_ts
                 )
             else:
-                # Nếu không có ngày cụ thể, dùng limit
-                logger.info(f"Collecting {limit} latest {timeframe} candles for {symbol}")
-                
+                logger.info(f"Collecting last {limit} candles")
                 klines = self.client.futures_klines(
                     symbol=symbol,
                     interval=timeframe,
                     limit=limit
                 )
             
-            # Chuyển đổi thành DataFrame
-            if klines:
-                df = self._convert_klines_to_dataframe(klines)
-                logger.info(f"Collected {len(df)} {timeframe} candles for {symbol}")
-                return df
-            else:
-                logger.warning(f"No data returned from Binance for {symbol} {timeframe}")
-                return None
-                
+            # Chuyển đổi dữ liệu klines sang DataFrame
+            df = self._convert_klines_to_dataframe(klines)
+            
+            # Lưu trữ dữ liệu
+            self.data[timeframe] = df
+            
+            # Cập nhật thời gian lấy dữ liệu
+            self.last_update = datetime.now()
+            
+            logger.info(f"Successfully collected {len(df)} records")
+            
+            return df
+            
         except BinanceAPIException as e:
             logger.error(f"Binance API error collecting historical data: {e}")
-            return None
+            raise
         except Exception as e:
             logger.error(f"Error collecting historical data: {e}")
-            return None
-    
+            raise
+            
     def update_data(self, symbol=config.SYMBOL):
         """
         Cập nhật dữ liệu cho tất cả các khung thời gian đã cấu hình.
@@ -275,82 +236,43 @@ class BinanceDataCollector:
         Returns:
             dict: Dictionary với DataFrame đã cập nhật cho mỗi khung thời gian
         """
-        if not self.connection_status["connected"]:
-            logger.warning(f"Cannot update data: {self.connection_status['message']}")
-            return self.data
-            
-        now = datetime.now()
-        
-        # Kiểm tra nếu cần cập nhật dựa trên chu kỳ đã cấu hình
-        if self.last_update and (now - self.last_update).total_seconds() < config.UPDATE_INTERVAL:
-            # Chưa đến lúc cập nhật
-            return self.data
-            
         try:
-            # Cập nhật dữ liệu cho mỗi khung thời gian
-            for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:
-                # Nếu chưa có dữ liệu, thu thập dữ liệu lịch sử
-                if self.data[tf] is None:
-                    logger.info(f"Initial data collection for {symbol} {tf}")
-                    
-                    # Nếu có ngày bắt đầu lịch sử, lấy dữ liệu từ đó đến hiện tại
-                    if hasattr(config, 'HISTORICAL_START_DATE') and config.HISTORICAL_START_DATE:
-                        start_date = config.HISTORICAL_START_DATE
-                        end_date = now.strftime("%Y-%m-%d")
-                        self.data[tf] = self.collect_historical_data(
-                            symbol=symbol, 
-                            timeframe=tf,
-                            start_date=start_date,
-                            end_date=end_date
-                        )
-                    else:
-                        # Nếu không, lấy số lượng nến được cấu hình
-                        self.data[tf] = self.collect_historical_data(
-                            symbol=symbol, 
-                            timeframe=tf,
-                            limit=config.LOOKBACK_PERIODS
-                        )
-                else:
-                    # Đã có dữ liệu, chỉ cập nhật nến mới nhất
-                    last_candle_time = self.data[tf].index.max()
-                    
-                    # Tính khoảng thời gian giữa nến cuối và hiện tại
-                    time_diff = now - last_candle_time
-                    
-                    # Chỉ cập nhật nếu đã qua một khoảng thời gian đủ lớn
-                    # Lấy 5 nến gần đây nhất để đảm bảo không bỏ sót dữ liệu
-                    klines = self.client.futures_klines(
-                        symbol=symbol,
-                        interval=tf,
-                        limit=5
-                    )
-                    
-                    if klines:
-                        new_df = self._convert_klines_to_dataframe(klines)
-                        
-                        # Ghép với dữ liệu hiện có, xóa bỏ bản sao
-                        self.data[tf] = pd.concat([self.data[tf], new_df])
-                        self.data[tf] = self.data[tf][~self.data[tf].index.duplicated(keep='last')]
-                        
-                        # Sắp xếp theo thời gian
-                        self.data[tf].sort_index(inplace=True)
-                        
-                        logger.info(f"Updated {symbol} {tf} data, now have {len(self.data[tf])} candles")
-                    else:
-                        logger.warning(f"No new data available for {symbol} {tf}")
+            if not self.connection_status["connected"]:
+                logger.warning("Attempting to update data without established connection")
+                return None
+                
+            updated_data = {}
             
-            # Cập nhật thời gian cập nhật cuối cùng
-            self.last_update = now
+            # Cập nhật dữ liệu cho khung thời gian chính
+            primary_tf = config.TIMEFRAMES["primary"]
+            updated_data[primary_tf] = self.collect_historical_data(
+                symbol=symbol,
+                timeframe=primary_tf,
+                limit=config.LOOKBACK_PERIODS
+            )
             
-            return self.data
+            # Cập nhật dữ liệu cho các khung thời gian phụ
+            for secondary_tf in config.TIMEFRAMES["secondary"]:
+                updated_data[secondary_tf] = self.collect_historical_data(
+                    symbol=symbol,
+                    timeframe=secondary_tf,
+                    limit=config.LOOKBACK_PERIODS
+                )
             
-        except BinanceAPIException as e:
-            logger.error(f"Binance API error updating data: {e}")
-            return self.data
+            # Lưu trữ dữ liệu đã cập nhật
+            self.data = updated_data
+            
+            # Cập nhật thời gian lấy dữ liệu
+            self.last_update = datetime.now()
+            
+            logger.info(f"Data updated for all timeframes at {self.last_update}")
+            
+            return updated_data
+            
         except Exception as e:
             logger.error(f"Error updating data: {e}")
-            return self.data
-    
+            raise
+            
     def get_funding_rate(self, symbol=config.SYMBOL, limit=500):
         """
         Lấy dữ liệu tỷ lệ tài trợ từ Binance.
@@ -362,41 +284,27 @@ class BinanceDataCollector:
         Returns:
             pd.DataFrame: DataFrame với dữ liệu tỷ lệ tài trợ
         """
-        if not self.connection_status["connected"]:
-            logger.warning(f"Cannot get funding rate: {self.connection_status['message']}")
-            return None
-            
         try:
-            # Lấy dữ liệu tỷ lệ tài trợ
-            funding_rates = self.client.futures_funding_rate(symbol=symbol, limit=limit)
-            
-            if not funding_rates:
-                logger.warning(f"No funding rate data available for {symbol}")
+            if not self.connection_status["connected"]:
+                logger.warning("Attempting to get funding rate without established connection")
                 return None
                 
-            # Chuyển đổi thành DataFrame
+            funding_rates = self.client.futures_funding_rate(symbol=symbol, limit=limit)
+            
             df = pd.DataFrame(funding_rates)
             
-            # Chuyển đổi kiểu dữ liệu
+            # Chuyển đổi timestamp sang datetime
             df['fundingTime'] = pd.to_datetime(df['fundingTime'], unit='ms')
+            
+            # Chuyển đổi fundingRate sang float
             df['fundingRate'] = df['fundingRate'].astype(float)
             
-            # Đặt index
-            df.set_index('fundingTime', inplace=True)
-            
-            # Sắp xếp theo thời gian
-            df.sort_index(inplace=True)
-            
-            logger.info(f"Collected {len(df)} funding rate records for {symbol}")
             return df
             
-        except BinanceAPIException as e:
-            logger.error(f"Binance API error getting funding rate: {e}")
-            return None
         except Exception as e:
             logger.error(f"Error getting funding rate: {e}")
-            return None
-    
+            raise
+            
     def get_open_interest(self, symbol=config.SYMBOL, timeframe="5m", limit=500):
         """
         Lấy dữ liệu open interest từ Binance.
@@ -409,42 +317,53 @@ class BinanceDataCollector:
         Returns:
             pd.DataFrame: DataFrame với dữ liệu open interest
         """
-        if not self.connection_status["connected"]:
-            logger.warning(f"Cannot get open interest: {self.connection_status['message']}")
-            return None
-            
         try:
-            # Lấy dữ liệu open interest
+            if not self.connection_status["connected"]:
+                logger.warning("Attempting to get open interest without established connection")
+                return None
+                
             open_interest = self.client.futures_open_interest_hist(
-                symbol=symbol, 
-                period=timeframe, 
+                symbol=symbol,
+                period=timeframe,
                 limit=limit
             )
             
-            if not open_interest:
-                logger.warning(f"No open interest data available for {symbol} {timeframe}")
-                return None
-                
-            # Chuyển đổi thành DataFrame
             df = pd.DataFrame(open_interest)
             
-            # Chuyển đổi kiểu dữ liệu
+            # Chuyển đổi timestamp sang datetime
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            df['sumOpenInterest'] = df['sumOpenInterest'].astype(float)
-            df['sumOpenInterestValue'] = df['sumOpenInterestValue'].astype(float)
             
-            # Đặt index
-            df.set_index('timestamp', inplace=True)
+            # Chuyển đổi sumOpenInterest và sumOpenInterestValue sang float
+            numeric_columns = ['sumOpenInterest', 'sumOpenInterestValue']
+            for col in numeric_columns:
+                df[col] = df[col].astype(float)
             
-            # Sắp xếp theo thời gian
-            df.sort_index(inplace=True)
-            
-            logger.info(f"Collected {len(df)} open interest records for {symbol} {timeframe}")
             return df
             
-        except BinanceAPIException as e:
-            logger.error(f"Binance API error getting open interest: {e}")
-            return None
         except Exception as e:
             logger.error(f"Error getting open interest: {e}")
-            return None
+            raise
+            
+    def get_connection_status(self):
+        """
+        Trả về trạng thái kết nối hiện tại.
+        
+        Returns:
+            dict: Trạng thái kết nối
+        """
+        # Cập nhật thời gian kiểm tra
+        self.connection_status["last_check"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Kiểm tra kết nối nếu đã được khởi tạo
+        if hasattr(self, 'client'):
+            try:
+                self.client.ping()
+                self.connection_status["connected"] = True
+                self.connection_status["message"] = "Connected to Binance API"
+                self.connection_status["error"] = None
+            except Exception as e:
+                self.connection_status["connected"] = False
+                self.connection_status["message"] = f"Connection error: {str(e)}"
+                self.connection_status["error"] = str(e)
+        
+        return self.connection_status
