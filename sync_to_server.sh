@@ -2,7 +2,8 @@
 # Script đồng bộ mã nguồn từ Replit lên server
 
 # Thông tin server - thay thế bằng thông tin server thực tế của bạn
-SERVER="your_server_ip"  # Thay your_server_ip bằng IP server thực tế của bạn
+SERVER="your_actual_server_ip"  # Thay your_actual_server_ip bằng IP thực tế của server mới của bạn
+SSH_PORT="22"  # Cổng SSH mặc định, thay đổi nếu cần
 USER="root"
 REMOTE_DIR="/root/ethusdt_dashboard"
 
@@ -36,7 +37,7 @@ fi
 
 # Kiểm tra kết nối đến server
 echo -e "${BLUE}Kiểm tra kết nối đến server...${NC}"
-ssh -o ConnectTimeout=5 $USER@$SERVER "echo 'Kết nối thành công'" > /dev/null 2>&1
+ssh -p $SSH_PORT -o ConnectTimeout=5 $USER@$SERVER "echo 'Kết nối thành công'" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo -e "${RED}Không thể kết nối đến server.${NC}"
     echo "Vui lòng kiểm tra lại thông tin kết nối và đảm bảo server đang chạy."

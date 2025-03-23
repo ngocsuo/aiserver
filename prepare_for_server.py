@@ -1,311 +1,278 @@
 #!/usr/bin/env python3
 """
-Script chuẩn bị triển khai ETHUSDT Dashboard lên server.
-Script này sẽ tạo một file zip có chứa tất cả các file cần thiết để chạy trên server.
+Script chuẩn bị triển khai ETHUSDT Dashboard lên server mới.
+Script này sẽ tạo một file zip có chứa tất cả các file cần thiết để chạy trên server mới hoàn toàn.
 """
 
 import os
-import sys
 import shutil
 import zipfile
-import tempfile
-import argparse
 import subprocess
-from pathlib import Path
-from datetime import datetime
-
-# Danh sách các thư mục và file cần thiết
-ESSENTIAL_DIRECTORIES = [
-    "deployment",
-    "utils",
-    "models",
-    "prediction",
-    "dashboard"
-]
-
-ESSENTIAL_FILES = [
-    "app.py",
-    "config.py",
-    "run_clean.py",
-    "run_with_monitoring.py",
-    "feature_engineering_fix.py",
-    "README.md",
-    "deployment/README.md",
-    "deployment/startup.sh",
-    "deployment/deploy_service.py",
-    "utils/log_filter.py",
-    "utils/data_fix.py",
-    "utils/thread_safe_logging.py",
-]
-
-# Danh sách các file và thư mục không nên đưa vào package
-EXCLUDED_ITEMS = [
-    "__pycache__",
-    ".git",
-    ".streamlit/cache",
-    "logs",
-    "venv",
-    "*.pyc",
-    "*.log",
-    "data/*.csv",
-    "*.pkl"
-]
+import json
+import datetime
+import sys
 
 def create_install_script():
     """Tạo script cài đặt cho server"""
-    install_script = """#!/bin/bash
-# Script cài đặt ETHUSDT Dashboard trên server
+    with open("server_install.sh", "w") as f:
+        f.write("""#!/bin/bash
+# Script cài đặt ETHUSDT Dashboard trên server mới
 
-# Cài đặt các gói phụ thuộc
-echo "Đang cài đặt các gói phụ thuộc..."
+# Thông tin cài đặt
+INSTALL_DIR="/root/ethusdt_dashboard"
+BINANCE_API_KEY="${BINANCE_API_KEY:-""}"
+BINANCE_API_SECRET="${BINANCE_API_SECRET:-""}"
+
+echo "=== CÀI ĐẶT ETHUSDT DASHBOARD ==="
+echo "Thời gian: $(date)"
+
+# Kiểm tra API keys
+if [ -z "$BINANCE_API_KEY" ] || [ -z "$BINANCE_API_SECRET" ]; then
+    echo "CẢNH BÁO: API keys chưa được cung cấp."
+    echo "Bạn cần cập nhật .env sau khi cài đặt."
+fi
+
+# 1. Cập nhật hệ thống
+echo "1. Cập nhật hệ thống..."
+apt update && apt upgrade -y
+
+# 2. Cài đặt các gói cần thiết
+echo "2. Cài đặt các gói cần thiết..."
+apt install -y python3 python3-pip python3-venv git rsync curl wget htop
+
+# 3. Tạo và giải nén vào thư mục cài đặt
+echo "3. Giải nén vào thư mục cài đặt..."
+mkdir -p $INSTALL_DIR
+unzip -o ethusdt_dashboard.zip -d $INSTALL_DIR
+
+# 4. Thiết lập Python venv
+echo "4. Thiết lập môi trường Python ảo..."
+cd $INSTALL_DIR
+python3 -m venv venv
+source venv/bin/activate
+
+# 5. Cài đặt các gói Python
+echo "5. Cài đặt các gói Python..."
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Tạo các thư mục cần thiết
-echo "Tạo các thư mục cần thiết..."
-mkdir -p logs
-mkdir -p data
-mkdir -p saved_models
-mkdir -p deployment/logs
+# 6. Tạo file .env
+echo "6. Thiết lập file .env..."
+cat > $INSTALL_DIR/.env << EOF
+# Binance API Keys
+BINANCE_API_KEY=$BINANCE_API_KEY
+BINANCE_API_SECRET=$BINANCE_API_SECRET
+EOF
 
-# Đặt quyền thực thi cho các script
-echo "Đặt quyền thực thi cho các script..."
-chmod +x run_clean.py
-chmod +x deployment/startup.sh
+echo "File .env đã được tạo tại $INSTALL_DIR/.env"
+if [ -z "$BINANCE_API_KEY" ] || [ -z "$BINANCE_API_SECRET" ]; then
+    echo "QUAN TRỌNG: Hãy cập nhật API key và secret trong file này!"
+fi
 
-# Cấu hình systemd service (nếu người dùng có quyền root)
-if [ "$(id -u)" = "0" ]; then
-    echo "Phát hiện quyền root, đang cấu hình systemd service..."
-    cat > /etc/systemd/system/ethusdt-dashboard.service << EOL
+# 7. Tạo service systemd
+echo "7. Thiết lập systemd service..."
+cat > /etc/systemd/system/ethusdt-dashboard.service << EOF
 [Unit]
 Description=ETHUSDT Dashboard Service
 After=network.target
 
 [Service]
-ExecStart=/bin/bash -c "cd $(pwd) && python run_clean.py --mode service"
-WorkingDirectory=$(pwd)
+User=root
+WorkingDirectory=$INSTALL_DIR
+ExecStart=$INSTALL_DIR/venv/bin/streamlit run app.py --server.port=5000 --server.address=0.0.0.0 --server.headless=true
 Restart=always
-RestartSec=10
-User=$(whoami)
-Environment=PYTHONUNBUFFERED=1
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment="PATH=$INSTALL_DIR/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PYTHONPATH=$INSTALL_DIR"
 
 [Install]
 WantedBy=multi-user.target
-EOL
+EOF
 
-    # Khởi động service
-    systemctl daemon-reload
-    systemctl enable ethusdt-dashboard.service
-    systemctl start ethusdt-dashboard.service
-    echo "Đã cấu hình và khởi động systemd service."
+# 8. Cấu hình firewall
+echo "8. Cấu hình firewall..."
+if command -v ufw &> /dev/null; then
+    ufw allow 5000/tcp
+    ufw status
 else
-    echo "Không có quyền root, bỏ qua cấu hình systemd service."
-    echo "Để chạy ứng dụng, sử dụng lệnh: python run_clean.py --mode service"
+    echo "UFW không được cài đặt. Bỏ qua cấu hình firewall."
 fi
 
-echo "Cài đặt hoàn tất. Ứng dụng sẽ chạy tại http://localhost:5000"
-"""
-    return install_script
+# 9. Reload systemd và enable service
+echo "9. Cấu hình systemd..."
+systemctl daemon-reload
+systemctl enable ethusdt-dashboard
+systemctl start ethusdt-dashboard
+
+echo "=== CÀI ĐẶT HOÀN TẤT ==="
+echo "Truy cập dashboard tại: http://$(hostname -I | awk '{print $1}'):5000"
+echo ""
+echo "Các lệnh hữu ích:"
+echo "- Xem logs: journalctl -fu ethusdt-dashboard"
+echo "- Khởi động lại: systemctl restart ethusdt-dashboard"
+echo "- Trạng thái: systemctl status ethusdt-dashboard"
+""")
+    
+    # Chỉnh quyền
+    os.chmod("server_install.sh", 0o755)
 
 def create_requirements():
     """Tạo file requirements.txt từ dependencies hiện tại"""
-    requirements = """streamlit==1.31.1
-pandas==2.1.4
-numpy==1.26.3
-plotly==5.18.0
-python-binance==1.0.19
-requests==2.31.0
-psutil==5.9.8
-scikit-learn==1.3.2
-tensorflow==2.15.0
-"""
-    return requirements
+    required_packages = [
+        "streamlit>=1.22.0",
+        "pandas>=1.5.3",
+        "numpy>=1.24.3",
+        "plotly>=5.14.1",
+        "python-binance>=1.0.17",
+        "scikit-learn>=1.2.2",
+        "tensorflow>=2.12.0",
+        "requests>=2.29.0",
+        "psutil>=5.9.5",
+        "pytz>=2023.3"
+    ]
+    
+    with open("requirements.txt", "w") as f:
+        f.write("\n".join(required_packages))
 
-def generate_package(output_path=None, include_data=False):
+def create_readme():
+    """Tạo README.md cho package"""
+    with open("PACKAGE_README.md", "w") as f:
+        f.write("""# ETHUSDT Dashboard - Package triển khai
+
+## Hướng dẫn cài đặt
+
+1. Upload file `ethusdt_dashboard.zip` lên server
+2. Giải nén: `unzip ethusdt_dashboard.zip`
+3. Chạy script cài đặt: `bash server_install.sh`
+
+## Cấu hình API Keys
+
+Sau khi cài đặt, cập nhật API keys trong file `.env`:
+```
+nano /root/ethusdt_dashboard/.env
+```
+
+Hoặc bạn có thể cung cấp API keys khi chạy script cài đặt:
+```
+BINANCE_API_KEY="your_api_key" BINANCE_API_SECRET="your_api_secret" bash server_install.sh
+```
+
+## Thông tin hệ thống
+- Dashboard port: 5000
+- Thư mục cài đặt: /root/ethusdt_dashboard
+- Service: ethusdt-dashboard
+
+## Các lệnh hữu ích
+- Xem logs: `journalctl -fu ethusdt-dashboard`
+- Khởi động lại: `systemctl restart ethusdt-dashboard`
+- Trạng thái: `systemctl status ethusdt-dashboard`
+
+## Nâng cấp phiên bản
+Để nâng cấp lên phiên bản mới:
+1. Upload package mới
+2. Giải nén và chạy lại script cài đặt
+""")
+
+def generate_package(output_path=None):
     """
     Tạo package triển khai
     
     Args:
         output_path (str, optional): Đường dẫn đến file zip đầu ra
-        include_data (bool): Có bao gồm dữ liệu hiện có không
     """
-    # Xác định tên file đầu ra
+    # Tạo timestamp để đặt tên file
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     if output_path is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_path = f"ethusdt_dashboard_deploy_{timestamp}.zip"
+        output_path = f"ethusdt_dashboard_{timestamp}.zip"
     
-    # Tạo thư mục tạm thời
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        deploy_dir = temp_path / "ethusdt_dashboard"
-        deploy_dir.mkdir()
-        
-        # Sao chép các thư mục cần thiết
-        for directory in ESSENTIAL_DIRECTORIES:
-            dir_path = Path(directory)
-            if dir_path.exists():
-                dest_dir = deploy_dir / directory
-                
-                # Tạo thư mục đích
-                dest_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Sao chép tất cả file trong thư mục
-                for item in dir_path.glob("**/*"):
-                    # Kiểm tra xem có nên bỏ qua không
-                    skip = False
-                    for exclude in EXCLUDED_ITEMS:
-                        if "*" in exclude:
-                            # So khớp wildcard
-                            pattern = exclude.replace("*", "")
-                            if pattern in str(item):
-                                skip = True
-                                break
-                        elif exclude in str(item):
-                            skip = True
-                            break
-                    
-                    if skip:
-                        continue
-                    
-                    # Nếu là thư mục, tạo thư mục tương ứng
-                    if item.is_dir():
-                        (dest_dir / item.relative_to(dir_path)).mkdir(parents=True, exist_ok=True)
-                    # Nếu là file, sao chép
-                    elif item.is_file():
-                        dest_file = dest_dir / item.relative_to(dir_path)
-                        dest_file.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(item, dest_file)
-        
-        # Sao chép các file cần thiết
-        for file_path in ESSENTIAL_FILES:
-            source = Path(file_path)
-            if source.exists():
-                dest = deploy_dir / file_path
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(source, dest)
-        
-        # Sao chép dữ liệu nếu cần
-        if include_data:
-            data_dir = Path("data")
-            if data_dir.exists():
-                dest_data_dir = deploy_dir / "data"
-                dest_data_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Sao chép tất cả file trong thư mục data (trừ các file bị loại trừ)
-                for item in data_dir.glob("*"):
-                    # Kiểm tra xem có nên bỏ qua không
-                    skip = False
-                    for exclude in EXCLUDED_ITEMS:
-                        if "*" in exclude:
-                            # So khớp wildcard
-                            pattern = exclude.replace("*", "")
-                            if pattern in str(item):
-                                skip = True
-                                break
-                        elif exclude in str(item):
-                            skip = True
-                            break
-                    
-                    if skip:
-                        continue
-                    
-                    # Nếu là thư mục, tạo thư mục tương ứng
-                    if item.is_dir():
-                        (dest_data_dir / item.name).mkdir(parents=True, exist_ok=True)
-                    # Nếu là file, sao chép
-                    elif item.is_file():
-                        shutil.copy2(item, dest_data_dir / item.name)
-        
-        # Tạo script cài đặt
-        with open(deploy_dir / "install.sh", "w") as f:
-            f.write(create_install_script())
-        
-        # Đặt quyền thực thi cho script cài đặt
-        os.chmod(deploy_dir / "install.sh", 0o755)
-        
-        # Tạo file requirements.txt
-        with open(deploy_dir / "requirements.txt", "w") as f:
-            f.write(create_requirements())
-        
-        # Tạo file README.md với hướng dẫn cài đặt
-        readme_content = """# ETHUSDT Dashboard - Hướng dẫn triển khai
-
-## Cài đặt
-
-1. Giải nén file zip
-2. Di chuyển vào thư mục giải nén:
-   ```
-   cd ethusdt_dashboard
-   ```
-3. Chạy script cài đặt:
-   ```
-   ./install.sh
-   ```
-
-## Chạy thủ công
-
-Nếu bạn không muốn cài đặt systemd service, bạn có thể chạy ứng dụng thủ công:
-
-```
-python run_clean.py --mode service
-```
-
-## Cấu hình
-
-Bạn có thể chỉnh sửa file `config.py` để thay đổi cấu hình ứng dụng.
-
-## Kiểm tra trạng thái
-
-Kiểm tra trạng thái của service:
-
-```
-systemctl status ethusdt-dashboard.service
-```
-
-## Xem log
-
-Xem log của ứng dụng:
-
-```
-tail -f logs/app.log
-```
-
-## Truy cập ứng dụng
-
-Ứng dụng sẽ chạy tại http://localhost:5000
-"""
-        with open(deploy_dir / "INSTALL.md", "w") as f:
-            f.write(readme_content)
-        
-        # Tạo file zip
-        with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for root, _, files in os.walk(deploy_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, temp_path)
-                    zipf.write(file_path, arcname)
+    # Tạo các file cần thiết
+    create_install_script()
+    create_requirements()
+    create_readme()
     
-    print(f"Đã tạo package triển khai tại: {output_path}")
+    # Danh sách thư mục và file cần đóng gói
+    include_dirs = [
+        "utils",
+        "models",
+        "data",
+        "dashboard",
+        "prediction"
+    ]
+    
+    include_files = [
+        "app.py",
+        "config.py",
+        "server_install.sh",
+        "requirements.txt",
+        "PACKAGE_README.md"
+    ]
+    
+    # Các file bổ sung nếu có
+    extra_files = [
+        "thread_safe_logging.py",
+        "enhanced_data_collector.py",
+        "fixed_train_models.py",
+    ]
+    
+    for f in extra_files:
+        if os.path.exists(f):
+            include_files.append(f)
+    
+    # Tạo zip file
+    print(f"Tạo package tại: {output_path}")
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Thêm các file
+        for file in include_files:
+            if os.path.exists(file):
+                print(f"  + Thêm file: {file}")
+                zipf.write(file)
+            else:
+                print(f"  - Bỏ qua file không tồn tại: {file}")
+        
+        # Thêm các thư mục
+        for folder in include_dirs:
+            if os.path.exists(folder):
+                print(f"  + Thêm thư mục: {folder}")
+                for root, dirs, files in os.walk(folder):
+                    for file in files:
+                        # Bỏ qua các file cache và temp
+                        if file.endswith(('.pyc', '.pyo')) or file.startswith(('__pycache__', '.', '#')):
+                            continue
+                        file_path = os.path.join(root, file)
+                        print(f"    + {file_path}")
+                        zipf.write(file_path)
+            else:
+                print(f"  - Bỏ qua thư mục không tồn tại: {folder}")
+                # Tạo thư mục trống để đảm bảo cấu trúc
+                zipf.writestr(f"{folder}/.keep", "")
+    
+    # Xóa các file tạm thời
+    temp_files = ["server_install.sh", "PACKAGE_README.md"]
+    for f in temp_files:
+        if os.path.exists(f):
+            os.remove(f)
+    
+    # Hiển thị thông tin
+    zip_size = os.path.getsize(output_path) / (1024 * 1024)  # Size in MB
+    print(f"\nPackage đã được tạo: {output_path}")
+    print(f"Kích thước: {zip_size:.2f} MB")
+    print("\nHướng dẫn triển khai:")
+    print("1. Upload file zip lên server")
+    print("2. Giải nén: unzip", output_path)
+    print("3. Chạy script cài đặt: bash server_install.sh")
+    
     return output_path
 
 def main():
     """Hàm chính"""
-    parser = argparse.ArgumentParser(description="Tạo package triển khai ETHUSDT Dashboard")
-    parser.add_argument("--output", "-o", help="Đường dẫn đến file zip đầu ra")
-    parser.add_argument("--include-data", "-d", action="store_true", help="Bao gồm dữ liệu hiện có")
+    # Parse arguments
+    output_path = "ethusdt_dashboard.zip"
+    if len(sys.argv) > 1:
+        output_path = sys.argv[1]
     
-    args = parser.parse_args()
-    
-    print("Đang tạo package triển khai ETHUSDT Dashboard...")
-    output_path = generate_package(args.output, args.include_data)
-    
-    # In thông tin bổ sung
-    print("\nThông tin triển khai:")
-    print("---------------------")
-    print("1. Sao chép file zip lên server của bạn")
-    print("2. Giải nén file zip")
-    print("3. Di chuyển vào thư mục giải nén")
-    print("4. Chạy script cài đặt: ./install.sh")
-    print("\nỨng dụng sẽ chạy tại http://server-ip:5000")
+    generate_package(output_path)
 
 if __name__ == "__main__":
     main()

@@ -1,74 +1,151 @@
-# Hướng dẫn đồng bộ code lên server
+# Hướng dẫn triển khai ETHUSDT Dashboard
 
-Chào mừng đến với hướng dẫn triển khai ETHUSDT Dashboard. Tài liệu này sẽ hướng dẫn bạn các phương pháp để đồng bộ code từ Replit lên server sản phẩm.
+## Giới thiệu
 
-## Phương pháp 1: Đồng bộ nhanh với 1 click
+Tài liệu này hướng dẫn chi tiết quy trình triển khai ETHUSDT Dashboard lên server mới. Hệ thống chạy một ứng dụng Streamlit kết nối với Binance API để cung cấp dự đoán ETH/USDT dựa trên mô hình AI.
 
-Đây là cách đơn giản nhất để đồng bộ tất cả các thay đổi lên server:
+## Yêu cầu hệ thống
 
+- **Hệ điều hành**: Ubuntu 22.04 hoặc mới hơn
+- **RAM**: Tối thiểu 4GB (Khuyến nghị: 8GB+)
+- **CPU**: 2 cores trở lên
+- **Dung lượng ổ cứng**: Tối thiểu 20GB
+- **Kết nối mạng**: Ổn định, băng thông tốt
+
+## Phương pháp triển khai
+
+Có hai phương pháp triển khai chính:
+
+### Phương pháp 1: Sử dụng Package Cài Đặt Tự Động
+
+1. **Tạo Package**:
+   ```bash
+   python prepare_for_server.py
+   ```
+   - Lệnh này tạo file `ethusdt_dashboard.zip` chứa toàn bộ mã nguồn và script cài đặt
+
+2. **Upload lên Server**:
+   ```bash
+   scp ethusdt_dashboard.zip root@your_server_ip:/root/
+   ```
+
+3. **Cài đặt trên Server**:
+   ```bash
+   ssh root@your_server_ip
+   cd /root
+   unzip ethusdt_dashboard.zip
+   bash server_install.sh
+   ```
+
+### Phương pháp 2: Sử dụng Script Đồng Bộ Hóa
+
+1. **Cập nhật thông tin server**:
+   Chỉnh sửa file `sync_to_server.sh`, thay `your_actual_server_ip` bằng địa chỉ IP thực của server
+
+2. **Chạy script đồng bộ**:
+   ```bash
+   ./sync_to_server.sh
+   ```
+
+3. **Kiểm tra trạng thái dịch vụ**:
+   ```bash
+   ssh root@your_server_ip
+   systemctl status ethusdt-dashboard
+   ```
+
+## Cấu hình API Binance
+
+Để dashboard hoạt động, cần cung cấp API key Binance:
+
+1. **Cài đặt qua biến môi trường**:
+   ```bash
+   BINANCE_API_KEY="your_api_key" BINANCE_API_SECRET="your_api_secret" bash server_install.sh
+   ```
+
+2. **Cập nhật thủ công sau khi cài đặt**:
+   ```bash
+   nano /root/ethusdt_dashboard/.env
+   ```
+   Thêm hoặc cập nhật các dòng:
+   ```
+   BINANCE_API_KEY=your_api_key
+   BINANCE_API_SECRET=your_api_secret
+   ```
+
+## Quản lý Dịch Vụ
+
+### Kiểm tra trạng thái:
 ```bash
-./deploy.sh
+systemctl status ethusdt-dashboard
 ```
 
-Script này sẽ tự động:
-- Đồng bộ tất cả các file và thư mục
-- Khởi động lại dịch vụ trên server
-- Kiểm tra trạng thái hoạt động
-
-## Phương pháp 2: Đồng bộ liên tục (theo dõi thay đổi)
-
-Nếu bạn muốn làm việc lâu dài và cần tự động đồng bộ khi có thay đổi:
-
+### Khởi động/dừng/khởi động lại:
 ```bash
-./automation_scripts/continuous_sync.sh
+systemctl start ethusdt-dashboard
+systemctl stop ethusdt-dashboard
+systemctl restart ethusdt-dashboard
 ```
 
-Script này sẽ:
-- Chạy trong nền và theo dõi các thay đổi trên các file
-- Tự động đồng bộ khi phát hiện thay đổi
-- Khởi động lại dịch vụ trên server khi cần
-
-Để dừng, nhấn `Ctrl+C`.
-
-## Phương pháp 3: Đồng bộ thủ công khi cần
-
-Nếu bạn muốn kiểm soát khi nào đồng bộ:
-
+### Xem logs:
 ```bash
-./automation_scripts/post_update_hook.sh
+journalctl -fu ethusdt-dashboard
 ```
 
-Script này sẽ đồng bộ tất cả các thay đổi một lần.
+## Xử lý Sự Cố
 
-## Phương pháp 4: Đóng gói và triển khai
+### Lỗi không thể kết nối Binance API:
 
-Đây là cách tạo một package hoàn chỉnh:
+1. Kiểm tra API keys:
+   ```bash
+   cat /root/ethusdt_dashboard/.env
+   ```
 
-```bash
-./deployment/prepare_deployment.sh
-```
+2. Kiểm tra kết nối mạng:
+   ```bash
+   ping api.binance.com
+   ```
 
-Sau đó làm theo hướng dẫn được hiển thị để chuyển file zip lên server và giải nén.
+3. Kiểm tra logs:
+   ```bash
+   journalctl -fu ethusdt-dashboard | grep "error"
+   ```
 
-## Kiểm tra sau khi đồng bộ
+### Lỗi dịch vụ không khởi động:
 
-Sau khi đồng bộ, kiểm tra trạng thái của server:
+1. Kiểm tra cài đặt Python và các thư viện:
+   ```bash
+   cd /root/ethusdt_dashboard
+   source venv/bin/activate
+   pip list | grep streamlit
+   ```
 
-```bash
-./automation_scripts/check_server_status.sh
-```
+2. Thử chạy ứng dụng thủ công:
+   ```bash
+   cd /root/ethusdt_dashboard
+   source venv/bin/activate
+   streamlit run app.py
+   ```
 
-## Sửa lỗi thường gặp
+## Cập Nhật Phiên Bản
 
-### Lỗi kết nối SSH
-- Kiểm tra địa chỉ IP server, tên người dùng
-- Kiểm tra kết nối mạng
-- Đảm bảo SSH key đã được thiết lập đúng
+Để cập nhật lên phiên bản mới:
 
-### Dịch vụ không khởi động
-- Kiểm tra logs: `ssh root@45.76.196.13 "journalctl -u ethusdt-dashboard -n 50"`
-- Chạy setup script: `ssh root@45.76.196.13 "cd /root/ethusdt_dashboard && ./server_setup.sh"`
+1. **Sử dụng script đồng bộ**:
+   ```bash
+   ./sync_to_server.sh
+   ```
 
-### Không thể truy cập dashboard
-- Kiểm tra firewall: `ssh root@45.76.196.13 "ufw status"`
-- Đảm bảo port 5000 được mở: `ssh root@45.76.196.13 "netstat -tuln | grep 5000"`
+2. **Hoặc tải lên package mới**:
+   ```bash
+   scp ethusdt_dashboard.zip root@your_server_ip:/root/
+   ssh root@your_server_ip
+   cd /root
+   unzip -o ethusdt_dashboard.zip
+   bash server_install.sh
+   ```
+
+## Tham Khảo
+
+- [Tài liệu Streamlit](https://docs.streamlit.io/)
+- [Tài liệu Binance API](https://binance-docs.github.io/apidocs/)
+- [Quản lý Systemd](https://www.digitalocean.com/community/tutorials/how-to-use-systemctl-to-manage-systemd-services-and-units)
