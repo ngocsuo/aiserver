@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script kiểm tra trạng thái server ETHUSDT Dashboard
+# Kiểm tra trạng thái server ETHUSDT Dashboard
 
 # Màu sắc đầu ra
 GREEN='\033[0;32m'
@@ -12,158 +12,135 @@ NC='\033[0m' # No Color
 SERVER="45.76.196.13"
 USER="root"
 REMOTE_DIR="/root/ethusdt_dashboard"
+DASHBOARD_PORT="5000"
 
 echo -e "${YELLOW}=== KIỂM TRA TRẠNG THÁI SERVER ETHUSDT DASHBOARD ===${NC}"
 echo "Thời gian: $(date)"
 
 # Kiểm tra kết nối SSH
-echo -e "${BLUE}Kiểm tra kết nối SSH đến server...${NC}"
+echo -e "${BLUE}Kiểm tra kết nối SSH...${NC}"
 if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no $USER@$SERVER "echo 'Kết nối thành công!'" &> /dev/null; then
-    echo -e "${GREEN}Kết nối SSH thành công!${NC}"
+    echo -e "${GREEN}✓ Kết nối SSH thành công!${NC}"
 else
-    echo -e "${RED}Không thể kết nối đến server. Kiểm tra lại thông tin đăng nhập hoặc kết nối mạng.${NC}"
+    echo -e "${RED}✗ Không thể kết nối qua SSH. Kiểm tra lại thông tin đăng nhập hoặc kết nối mạng.${NC}"
     exit 1
 fi
 
-# Kiểm tra dung lượng ổ đĩa
-echo -e "${BLUE}Kiểm tra dung lượng ổ đĩa...${NC}"
-DISK_USAGE=$(ssh $USER@$SERVER "df -h / | grep -v Filesystem")
-DISK_USED=$(echo $DISK_USAGE | awk '{print $5}' | sed 's/%//')
-DISK_AVAIL=$(echo $DISK_USAGE | awk '{print $4}')
+# Kiểm tra uptime và tải CPU
+echo -e "${BLUE}Kiểm tra uptime và tải CPU...${NC}"
+UPTIME=$(ssh $USER@$SERVER "uptime")
+echo "Uptime: $UPTIME"
 
-if [ $DISK_USED -gt 90 ]; then
-    echo -e "${RED}Cảnh báo: Ổ đĩa sử dụng $DISK_USED% (Còn trống: $DISK_AVAIL)${NC}"
-elif [ $DISK_USED -gt 80 ]; then
-    echo -e "${YELLOW}Chú ý: Ổ đĩa sử dụng $DISK_USED% (Còn trống: $DISK_AVAIL)${NC}"
-else
-    echo -e "${GREEN}Ổ đĩa sử dụng $DISK_USED% (Còn trống: $DISK_AVAIL)${NC}"
-fi
+LOAD=$(ssh $USER@$SERVER "cat /proc/loadavg | awk '{print \$1,\$2,\$3}'")
+echo -e "Tải CPU: ${LOAD}"
 
-# Kiểm tra RAM
-echo -e "${BLUE}Kiểm tra RAM...${NC}"
-MEM_INFO=$(ssh $USER@$SERVER "free -m | grep Mem")
-MEM_TOTAL=$(echo $MEM_INFO | awk '{print $2}')
-MEM_USED=$(echo $MEM_INFO | awk '{print $3}')
-MEM_AVAIL=$(echo $MEM_INFO | awk '{print $7}')
-MEM_PERCENT=$((MEM_USED * 100 / MEM_TOTAL))
+# Kiểm tra bộ nhớ RAM
+echo -e "${BLUE}Kiểm tra bộ nhớ RAM...${NC}"
+RAM_INFO=$(ssh $USER@$SERVER "free -h | grep -i 'mem'")
+echo "$RAM_INFO"
 
-if [ $MEM_PERCENT -gt 90 ]; then
-    echo -e "${RED}Cảnh báo: RAM sử dụng $MEM_PERCENT% ($MEM_USED MB / $MEM_TOTAL MB, Còn trống: $MEM_AVAIL MB)${NC}"
-elif [ $MEM_PERCENT -gt 80 ]; then
-    echo -e "${YELLOW}Chú ý: RAM sử dụng $MEM_PERCENT% ($MEM_USED MB / $MEM_TOTAL MB, Còn trống: $MEM_AVAIL MB)${NC}"
-else
-    echo -e "${GREEN}RAM sử dụng $MEM_PERCENT% ($MEM_USED MB / $MEM_TOTAL MB, Còn trống: $MEM_AVAIL MB)${NC}"
-fi
+# Kiểm tra dung lượng ổ cứng
+echo -e "${BLUE}Kiểm tra dung lượng ổ cứng...${NC}"
+DISK_INFO=$(ssh $USER@$SERVER "df -h / | grep -v Filesystem")
+echo "$DISK_INFO"
 
-# Kiểm tra CPU
-echo -e "${BLUE}Kiểm tra CPU...${NC}"
-CPU_LOAD=$(ssh $USER@$SERVER "cat /proc/loadavg")
-LOAD_1M=$(echo $CPU_LOAD | awk '{print $1}')
-LOAD_5M=$(echo $CPU_LOAD | awk '{print $2}')
-LOAD_15M=$(echo $CPU_LOAD | awk '{print $3}')
-CPU_CORES=$(ssh $USER@$SERVER "nproc")
-LOAD_PERCENT=$(awk -v load=$LOAD_1M -v cores=$CPU_CORES 'BEGIN {printf "%.0f", load * 100 / cores}')
-
-if [ $LOAD_PERCENT -gt 90 ]; then
-    echo -e "${RED}Cảnh báo: CPU load ${LOAD_PERCENT}% (1m: ${LOAD_1M}, 5m: ${LOAD_5M}, 15m: ${LOAD_15M}, Số lõi: ${CPU_CORES})${NC}"
-elif [ $LOAD_PERCENT -gt 70 ]; then
-    echo -e "${YELLOW}Chú ý: CPU load ${LOAD_PERCENT}% (1m: ${LOAD_1M}, 5m: ${LOAD_5M}, 15m: ${LOAD_15M}, Số lõi: ${CPU_CORES})${NC}"
-else
-    echo -e "${GREEN}CPU load ${LOAD_PERCENT}% (1m: ${LOAD_1M}, 5m: ${LOAD_5M}, 15m: ${LOAD_15M}, Số lõi: ${CPU_CORES})${NC}"
-fi
-
-# Kiểm tra trạng thái service
-echo -e "${BLUE}Kiểm tra trạng thái service...${NC}"
+# Kiểm tra trạng thái dịch vụ
+echo -e "${BLUE}Kiểm tra trạng thái dịch vụ...${NC}"
 SERVICE_STATUS=$(ssh $USER@$SERVER "systemctl is-active ethusdt-dashboard")
-if [ "$SERVICE_STATUS" == "active" ]; then
-    echo -e "${GREEN}Service đang chạy (active)${NC}"
+
+if [ "$SERVICE_STATUS" = "active" ]; then
+    echo -e "${GREEN}✓ Dịch vụ ethusdt-dashboard đang hoạt động (active)${NC}"
     
-    # Kiểm tra thời gian chạy liên tục
-    UPTIME=$(ssh $USER@$SERVER "systemctl show ethusdt-dashboard -p ActiveEnterTimestamp | sed 's/ActiveEnterTimestamp=//'")
-    if [ ! -z "$UPTIME" ]; then
-        CURRENT_TIME=$(ssh $USER@$SERVER "date +%s")
-        UPTIME_SECONDS=$((CURRENT_TIME - $(date -d "$UPTIME" +%s)))
-        UPTIME_DAYS=$((UPTIME_SECONDS / 86400))
-        UPTIME_HOURS=$(((UPTIME_SECONDS % 86400) / 3600))
-        UPTIME_MINUTES=$(((UPTIME_SECONDS % 3600) / 60))
-        
-        echo -e "${GREEN}Thời gian chạy: ${UPTIME_DAYS} ngày, ${UPTIME_HOURS} giờ, ${UPTIME_MINUTES} phút${NC}"
-    fi
+    # Lấy thêm chi tiết về dịch vụ
+    SERVICE_DETAILS=$(ssh $USER@$SERVER "systemctl status ethusdt-dashboard | grep -E 'Active:|Main PID:'")
+    echo "$SERVICE_DETAILS"
 else
-    echo -e "${RED}Service không chạy ($SERVICE_STATUS)${NC}"
+    echo -e "${RED}✗ Dịch vụ ethusdt-dashboard không hoạt động (inactive)${NC}"
     
-    # Kiểm tra log để xem lý do lỗi
-    echo -e "${BLUE}Kiểm tra log lỗi...${NC}"
-    ERROR_LOG=$(ssh $USER@$SERVER "journalctl -u ethusdt-dashboard -n 20 --no-pager | grep -i error")
-    if [ ! -z "$ERROR_LOG" ]; then
-        echo -e "${RED}Lỗi được phát hiện trong log:${NC}"
-        echo "$ERROR_LOG"
-    fi
+    # Kiểm tra log gần nhất
+    echo "Log gần nhất:"
+    ssh $USER@$SERVER "journalctl -u ethusdt-dashboard -n 5 --no-pager"
 fi
 
-# Kiểm tra cổng dịch vụ
-echo -e "${BLUE}Kiểm tra cổng dịch vụ...${NC}"
-if ssh $USER@$SERVER "netstat -tuln | grep -q ':5000'"; then
-    echo -e "${GREEN}Cổng 5000 đang mở và lắng nghe kết nối${NC}"
+# Kiểm tra port
+echo -e "${BLUE}Kiểm tra port của ứng dụng...${NC}"
+PORT_STATUS=$(ssh $USER@$SERVER "netstat -tuln | grep :$DASHBOARD_PORT")
+
+if [ -n "$PORT_STATUS" ]; then
+    echo -e "${GREEN}✓ Port $DASHBOARD_PORT đang mở và lắng nghe kết nối${NC}"
+    echo "$PORT_STATUS"
 else
-    echo -e "${RED}Cổng 5000 không mở! Dịch vụ có thể không chạy chính xác.${NC}"
+    echo -e "${RED}✗ Port $DASHBOARD_PORT không mở hoặc không lắng nghe kết nối${NC}"
 fi
 
-# Kiểm tra các quá trình Python đang chạy
-echo -e "${BLUE}Kiểm tra các quá trình Python đang chạy...${NC}"
-PYTHON_PROCESSES=$(ssh $USER@$SERVER "ps aux | grep python | grep -v grep")
-if [ ! -z "$PYTHON_PROCESSES" ]; then
+# Kiểm tra thư mục ứng dụng
+echo -e "${BLUE}Kiểm tra thư mục ứng dụng...${NC}"
+DIR_STATUS=$(ssh $USER@$SERVER "[ -d $REMOTE_DIR ] && echo 'Tồn tại' || echo 'Không tồn tại'")
+
+if [ "$DIR_STATUS" = "Tồn tại" ]; then
+    echo -e "${GREEN}✓ Thư mục $REMOTE_DIR tồn tại${NC}"
+    
+    # Liệt kê các file chính
+    echo "Các file và thư mục chính:"
+    ssh $USER@$SERVER "ls -la $REMOTE_DIR | head -10"
+    
+    # Kiểm tra kích thước thư mục
+    DIR_SIZE=$(ssh $USER@$SERVER "du -sh $REMOTE_DIR | cut -f1")
+    echo "Kích thước thư mục: $DIR_SIZE"
+else
+    echo -e "${RED}✗ Thư mục $REMOTE_DIR không tồn tại${NC}"
+fi
+
+# Kiểm tra tiến trình Python/Streamlit
+echo -e "${BLUE}Kiểm tra tiến trình Python/Streamlit...${NC}"
+PYTHON_PROCESSES=$(ssh $USER@$SERVER "ps aux | grep -E 'python|streamlit' | grep -v grep")
+
+if [ -n "$PYTHON_PROCESSES" ]; then
+    echo -e "${GREEN}✓ Tiến trình Python/Streamlit đang chạy:${NC}"
+    echo "$PYTHON_PROCESSES" | head -5
+    
+    # Số lượng tiến trình Python
     PROCESS_COUNT=$(echo "$PYTHON_PROCESSES" | wc -l)
-    echo -e "${GREEN}Có ${PROCESS_COUNT} quá trình Python đang chạy:${NC}"
-    ssh $USER@$SERVER "ps aux | grep python | grep -v grep | head -5"
-    if [ $PROCESS_COUNT -gt 5 ]; then
-        echo -e "${YELLOW}...và ${PROCESS_COUNT-5} quá trình khác${NC}"
+    echo "Tổng số tiến trình Python: $PROCESS_COUNT"
+else
+    echo -e "${RED}✗ Không có tiến trình Python/Streamlit nào đang chạy${NC}"
+fi
+
+# Kiểm tra logs gần đây
+echo -e "${BLUE}Kiểm tra logs của ứng dụng...${NC}"
+LOG_FILES=$(ssh $USER@$SERVER "find $REMOTE_DIR/logs -type f -name '*.log' 2>/dev/null")
+
+if [ -n "$LOG_FILES" ]; then
+    echo -e "${GREEN}✓ Tìm thấy các file log:${NC}"
+    echo "$LOG_FILES"
+    
+    # Hiển thị log gần nhất
+    LATEST_LOG=$(ssh $USER@$SERVER "find $REMOTE_DIR/logs -type f -name '*.log' -exec ls -lt {} \; | head -1 | awk '{print \$9}'")
+    if [ -n "$LATEST_LOG" ]; then
+        echo -e "\nNội dung log gần nhất ($LATEST_LOG):"
+        ssh $USER@$SERVER "tail -n 10 $LATEST_LOG"
     fi
 else
-    echo -e "${RED}Không có quá trình Python nào đang chạy!${NC}"
+    echo -e "${YELLOW}! Không tìm thấy file log nào trong thư mục $REMOTE_DIR/logs${NC}"
+    
+    # Kiểm tra log của systemd
+    echo "Kiểm tra systemd logs:"
+    ssh $USER@$SERVER "journalctl -u ethusdt-dashboard -n 10 --no-pager"
 fi
 
-# Kiểm tra log ứng dụng
-echo -e "${BLUE}Kiểm tra log ứng dụng mới nhất...${NC}"
-if ssh $USER@$SERVER "[ -f $REMOTE_DIR/app.log ] && echo 'exists'"; then
-    APP_LOG=$(ssh $USER@$SERVER "tail -n 10 $REMOTE_DIR/app.log")
-    echo -e "${GREEN}10 dòng log mới nhất:${NC}"
-    echo "$APP_LOG"
+# Kiểm tra kết nối đến Binance API
+echo -e "${BLUE}Kiểm tra kết nối đến Binance API...${NC}"
+API_STATUS=$(ssh $USER@$SERVER "curl -s -o /dev/null -w '%{http_code}' https://api.binance.com/api/v3/ping")
+
+if [ "$API_STATUS" = "200" ]; then
+    echo -e "${GREEN}✓ Kết nối đến Binance API thành công (HTTP Status: $API_STATUS)${NC}"
 else
-    echo -e "${YELLOW}Không tìm thấy file log ứng dụng ($REMOTE_DIR/app.log)${NC}"
+    echo -e "${RED}✗ Không thể kết nối đến Binance API (HTTP Status: $API_STATUS)${NC}"
 fi
 
-# Kiểm tra các model đã huấn luyện
-echo -e "${BLUE}Kiểm tra các model đã huấn luyện...${NC}"
-MODELS_COUNT=$(ssh $USER@$SERVER "find $REMOTE_DIR/models -name \"*.h5\" | wc -l")
-if [ $MODELS_COUNT -gt 0 ]; then
-    echo -e "${GREEN}Có ${MODELS_COUNT} model đã được huấn luyện:${NC}"
-    ssh $USER@$SERVER "find $REMOTE_DIR/models -name \"*.h5\" -printf \"%f\n\" | head -5"
-    if [ $MODELS_COUNT -gt 5 ]; then
-        echo -e "${YELLOW}...và ${MODELS_COUNT-5} model khác${NC}"
-    fi
-else
-    echo -e "${YELLOW}Không tìm thấy model nào đã được huấn luyện.${NC}"
-fi
+# Hiển thị endpoints
+echo -e "${BLUE}Thông tin về endpoints...${NC}"
+echo "Dashboard URL: http://$SERVER:$DASHBOARD_PORT"
+echo "API URL: http://$SERVER:$DASHBOARD_PORT/api"
 
-# Kiểm tra log training
-echo -e "${BLUE}Kiểm tra log huấn luyện...${NC}"
-if ssh $USER@$SERVER "[ -f $REMOTE_DIR/training_logs.txt ] && echo 'exists'"; then
-    TRAINING_LOG=$(ssh $USER@$SERVER "tail -n 10 $REMOTE_DIR/training_logs.txt")
-    echo -e "${GREEN}10 dòng log huấn luyện mới nhất:${NC}"
-    echo "$TRAINING_LOG"
-else
-    echo -e "${YELLOW}Không tìm thấy file log huấn luyện ($REMOTE_DIR/training_logs.txt)${NC}"
-fi
-
-# Kiểm tra dữ liệu đã tải
-echo -e "${BLUE}Kiểm tra dữ liệu đã tải...${NC}"
-DATA_COUNT=$(ssh $USER@$SERVER "find $REMOTE_DIR/data -type f | wc -l")
-if [ $DATA_COUNT -gt 0 ]; then
-    DATA_SIZE=$(ssh $USER@$SERVER "du -sh $REMOTE_DIR/data | cut -f1")
-    echo -e "${GREEN}Có ${DATA_COUNT} file dữ liệu (Kích thước: ${DATA_SIZE})${NC}"
-else
-    echo -e "${YELLOW}Không tìm thấy dữ liệu đã tải.${NC}"
-fi
-
-echo -e "${YELLOW}=== KIỂM TRA TRẠNG THÁI HOÀN TẤT ===${NC}"
+echo -e "${YELLOW}=== KIỂM TRA HOÀN TẤT ===${NC}"
