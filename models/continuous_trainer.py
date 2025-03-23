@@ -488,7 +488,7 @@ class ContinuousTrainer:
                         # Tiếp tục với quy trình tải mới dưới đây
                 
                 # Nếu không có dữ liệu đệm hoặc không thể tải, tải mới từ API
-                if len(all_processed_data[timeframe]) <= i:
+                if len(all_processed_data[timeframe]) <= current_chunk_index:
                     log_msg = f"📥 Đang tải đoạn dữ liệu {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
                     self._add_log(log_msg)
                     logger.info(f"Downloading chunk {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): {start_date} to {end_date}")
