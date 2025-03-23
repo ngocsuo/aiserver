@@ -1,0 +1,41 @@
+
+2025-03-23 06:18:45,035 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:18:45,035 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:18:45,035 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:18:45,035 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:18:45,166 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:18:45,167 - app - INFO - Proxy configured successfully
+2025-03-23 06:18:45,167 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:18:45,170 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:18:45,172 - app - INFO - Proxy configured successfully
+2025-03-23 06:18:45,172 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:18:45.926 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:18:45,927 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:18:45,928 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:18:46.018 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:18:46,019 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:18:46,019 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:18:46,039 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:18:46,040 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:18:46,040 - data_collector - WARNING - Binance API keys not found in config
+2025-03-23 06:18:46,040 - data_collector_factory - ERROR - Could not connect to Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,040 - data_collector_factory - ERROR - Không thể kết nối đến Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,042 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:18:46,042 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:18:46,130 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:18:46,131 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:18:46,131 - data_collector - WARNING - Binance API keys not found in config
+2025-03-23 06:18:46,131 - data_collector_factory - ERROR - Could not connect to Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,131 - data_collector_factory - ERROR - Không thể kết nối đến Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,133 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:18:46,133 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:18:46,150 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:18:46,151 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:18:46,151 - data_collector - WARNING - Binance API keys not found in config
+2025-03-23 06:18:46,151 - data_collector_factory - ERROR - Could not connect to Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,151 - data_collector_factory - ERROR - Không thể kết nối đến Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,308 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:18:46,309 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:18:46,309 - data_collector - WARNING - Binance API keys not found in config
+2025-03-23 06:18:46,309 - data_collector_factory - ERROR - Could not connect to Binance API: Could not connect to Binance API: API keys not found in configuration
+2025-03-23 06:18:46,309 - data_collector_factory - ERROR - Không thể kết nối đến Binance API: Could not connect to Binance API: API keys not found in configuration

@@ -1,0 +1,50 @@
+Mar 23 05:36:55 hvnai systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+░░ Defined-By: systemd
+░░ Support: http://www.ubuntu.com/support
+░░
+░░ The unit nginx.service has entered the 'failed' state with result 'exit-code'.
+Mar 23 05:24:56 hvnai systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+░░ Subject: A start job for unit nginx.service has failed
+░░ Defined-By: systemd
+░░ Support: http://www.ubuntu.com/support
+░░
+░░ A start job for unit nginx.service has finished with a failure.
+░░
+░░ The job identifier is 1730852 and the job result is failed.
+Mar 23 05:36:52 hvnai systemd[1]: Starting A high performance web server and a reverse proxy server...
+░░ Subject: A start job for unit nginx.service has begun execution
+░░ Defined-By: systemd
+░░ Support: http://www.ubuntu.com/support
+░░
+░░ A start job for unit nginx.service has begun execution.
+░░
+░░ The job identifier is 1742306.
+Mar 23 05:36:52 hvnai nginx[744423]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+Mar 23 05:36:53 hvnai nginx[744423]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+Mar 23 05:36:53 hvnai nginx[744423]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+Mar 23 05:36:54 hvnai nginx[744423]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+Mar 23 05:36:54 hvnai nginx[744423]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+Mar 23 05:36:55 hvnai nginx[744423]: nginx: [emerg] still could not bind()
+Mar 23 05:36:55 hvnai systemd[1]: nginx.service: Control process exited, code=exited, status=1/FAILURE
+░░ Subject: Unit process exited
+░░ Defined-By: systemd
+░░ Support: http://www.ubuntu.com/support
+░░
+░░ An ExecStart= process belonging to unit nginx.service has exited.
+░░
+░░ The process' exit code is 'exited' and its exit status is 1.
+Mar 23 05:36:55 hvnai systemd[1]: nginx.service: Failed with result 'exit-code'.
+░░ Subject: Unit failed
+░░ Defined-By: systemd
+░░ Support: http://www.ubuntu.com/support
+░░
+░░ The unit nginx.service has entered the 'failed' state with result 'exit-code'.
+Mar 23 05:36:55 hvnai systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+░░ Subject: A start job for unit nginx.service has failed
+░░ Defined-By: systemd
+░░ Support: http://www.ubuntu.com/support
+░░
+░░ A start job for unit nginx.service has finished with a failure.
+░░
+░░ The job identifier is 1742306 and the job result is failed.
+lines 30-77/77 (END)

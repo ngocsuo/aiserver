@@ -1,0 +1,1111 @@
+2025-03-23 05:55:52,108 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:55:52,108 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:55:52,108 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:55:52,312 - data_collector - INFO - Fetching chunk from 2025-02-03 12:00 to 2025-02-04 03:00
+2025-03-23 05:55:52,579 - data_collector - INFO - Fetching chunk from 2025-02-04 03:00 to 2025-02-04 18:00
+2025-03-23 05:55:52,844 - data_collector - INFO - Fetching chunk from 2025-02-04 18:00 to 2025-02-05 09:00
+2025-03-23 05:55:53,109 - data_collector - INFO - Fetching chunk from 2025-02-05 09:00 to 2025-02-06 00:00
+2025-03-23 05:55:53,374 - data_collector - INFO - Fetching chunk from 2025-02-06 00:00 to 2025-02-06 15:00
+2025-03-23 05:55:53,641 - data_collector - INFO - Fetching chunk from 2025-02-06 15:00 to 2025-02-07 06:00
+2025-03-23 05:55:53,908 - data_collector - INFO - Fetching chunk from 2025-02-07 06:00 to 2025-02-07 21:00
+2025-03-23 05:55:54,170 - data_collector - INFO - Fetching chunk from 2025-02-07 21:00 to 2025-02-08 12:00
+2025-03-23 05:55:54,438 - data_collector - INFO - Fetching chunk from 2025-02-08 12:00 to 2025-02-09 03:00
+2025-03-23 05:55:54,701 - data_collector - INFO - Fetching chunk from 2025-02-09 03:00 to 2025-02-09 18:00
+2025-03-23 05:55:54,970 - data_collector - INFO - Fetching chunk from 2025-02-09 18:00 to 2025-02-10 09:00
+2025-03-23 05:55:55,235 - data_collector - INFO - Fetching chunk from 2025-02-10 09:00 to 2025-02-11 00:00
+2025-03-23 05:55:55,497 - data_collector - INFO - Fetching chunk from 2025-02-11 00:00 to 2025-02-11 15:00
+2025-03-23 05:55:55,766 - data_collector - INFO - Fetching chunk from 2025-02-11 15:00 to 2025-02-12 06:00
+2025-03-23 05:55:56,027 - data_collector - INFO - Fetching chunk from 2025-02-12 06:00 to 2025-02-12 21:00
+2025-03-23 05:55:56,288 - data_collector - INFO - Fetching chunk from 2025-02-12 21:00 to 2025-02-13 12:00
+2025-03-23 05:55:56,550 - data_collector - INFO - Fetching chunk from 2025-02-13 12:00 to 2025-02-14 03:00
+2025-03-23 05:55:56,813 - data_collector - INFO - Fetching chunk from 2025-02-14 03:00 to 2025-02-14 18:00
+2025-03-23 05:55:57,077 - data_collector - INFO - Fetching chunk from 2025-02-14 18:00 to 2025-02-15 09:00
+2025-03-23 05:55:57,085 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:55:57,085 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:55:57,197 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:55:57,198 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:55:57,198 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:55:57,306 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:55:57,307 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:55:57,308 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:55:57,340 - data_collector - INFO - Fetching chunk from 2025-02-15 09:00 to 2025-02-16 00:00
+2025-03-23 05:55:57,446 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:55:57,476 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:55:57,582 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:55:57,582 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:55:57,582 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:55:57,604 - data_collector - INFO - Fetching chunk from 2025-02-16 00:00 to 2025-02-16 15:00
+2025-03-23 05:55:57,865 - data_collector - INFO - Fetching chunk from 2025-02-16 15:00 to 2025-02-17 06:00
+2025-03-23 05:55:58,126 - data_collector - INFO - Fetching chunk from 2025-02-17 06:00 to 2025-02-17 21:00
+2025-03-23 05:55:58,388 - data_collector - INFO - Fetching chunk from 2025-02-17 21:00 to 2025-02-18 12:00
+2025-03-23 05:55:58,651 - data_collector - INFO - Fetching chunk from 2025-02-18 12:00 to 2025-02-19 03:00
+2025-03-23 05:55:58,914 - data_collector - INFO - Fetching chunk from 2025-02-19 03:00 to 2025-02-19 18:00
+2025-03-23 05:55:59,176 - data_collector - INFO - Fetching chunk from 2025-02-19 18:00 to 2025-02-20 09:00
+2025-03-23 05:55:59,440 - data_collector - INFO - Fetching chunk from 2025-02-20 09:00 to 2025-02-21 00:00
+2025-03-23 05:55:59,704 - data_collector - INFO - Fetching chunk from 2025-02-21 00:00 to 2025-02-21 15:00
+2025-03-23 05:55:59,966 - data_collector - INFO - Fetching chunk from 2025-02-21 15:00 to 2025-02-22 06:00
+2025-03-23 05:56:00,229 - data_collector - INFO - Fetching chunk from 2025-02-22 06:00 to 2025-02-22 21:00
+2025-03-23 05:56:00,493 - data_collector - INFO - Fetching chunk from 2025-02-22 21:00 to 2025-02-23 12:00
+2025-03-23 05:56:00,755 - data_collector - INFO - Fetching chunk from 2025-02-23 12:00 to 2025-02-24 03:00
+2025-03-23 05:56:01,018 - data_collector - INFO - Fetching chunk from 2025-02-24 03:00 to 2025-02-24 18:00
+2025-03-23 05:56:01,284 - data_collector - INFO - Fetching chunk from 2025-02-24 18:00 to 2025-02-25 09:00
+2025-03-23 05:56:01,547 - data_collector - INFO - Fetching chunk from 2025-02-25 09:00 to 2025-02-26 00:00
+2025-03-23 05:56:01,809 - data_collector - INFO - Fetching chunk from 2025-02-26 00:00 to 2025-02-26 15:00
+2025-03-23 05:56:02,073 - data_collector - INFO - Fetching chunk from 2025-02-26 15:00 to 2025-02-27 06:00
+2025-03-23 05:56:02,146 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:02,146 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:02,257 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:02,258 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:02,258 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:02,335 - data_collector - INFO - Fetching chunk from 2025-02-27 06:00 to 2025-02-27 21:00
+2025-03-23 05:56:02,368 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:02,370 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:02,370 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:02,503 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:02,530 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:02,598 - data_collector - INFO - Fetching chunk from 2025-02-27 21:00 to 2025-02-28 00:00
+2025-03-23 05:56:02,635 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:02,636 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:02,637 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:02,851 - data_collector - INFO - Fetched a total of 38924 candles
+2025-03-23 05:56:02,988 - data_collector - INFO - Fetched 38924 1m candles for ETHUSDT
+2025-03-23 05:56:03,007 - data_processor - INFO - Processing 38924 candles of data
+2025-03-23 05:56:03,008 - data_processor - INFO - Data split into 4 chunks for parallel processing using 3 workers
+2025-03-23 05:56:03,008 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:03,010 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:03,026 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:04,603 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:04,612 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:04,630 - feature_engineering - INFO - Processed dataset has 12842 samples
+2025-03-23 05:56:04,631 - feature_engineering - INFO - Class distribution: {1: 12839, 0: 2, 2: 1}
+2025-03-23 05:56:04,631 - feature_engineering - INFO - Feature engineering completed successfully
+2025-03-23 05:56:04,631 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:04,633 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:04,650 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:06,251 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:06,258 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:06,278 - feature_engineering - INFO - Processed dataset has 12942 samples
+2025-03-23 05:56:06,278 - feature_engineering - INFO - Class distribution: {1: 12942}
+2025-03-23 05:56:06,278 - feature_engineering - INFO - Feature engineering completed successfully
+2025-03-23 05:56:06,278 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:06,280 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:06,302 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:07,689 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:07,690 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:07,866 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:07,868 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:07,869 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:07,915 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:07,923 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:07,943 - feature_engineering - INFO - Processed dataset has 12942 samples
+2025-03-23 05:56:07,944 - feature_engineering - INFO - Class distribution: {1: 12942}
+2025-03-23 05:56:07,944 - feature_engineering - INFO - Feature engineering completed successfully
+2025-03-23 05:56:07,944 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:07,944 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:07,950 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:07,996 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:07,998 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:08,000 - feature_engineering - WARNING - Empty dataset received for normalization. Skipping normalization.
+2025-03-23 05:56:08,000 - feature_engineering - WARNING - Processed dataset is empty!
+2025-03-23 05:56:08,007 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:08,008 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:08,008 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:08,146 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:08,167 - data_processor - INFO - Sequential processing complete: 38483 samples with 81 features
+2025-03-23 05:56:08,175 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:08,284 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:08,285 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:08,285 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:09,344 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-23 05:56:09,345 - continuous_trainer - INFO - Cached data saved for period 2025-02-01 to 2025-02-28 (Memory optimized: 2.0% saved)
+2025-03-23 05:56:09,345 - continuous_trainer - INFO - Chunk 14 (1m): Processed 38483 data points
+2025-03-23 05:56:09,345 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-23 đã tồn tại trong cache
+2025-03-23 05:56:09,345 - continuous_trainer - INFO - Skipping chunk 15/15 (1m): 2025-03-01 to 2025-03-23 - data already exists
+2025-03-23 05:56:09,369 - continuous_trainer - ERROR - Error loading cached data: No module named 'numpy._core.numeric'
+2025-03-23 05:56:09,370 - continuous_trainer - INFO - Downloading chunk 15/15 (1m): 2025-03-01 to 2025-03-23
+2025-03-23 05:56:09,370 - data_collector - INFO - Fetching 1m candles for ETHUSDT from 2025-03-01 to 2025-03-23
+2025-03-23 05:56:09,370 - data_collector - INFO - Fetching chunk from 2025-03-01 00:00 to 2025-03-01 15:00
+2025-03-23 05:56:09,634 - data_collector - INFO - Fetching chunk from 2025-03-01 15:00 to 2025-03-02 06:00
+2025-03-23 05:56:09,897 - data_collector - INFO - Fetching chunk from 2025-03-02 06:00 to 2025-03-02 21:00
+2025-03-23 05:56:10,162 - data_collector - INFO - Fetching chunk from 2025-03-02 21:00 to 2025-03-03 12:00
+2025-03-23 05:56:10,424 - data_collector - INFO - Fetching chunk from 2025-03-03 12:00 to 2025-03-04 03:00
+2025-03-23 05:56:10,688 - data_collector - INFO - Fetching chunk from 2025-03-04 03:00 to 2025-03-04 18:00
+2025-03-23 05:56:10,952 - data_collector - INFO - Fetching chunk from 2025-03-04 18:00 to 2025-03-05 09:00
+2025-03-23 05:56:11,214 - data_collector - INFO - Fetching chunk from 2025-03-05 09:00 to 2025-03-06 00:00
+2025-03-23 05:56:12,990 - data_collector - INFO - Fetching chunk from 2025-03-06 00:00 to 2025-03-06 15:00
+2025-03-23 05:56:12,993 - feature_engineering - INFO - Created 25622 sequences of length 60
+2025-03-23 05:56:12,994 - feature_engineering - INFO - Sequence shape: (25622, 60, 76), Target shape: (25622,)
+2025-03-23 05:56:12,994 - data_processor - INFO - Sequence data preparation complete
+2025-03-23 05:56:13,016 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:13,016 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:13,063 - data_processor - INFO - Data split complete: 77046 train, 25682 validation, 25682 test samples
+2025-03-23 05:56:13,121 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:13,122 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:13,122 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:13,215 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:13,216 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:13,217 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:13,263 - data_collector - INFO - Fetching chunk from 2025-03-06 15:00 to 2025-03-07 06:00
+2025-03-23 05:56:13,352 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:13,382 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:13,485 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:13,485 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:13,485 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:13,526 - data_collector - INFO - Fetching chunk from 2025-03-07 06:00 to 2025-03-07 21:00
+2025-03-23 05:56:13,789 - data_collector - INFO - Fetching chunk from 2025-03-07 21:00 to 2025-03-08 12:00
+2025-03-23 05:56:14,049 - data_collector - INFO - Fetching chunk from 2025-03-08 12:00 to 2025-03-09 03:00
+2025-03-23 05:56:14,310 - data_collector - INFO - Fetching chunk from 2025-03-09 03:00 to 2025-03-09 18:00
+2025-03-23 05:56:14,571 - data_collector - INFO - Fetching chunk from 2025-03-09 18:00 to 2025-03-10 09:00
+2025-03-23 05:56:14,835 - data_collector - INFO - Fetching chunk from 2025-03-10 09:00 to 2025-03-11 00:00
+2025-03-23 05:56:15,098 - data_collector - INFO - Fetching chunk from 2025-03-11 00:00 to 2025-03-11 15:00
+2025-03-23 05:56:15,363 - data_collector - INFO - Fetching chunk from 2025-03-11 15:00 to 2025-03-12 06:00
+2025-03-23 05:56:15,725 - data_collector - INFO - Fetching chunk from 2025-03-12 06:00 to 2025-03-12 21:00
+2025-03-23 05:56:15,991 - data_collector - INFO - Fetching chunk from 2025-03-12 21:00 to 2025-03-13 12:00
+2025-03-23 05:56:16,253 - data_collector - INFO - Fetching chunk from 2025-03-13 12:00 to 2025-03-14 03:00
+2025-03-23 05:56:16,516 - data_collector - INFO - Fetching chunk from 2025-03-14 03:00 to 2025-03-14 18:00
+2025-03-23 05:56:16,776 - data_collector - INFO - Fetching chunk from 2025-03-14 18:00 to 2025-03-15 09:00
+2025-03-23 05:56:17,037 - data_collector - INFO - Fetching chunk from 2025-03-15 09:00 to 2025-03-16 00:00
+2025-03-23 05:56:17,300 - data_collector - INFO - Fetching chunk from 2025-03-16 00:00 to 2025-03-16 15:00
+2025-03-23 05:56:17,563 - data_collector - INFO - Fetching chunk from 2025-03-16 15:00 to 2025-03-17 06:00
+2025-03-23 05:56:17,824 - data_collector - INFO - Fetching chunk from 2025-03-17 06:00 to 2025-03-17 21:00
+2025-03-23 05:56:18,087 - data_collector - INFO - Fetching chunk from 2025-03-17 21:00 to 2025-03-18 12:00
+2025-03-23 05:56:18,323 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:18,323 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:18,348 - data_collector - INFO - Fetching chunk from 2025-03-18 12:00 to 2025-03-19 03:00
+2025-03-23 05:56:18,609 - data_collector - INFO - Fetching chunk from 2025-03-19 03:00 to 2025-03-19 18:00
+2025-03-23 05:56:18,642 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:18,643 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:18,643 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:18,732 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:18,733 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:18,733 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:18,870 - data_collector - INFO - Fetching chunk from 2025-03-19 18:00 to 2025-03-20 09:00
+2025-03-23 05:56:18,878 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:18,964 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:19,075 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:19,075 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:19,075 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:19,132 - data_collector - INFO - Fetching chunk from 2025-03-20 09:00 to 2025-03-21 00:00
+2025-03-23 05:56:19,394 - data_collector - INFO - Fetching chunk from 2025-03-21 00:00 to 2025-03-21 15:00
+2025-03-23 05:56:19,656 - data_collector - INFO - Fetching chunk from 2025-03-21 15:00 to 2025-03-22 06:00
+2025-03-23 05:56:19,918 - data_collector - INFO - Fetching chunk from 2025-03-22 06:00 to 2025-03-22 21:00
+2025-03-23 05:56:20,179 - data_collector - INFO - Fetching chunk from 2025-03-22 21:00 to 2025-03-23 00:00
+2025-03-23 05:56:20,430 - data_collector - INFO - Fetched a total of 31716 candles
+2025-03-23 05:56:20,535 - data_collector - INFO - Fetched 31716 1m candles for ETHUSDT
+2025-03-23 05:56:20,551 - data_processor - INFO - Processing 31716 candles of data
+2025-03-23 05:56:20,551 - data_processor - INFO - Data split into 3 chunks for parallel processing using 3 workers
+2025-03-23 05:56:20,551 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:20,553 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:20,567 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:21,823 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:21,831 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:21,843 - feature_engineering - INFO - Processed dataset has 10440 samples
+2025-03-23 05:56:21,843 - feature_engineering - INFO - Class distribution: {1: 10440}
+2025-03-23 05:56:21,843 - feature_engineering - INFO - Feature engineering completed successfully
+2025-03-23 05:56:21,843 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:21,845 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:21,860 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:23,136 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:23,144 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:23,158 - feature_engineering - INFO - Processed dataset has 10540 samples
+2025-03-23 05:56:23,158 - feature_engineering - INFO - Class distribution: {1: 10540}
+2025-03-23 05:56:23,158 - feature_engineering - INFO - Feature engineering completed successfully
+2025-03-23 05:56:23,158 - feature_engineering - INFO - Starting data preprocessing pipeline
+2025-03-23 05:56:23,160 - feature_engineering - INFO - Adding basic price features
+2025-03-23 05:56:23,174 - feature_engineering - INFO - Adding technical indicators
+2025-03-23 05:56:23,590 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:23,590 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:23,868 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:23,874 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:23,875 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:24,017 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:24,037 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:24,037 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:24,324 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:24,398 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:24,495 - feature_engineering - INFO - Adding target labels
+2025-03-23 05:56:24,502 - feature_engineering - INFO - Normalizing features
+2025-03-23 05:56:24,515 - feature_engineering - INFO - Processed dataset has 10540 samples
+2025-03-23 05:56:24,516 - feature_engineering - INFO - Class distribution: {1: 10540}
+2025-03-23 05:56:24,516 - feature_engineering - INFO - Feature engineering completed successfully
+2025-03-23 05:56:24,537 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:24,537 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:24,537 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:24,583 - data_processor - INFO - Sequential processing complete: 31285 samples with 79 features
+2025-03-23 05:56:25,491 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-23 đã tồn tại trong cache
+2025-03-23 05:56:25,492 - continuous_trainer - INFO - Cached data saved for period 2025-03-01 to 2025-03-23 (Memory optimized: 0.0% saved)
+2025-03-23 05:56:25,492 - continuous_trainer - INFO - Chunk 15 (1m): Processed 31285 data points
+2025-03-23 05:56:25,594 - continuous_trainer - INFO - Combined data for 5m: 118768 data points
+2025-03-23 05:56:25,652 - data_processor - INFO - Data split complete: 71260 train, 23754 validation, 23754 test samples
+2025-03-23 05:56:29,134 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:29,134 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:29,238 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:29,239 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:29,240 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:29,344 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:29,345 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:29,346 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:29,473 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:29,522 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:29,629 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:29,629 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:29,629 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:34,586 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:34,586 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:34,682 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:34,684 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:34,684 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:34,780 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:34,782 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:34,783 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:34,917 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:34,943 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:35,047 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:35,047 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:35,047 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:39,718 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:39,718 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:39,872 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:39,873 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:39,873 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:39,970 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:39,972 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:39,972 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:40,099 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:40,159 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:40,266 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:40,267 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:40,267 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:45,103 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:45,104 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:45,220 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:45,221 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:45,222 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:45,383 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:45,385 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:45,386 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:45,519 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:45,552 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:45,660 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:45,661 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:45,661 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:50,354 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:50,354 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:50,453 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:50,455 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:50,455 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:50,549 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:50,551 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:50,552 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:50,677 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:50,718 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:50,826 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:50,826 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:50,826 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:56:55,721 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:56:55,723 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:55,834 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:55,836 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:55,836 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:56:56,065 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:56:56,067 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:56:56,067 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:56:56,208 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:56:56,239 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:56:56,347 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:56:56,347 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:56:56,347 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:00,875 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:00,875 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:00,979 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:00,982 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:00,982 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:01,075 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:01,077 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:01,077 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:01,321 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:01,395 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:01,498 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:01,499 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:01,499 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:06,421 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:06,421 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:06,529 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:06,531 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:06,531 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:06,640 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:06,642 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:06,642 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:06,778 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:06,826 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:06,949 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:06,950 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:06,952 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:11,554 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:11,555 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:11,687 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:11,688 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:11,689 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:11,788 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:11,789 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:11,790 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:11,945 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:11,982 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:12,092 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:12,093 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:12,093 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:17,003 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:17,003 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:17,146 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:17,148 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:17,149 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:17,265 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:17,267 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:17,267 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:17,437 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:17,480 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:17,606 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:17,606 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:17,606 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:22,141 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:22,141 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:22,281 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:22,283 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:22,284 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:22,399 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:22,400 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:22,401 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:22,538 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:22,569 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:22,679 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:22,679 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:22,680 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:27,658 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:27,658 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:27,769 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:27,770 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:27,771 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:27,910 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:27,914 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:27,916 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:28,082 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:28,112 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:28,290 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:28,290 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:28,290 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:32,723 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:32,723 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:32,844 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:32,846 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:32,847 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:32,971 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:32,975 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:32,976 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:33,113 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:33,142 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:33,251 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:33,251 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:33,251 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:38,343 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:38,344 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:38,466 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:38,467 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:38,468 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:38,586 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:38,589 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:38,589 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:38,720 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:38,749 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:38,864 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:38,864 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:38,864 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:43,295 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:43,296 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:43,419 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:43,421 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:43,422 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:43,538 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:43,540 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:43,540 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:43,690 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:43,724 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:43,853 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:43,854 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:43,854 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:48,906 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:48,906 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:49,027 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:49,030 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:49,030 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:49,156 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:49,158 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:49,158 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:49,301 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:49,331 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:49,455 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:49,457 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:49,457 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:53,896 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:53,898 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:54,027 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:54,029 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:54,029 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:54,148 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:54,150 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:54,150 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:54,292 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:54,320 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:57:54,438 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:57:54,438 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:57:54,438 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:57:59,498 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:57:59,498 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:59,621 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:59,622 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:59,622 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:57:59,741 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:57:59,743 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:57:59,744 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:57:59,906 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:57:59,934 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:00,047 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:00,047 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:00,047 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:04,478 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:04,478 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:04,592 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:04,594 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:04,594 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:04,710 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:04,712 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:04,712 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:04,850 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:04,880 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:04,988 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:04,989 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:04,989 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:08,066 - app - INFO - Configuring proxy for Binance API
+2025-03-23 05:58:08,067 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:08,203 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:08,205 - app - INFO - Proxy configured successfully
+2025-03-23 05:58:08,207 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:08.390 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 05:58:08,393 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:08,393 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:08,504 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:08,505 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:08,505 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:08,616 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:08,617 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:08,618 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:08,751 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:08,782 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:08,919 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:08,919 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:08,919 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:08,920 - data_processor - INFO - Data processor initialized
+2025-03-23 05:58:08,922 - model_trainer - INFO - Model trainer initialized
+2025-03-23 05:58:08,922 - data_processor - INFO - Data processor initialized
+2025-03-23 05:58:08,922 - prediction_engine - INFO - Prediction engine initialized
+2025-03-23 05:58:08,925 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-23 05:58:09,026 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-23 05:58:09,027 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-23 05:58:09,080 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-23 05:58:09,081 - continuous_trainer - WARNING - Training thread is already running
+2025-03-23 05:58:09,085 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-23 05:58:09,091 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:09,091 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:09,136 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-23 05:58:09,136 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-23 05:58:09,190 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-23 05:58:09,528 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:09,529 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:09,529 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:09,533 - app - INFO - Configuring proxy for Binance API
+2025-03-23 05:58:09,534 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:09,654 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:09,656 - app - INFO - Proxy configured successfully
+2025-03-23 05:58:09,656 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:09,658 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:09,660 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:09,660 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:09.808 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 05:58:09,837 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:09,881 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:10,026 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:10,027 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:10,029 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:10,093 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:10,093 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:10,360 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:10,362 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:10,363 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:10,478 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:10,480 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:10,481 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:10,645 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:10,678 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:10,815 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:10,820 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:10,820 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:15,699 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:15,889 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:20,589 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:20,679 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:21,156 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:21,381 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:23,896 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:24,146 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:24,468 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:26,300 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:26,539 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:26,541 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:26,642 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:26,644 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:26,644 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:28,506 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:28,558 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:29,049 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:29,201 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:29,462 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:29,465 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:31,512 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:31,528 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:31,528 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:31,733 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:31,747 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:34,796 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:34,797 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:34,804 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:34,845 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:36,774 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:36,775 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:36,775 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:36,778 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:36,778 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:36,778 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:36,786 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:36,786 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:36,786 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:47,050 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:47,051 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:47,054 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:47,054 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:47,055 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:58:47,055 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:47,445 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:47,451 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:47,451 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:47,463 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:47,466 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:47,466 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:47,485 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:47,488 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:47,489 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:58:49,281 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:49,519 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:50,284 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:50,544 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:50,559 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:50,831 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:51,899 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:58:52,093 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 05:58:52,094 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 05:58:52,884 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:52,894 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:52,911 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:52,929 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:52,936 - data_collector - INFO - Binance API connection successful
+2025-03-23 05:58:57,191 - data_collector - INFO - Binance system status: Normal
+2025-03-23 05:58:57,781 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:57,865 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:57,964 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:58:59,390 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:58:59,485 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:58:59,977 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:59:08,203 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 05:59:08,203 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 05:59:08,203 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 05:59:14,842 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:59:14,984 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:59:17,571 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:59:17,804 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:59:22,976 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:59:23,445 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 05:59:23,734 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:59:24,429 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 05:59:25,206 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 05:59:35,086 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 05:59:35,714 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:00,884 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:00,885 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:00,972 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:00,973 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:00,973 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:01,281 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:01,281 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:01,376 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:01,377 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:01,377 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:02.087 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:02,088 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:02,088 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:02.185 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:02,186 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:02,186 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:02,235 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:02,237 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:02,237 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:02,328 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:02,329 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:02,329 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:02,382 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:02,383 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:02,383 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:02,452 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:02,474 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:02,475 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:02,475 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:02,481 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:02,590 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:02,590 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:02,590 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:02,591 - data_processor - INFO - Data processor initialized
+2025-03-23 06:01:02,591 - model_trainer - INFO - Model trainer initialized
+2025-03-23 06:01:02,591 - data_processor - INFO - Data processor initialized
+2025-03-23 06:01:02,592 - prediction_engine - INFO - Prediction engine initialized
+2025-03-23 06:01:02,592 - data_collector - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:02,592 - data_collector - INFO - Connecting directly to Binance API
+2025-03-23 06:01:02,592 - data_collector - INFO - Using direct connection to Binance API
+2025-03-23 06:01:02,746 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:02,775 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:02,798 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:02,836 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:02,884 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:02,884 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:02,884 - data_collector - INFO - Successfully connected to Binance API
+2025-03-23 06:01:02,884 - data_processor - INFO - Data processor initialized
+2025-03-23 06:01:02,884 - model_trainer - INFO - Model trainer initialized
+2025-03-23 06:01:02,884 - continuous_trainer - INFO - Using custom historical start date: 2024-01-01
+2025-03-23 06:01:02,884 - continuous_trainer - INFO - Generated 15 monthly chunks from 2024-01-01 to 2025-03-23
+2025-03-23 06:01:02,940 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:02,940 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:02,940 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:02,940 - data_processor - INFO - Data processor initialized
+2025-03-23 06:01:02,940 - model_trainer - INFO - Model trainer initialized
+2025-03-23 06:01:02,940 - data_processor - INFO - Data processor initialized
+2025-03-23 06:01:02,941 - prediction_engine - INFO - Prediction engine initialized
+2025-03-23 06:01:02,974 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-23 06:01:02,974 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-23 06:01:03,026 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-23 06:01:03,026 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-23 06:01:03,033 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-23 06:01:03,033 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-23 06:01:03,069 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-23 06:01:03,070 - continuous_trainer - INFO - Training loop started
+2025-03-23 06:01:03,070 - continuous_trainer - INFO - Forced training scheduled
+2025-03-23 06:01:03,070 - continuous_trainer - INFO - Starting training process at 2025-03-23 06:01:03.070293
+2025-03-23 06:01:03,070 - continuous_trainer - INFO - Training with 15 monthly chunks from 2024-01-01 for timeframes: 5m, 1m
+2025-03-23 06:01:03,070 - continuous_trainer - INFO - Continuous training manager started
+2025-03-23 06:01:03,073 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-23 06:01:03,074 - continuous_trainer - INFO - Processing data for timeframe: 5m
+2025-03-23 06:01:03,074 - continuous_trainer - INFO - Khoảng thời gian 2024-01-01 đến 2024-01-31 đã tồn tại trong cache
+2025-03-23 06:01:03,074 - continuous_trainer - INFO - Skipping chunk 1/15 (5m): 2024-01-01 to 2024-01-31 - data already exists
+2025-03-23 06:01:03,078 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:03,079 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,084 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-23 06:01:03,085 - continuous_trainer - WARNING - Training thread is already running
+2025-03-23 06:01:03,088 - data_collector - INFO - Collecting 1000 latest 1m candles for ETHUSDT
+2025-03-23 06:01:03,089 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:03,089 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,109 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-23 06:01:03,109 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-23 06:01:03,113 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-01-01 to 2024-01-31 (1.72 MB)
+2025-03-23 06:01:03,114 - continuous_trainer - INFO - Khoảng thời gian 2024-02-01 đến 2024-02-29 đã tồn tại trong cache
+2025-03-23 06:01:03,114 - continuous_trainer - INFO - Skipping chunk 2/15 (5m): 2024-02-01 to 2024-02-29 - data already exists
+2025-03-23 06:01:03,125 - data_collector - INFO - Collected 1000 1m candles for ETHUSDT
+2025-03-23 06:01:03,126 - data_collector - INFO - Collecting 1000 latest 5m candles for ETHUSDT
+2025-03-23 06:01:03,134 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-02-01 to 2024-02-29 (1.59 MB)
+2025-03-23 06:01:03,135 - continuous_trainer - INFO - Khoảng thời gian 2024-03-01 đến 2024-03-31 đã tồn tại trong cache
+2025-03-23 06:01:03,135 - continuous_trainer - INFO - Skipping chunk 3/15 (5m): 2024-03-01 to 2024-03-31 - data already exists
+2025-03-23 06:01:03,147 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-23 06:01:03,211 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:03,212 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,225 - data_collector - INFO - Collected 1000 5m candles for ETHUSDT
+2025-03-23 06:01:03,282 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:03,283 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:03,284 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,285 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:03,290 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,343 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:03,349 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:03,349 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,382 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:03,383 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:03,383 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,425 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-03-01 to 2024-03-31 (1.75 MB)
+2025-03-23 06:01:03,425 - continuous_trainer - INFO - Khoảng thời gian 2024-04-01 đến 2024-04-30 đã tồn tại trong cache
+2025-03-23 06:01:03,425 - continuous_trainer - INFO - Skipping chunk 4/15 (5m): 2024-04-01 to 2024-04-30 - data already exists
+2025-03-23 06:01:03,440 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:03,441 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:03,441 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,448 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:03,449 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:03,449 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:03,474 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:03,475 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:03,475 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:03.501 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:03.515 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:03,552 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-04-01 to 2024-04-30 (1.67 MB)
+2025-03-23 06:01:03,553 - continuous_trainer - INFO - Khoảng thời gian 2024-05-01 đến 2024-05-31 đã tồn tại trong cache
+2025-03-23 06:01:03,554 - continuous_trainer - INFO - Skipping chunk 5/15 (5m): 2024-05-01 to 2024-05-31 - data already exists
+2025-03-23 06:01:03,608 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:03,643 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:03,676 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:03,709 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:03,755 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:03,755 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:03,755 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:03,761 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-05-01 to 2024-05-31 (1.72 MB)
+2025-03-23 06:01:03,761 - continuous_trainer - INFO - Khoảng thời gian 2024-06-01 đến 2024-06-30 đã tồn tại trong cache
+2025-03-23 06:01:03,761 - continuous_trainer - INFO - Skipping chunk 6/15 (5m): 2024-06-01 to 2024-06-30 - data already exists
+2025-03-23 06:01:03,813 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:03,814 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:03,814 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:03,840 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-06-01 to 2024-06-30 (1.65 MB)
+2025-03-23 06:01:03,841 - continuous_trainer - INFO - Khoảng thời gian 2024-07-01 đến 2024-07-31 đã tồn tại trong cache
+2025-03-23 06:01:03,841 - continuous_trainer - INFO - Skipping chunk 7/15 (5m): 2024-07-01 to 2024-07-31 - data already exists
+2025-03-23 06:01:04,092 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-07-01 to 2024-07-31 (1.73 MB)
+2025-03-23 06:01:04,092 - continuous_trainer - INFO - Khoảng thời gian 2024-08-01 đến 2024-08-31 đã tồn tại trong cache
+2025-03-23 06:01:04,093 - continuous_trainer - INFO - Skipping chunk 8/15 (5m): 2024-08-01 to 2024-08-31 - data already exists
+2025-03-23 06:01:04,228 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-08-01 to 2024-08-31 (1.72 MB)
+2025-03-23 06:01:04,229 - continuous_trainer - INFO - Khoảng thời gian 2024-09-01 đến 2024-09-30 đã tồn tại trong cache
+2025-03-23 06:01:04,229 - continuous_trainer - INFO - Skipping chunk 9/15 (5m): 2024-09-01 to 2024-09-30 - data already exists
+2025-03-23 06:01:04,461 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-09-01 to 2024-09-30 (1.66 MB)
+2025-03-23 06:01:04,461 - continuous_trainer - INFO - Khoảng thời gian 2024-10-01 đến 2024-10-31 đã tồn tại trong cache
+2025-03-23 06:01:04,461 - continuous_trainer - INFO - Skipping chunk 10/15 (5m): 2024-10-01 to 2024-10-31 - data already exists
+2025-03-23 06:01:04,906 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-10-01 to 2024-10-31 (1.72 MB)
+2025-03-23 06:01:04,906 - continuous_trainer - INFO - Khoảng thời gian 2024-11-01 đến 2024-11-30 đã tồn tại trong cache
+2025-03-23 06:01:04,906 - continuous_trainer - INFO - Skipping chunk 11/15 (5m): 2024-11-01 to 2024-11-30 - data already exists
+2025-03-23 06:01:04,965 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-11-01 to 2024-11-30 (1.68 MB)
+2025-03-23 06:01:04,966 - continuous_trainer - INFO - Khoảng thời gian 2024-12-01 đến 2024-12-31 đã tồn tại trong cache
+2025-03-23 06:01:04,966 - continuous_trainer - INFO - Skipping chunk 12/15 (5m): 2024-12-01 to 2024-12-31 - data already exists
+2025-03-23 06:01:05,054 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-12-01 to 2024-12-31 (1.74 MB)
+2025-03-23 06:01:05,055 - continuous_trainer - INFO - Khoảng thời gian 2025-01-01 đến 2025-01-31 đã tồn tại trong cache
+2025-03-23 06:01:05,055 - continuous_trainer - INFO - Skipping chunk 13/15 (5m): 2025-01-01 to 2025-01-31 - data already exists
+2025-03-23 06:01:05,100 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-01-01 to 2025-01-31 (1.74 MB)
+2025-03-23 06:01:05,100 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-23 06:01:05,100 - continuous_trainer - INFO - Skipping chunk 14/15 (5m): 2025-02-01 to 2025-02-28 - data already exists
+2025-03-23 06:01:05,146 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-02-01 to 2025-02-28 (1.55 MB)
+2025-03-23 06:01:05,147 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-23 đã tồn tại trong cache
+2025-03-23 06:01:05,147 - continuous_trainer - INFO - Skipping chunk 15/15 (5m): 2025-03-01 to 2025-03-23 - data already exists
+2025-03-23 06:01:05,183 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-03-01 to 2025-03-23 (1.25 MB)
+2025-03-23 06:01:05,183 - continuous_trainer - INFO - Processing data for timeframe: 1m
+2025-03-23 06:01:05,184 - continuous_trainer - INFO - Khoảng thời gian 2024-01-01 đến 2024-01-31 đã tồn tại trong cache
+2025-03-23 06:01:05,184 - continuous_trainer - INFO - Skipping chunk 1/15 (1m): 2024-01-01 to 2024-01-31 - data already exists
+2025-03-23 06:01:05,255 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-01-01 to 2024-01-31 (8.26 MB)
+2025-03-23 06:01:05,256 - continuous_trainer - INFO - Khoảng thời gian 2024-02-01 đến 2024-02-29 đã tồn tại trong cache
+2025-03-23 06:01:05,256 - continuous_trainer - INFO - Skipping chunk 2/15 (1m): 2024-02-01 to 2024-02-29 - data already exists
+2025-03-23 06:01:05,322 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-02-01 to 2024-02-29 (7.70 MB)
+2025-03-23 06:01:05,322 - continuous_trainer - INFO - Khoảng thời gian 2024-03-01 đến 2024-03-31 đã tồn tại trong cache
+2025-03-23 06:01:05,323 - continuous_trainer - INFO - Skipping chunk 3/15 (1m): 2024-03-01 to 2024-03-31 - data already exists
+2025-03-23 06:01:05,394 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-03-01 to 2024-03-31 (8.48 MB)
+2025-03-23 06:01:05,394 - continuous_trainer - INFO - Khoảng thời gian 2024-04-01 đến 2024-04-30 đã tồn tại trong cache
+2025-03-23 06:01:05,394 - continuous_trainer - INFO - Skipping chunk 4/15 (1m): 2024-04-01 to 2024-04-30 - data already exists
+2025-03-23 06:01:05,464 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-04-01 to 2024-04-30 (8.13 MB)
+2025-03-23 06:01:05,464 - continuous_trainer - INFO - Khoảng thời gian 2024-05-01 đến 2024-05-31 đã tồn tại trong cache
+2025-03-23 06:01:05,464 - continuous_trainer - INFO - Skipping chunk 5/15 (1m): 2024-05-01 to 2024-05-31 - data already exists
+2025-03-23 06:01:05,537 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-05-01 to 2024-05-31 (8.29 MB)
+2025-03-23 06:01:05,537 - continuous_trainer - INFO - Khoảng thời gian 2024-06-01 đến 2024-06-30 đã tồn tại trong cache
+2025-03-23 06:01:05,537 - continuous_trainer - INFO - Skipping chunk 6/15 (1m): 2024-06-01 to 2024-06-30 - data already exists
+2025-03-23 06:01:05,610 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-06-01 to 2024-06-30 (7.93 MB)
+2025-03-23 06:01:05,611 - continuous_trainer - INFO - Khoảng thời gian 2024-07-01 đến 2024-07-31 đã tồn tại trong cache
+2025-03-23 06:01:05,611 - continuous_trainer - INFO - Skipping chunk 7/15 (1m): 2024-07-01 to 2024-07-31 - data already exists
+2025-03-23 06:01:05,682 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-07-01 to 2024-07-31 (8.32 MB)
+2025-03-23 06:01:05,682 - continuous_trainer - INFO - Khoảng thời gian 2024-08-01 đến 2024-08-31 đã tồn tại trong cache
+2025-03-23 06:01:05,682 - continuous_trainer - INFO - Skipping chunk 8/15 (1m): 2024-08-01 to 2024-08-31 - data already exists
+2025-03-23 06:01:05,754 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-08-01 to 2024-08-31 (8.37 MB)
+2025-03-23 06:01:05,755 - continuous_trainer - INFO - Khoảng thời gian 2024-09-01 đến 2024-09-30 đã tồn tại trong cache
+2025-03-23 06:01:05,755 - continuous_trainer - INFO - Skipping chunk 9/15 (1m): 2024-09-01 to 2024-09-30 - data already exists
+2025-03-23 06:01:05,825 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-09-01 to 2024-09-30 (8.04 MB)
+2025-03-23 06:01:05,825 - continuous_trainer - INFO - Khoảng thời gian 2024-10-01 đến 2024-10-31 đã tồn tại trong cache
+2025-03-23 06:01:05,825 - continuous_trainer - INFO - Skipping chunk 10/15 (1m): 2024-10-01 to 2024-10-31 - data already exists
+2025-03-23 06:01:05,896 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-10-01 to 2024-10-31 (8.30 MB)
+2025-03-23 06:01:05,897 - continuous_trainer - INFO - Khoảng thời gian 2024-11-01 đến 2024-11-30 đã tồn tại trong cache
+2025-03-23 06:01:05,897 - continuous_trainer - INFO - Skipping chunk 11/15 (1m): 2024-11-01 to 2024-11-30 - data already exists
+2025-03-23 06:01:05,967 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-11-01 to 2024-11-30 (8.23 MB)
+2025-03-23 06:01:05,968 - continuous_trainer - INFO - Khoảng thời gian 2024-12-01 đến 2024-12-31 đã tồn tại trong cache
+2025-03-23 06:01:05,968 - continuous_trainer - INFO - Skipping chunk 12/15 (1m): 2024-12-01 to 2024-12-31 - data already exists
+2025-03-23 06:01:06,041 - continuous_trainer - INFO - Loaded compressed cached data for period 2024-12-01 to 2024-12-31 (8.49 MB)
+2025-03-23 06:01:06,041 - continuous_trainer - INFO - Khoảng thời gian 2025-01-01 đến 2025-01-31 đã tồn tại trong cache
+2025-03-23 06:01:06,041 - continuous_trainer - INFO - Skipping chunk 13/15 (1m): 2025-01-01 to 2025-01-31 - data already exists
+2025-03-23 06:01:06,113 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-01-01 to 2025-01-31 (8.49 MB)
+2025-03-23 06:01:06,113 - continuous_trainer - INFO - Khoảng thời gian 2025-02-01 đến 2025-02-28 đã tồn tại trong cache
+2025-03-23 06:01:06,113 - continuous_trainer - INFO - Skipping chunk 14/15 (1m): 2025-02-01 to 2025-02-28 - data already exists
+2025-03-23 06:01:06,182 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-02-01 to 2025-02-28 (7.59 MB)
+2025-03-23 06:01:06,182 - continuous_trainer - INFO - Khoảng thời gian 2025-03-01 đến 2025-03-23 đã tồn tại trong cache
+2025-03-23 06:01:06,183 - continuous_trainer - INFO - Skipping chunk 15/15 (1m): 2025-03-01 to 2025-03-23 - data already exists
+2025-03-23 06:01:06,235 - continuous_trainer - INFO - Loaded compressed cached data for period 2025-03-01 to 2025-03-23 (6.14 MB)
+2025-03-23 06:01:06,305 - continuous_trainer - INFO - Combined data for 5m: 118768 data points
+2025-03-23 06:01:06,323 - data_processor - INFO - Data split complete: 71260 train, 23754 validation, 23754 test samples
+2025-03-23 06:01:13,795 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:13,795 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:13,855 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:13,855 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:13,886 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:13,887 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:13,887 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:13,951 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:13,952 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:13,952 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:13,972 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:13,973 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:13,974 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:14,047 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:14,048 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:14,048 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:14,088 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:14,119 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:14,163 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:14,194 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:14,222 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:14,222 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:14,222 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:14,299 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:14,299 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:14,299 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:24,262 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:24,262 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:24,364 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:24,364 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:24,365 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:24,366 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:24,366 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:24,478 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:24,480 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:24,480 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:24,490 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:24,491 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:24,492 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:24,615 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:24,657 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:24,716 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:24,717 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:24,717 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:24,759 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:24,759 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:24,759 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:24,836 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:24,870 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:24,972 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:24,972 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:24,972 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:34,798 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:34,798 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:34,907 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:34,909 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:34,909 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:34,999 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:35,000 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:35,000 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:35,014 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:35,014 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:35,109 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:35,111 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:35,111 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:35,123 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:35,150 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:35,203 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:35,204 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:35,204 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:35,261 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:35,262 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:35,262 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:35,318 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:35,350 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:35,451 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:35,451 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:35,451 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:45,308 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:45,308 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:45,436 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:45,438 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:45,438 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:45,491 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:45,491 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:45,526 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:45,527 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:45,527 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:45,581 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:45,582 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:45,583 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:45,659 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:45,673 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:45,674 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:45,674 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:45,702 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:45,787 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:45,809 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:45,809 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:45,809 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:45,817 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:45,924 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:45,924 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:45,924 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:46,691 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:46,692 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:46,787 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:46,788 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:46,788 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:46.882 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:46,893 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho USE_REAL_API
+2025-03-23 06:01:46,893 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho USE_REAL_API
+2025-03-23 06:01:46,896 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho UPDATE_INTERVAL
+2025-03-23 06:01:46,896 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho UPDATE_INTERVAL
+2025-03-23 06:01:55,777 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:55,777 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:55,866 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:55,867 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:55,867 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:55,878 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:55,878 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:55.933 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:55,940 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho USE_REAL_API
+2025-03-23 06:01:55,940 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho USE_REAL_API
+2025-03-23 06:01:55,941 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho UPDATE_INTERVAL
+2025-03-23 06:01:55,941 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho UPDATE_INTERVAL
+2025-03-23 06:01:55,995 - data_collector_factory - INFO - Attempting to use Binance API data collector
+2025-03-23 06:01:55,996 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:56,154 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:56,156 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:56,156 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:56,223 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:56,224 - data_collector_factory - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:56,224 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:56,247 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:56,248 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:56,249 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:56,346 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:56,348 - data_collector - INFO - Connecting to Binance API using proxy
+2025-03-23 06:01:56,348 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:56,363 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:56,390 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:56,460 - data_collector - INFO - Binance API connection successful
+2025-03-23 06:01:56,489 - data_collector - INFO - Binance system status: Normal
+2025-03-23 06:01:56,496 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:56,496 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:56,496 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:56,598 - data_collector - INFO - Binance Futures API accessible
+2025-03-23 06:01:56,598 - data_collector - INFO - Binance data collector initialized successfully
+2025-03-23 06:01:56,598 - data_collector_factory - INFO - Successfully initialized Binance data collector
+2025-03-23 06:01:56,833 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:01:56,833 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:01:56,922 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:01:56,923 - app - INFO - Proxy configured successfully
+2025-03-23 06:01:56,924 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:01:56.981 `label` got an empty value. This is discouraged for accessibility reasons and may be disallowed in the future by raising an exception. Please provide a non-empty label and hide it with label_visibility if needed.
+2025-03-23 06:01:56,989 - config_updater - INFO - Đã cập nhật TRAINING_SCHEDULE = {'frequency': '30 phút', 'interval_minutes': 30} trong config.py
+2025-03-23 06:01:56,989 - config_updater - INFO - Đã cập nhật TRAINING_SCHEDULE = {'frequency': '30 phút', 'interval_minutes': 30} trong config.py
+2025-03-23 06:01:56,990 - config_updater - INFO - Đã cập nhật HISTORICAL_START_DATE = "2024-11-01" trong config.py
+2025-03-23 06:01:56,990 - config_updater - INFO - Đã cập nhật HISTORICAL_START_DATE = "2024-11-01" trong config.py
+2025-03-23 06:01:56,991 - continuous_trainer - INFO - Using custom historical start date: 2024-11-01
+2025-03-23 06:01:56,991 - continuous_trainer - INFO - Generated 5 monthly chunks from 2024-11-01 to 2025-03-23
+2025-03-23 06:01:56,995 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho USE_REAL_API
+2025-03-23 06:01:56,995 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho USE_REAL_API
+2025-03-23 06:01:56,997 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho UPDATE_INTERVAL
+2025-03-23 06:01:56,997 - config_updater - WARNING - Không tìm thấy hoặc không thể thay đổi cấu hình cho UPDATE_INTERVAL
+2025-03-23 06:02:03,026 - app - INFO - Configuring proxy for Binance API
+2025-03-23 06:02:03,026 - proxy_config - INFO - Kiểm tra kết nối proxy: 64.176.51.107:3128
+2025-03-23 06:02:03,125 - proxy_config - INFO - Kết nối proxy thành công: 64.176.51.107:3128
+2025-03-23 06:02:03,126 - app - INFO - Proxy configured successfully
+2025-03-23 06:02:03,126 - proxy_config - INFO - Đã cấu hình socket proxy: 64.176.51.107:3128
+2025-03-23 06:02:03.131 Uncaught app exception
+Traceback (most recent call last):
+  File "/opt/ethusdt-dashboard/venv/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 535, in _run_script
+    exec(code, module.__dict__)
+  File "/opt/ethusdt-dashboard/app.py", line 80, in <module>
+    from utils.data_collector_factory import create_data_collector
+  File "/opt/ethusdt-dashboard/utils/data_collector_factory.py", line 6, in <module>
+    from utils.data_collector_proxy import BinanceDataCollector
+  File "/opt/ethusdt-dashboard/utils/data_collector_proxy.py", line 23, in <module>
+    import config
+  File "/opt/ethusdt-dashboard/config.py", line 111
+    "frequency": "30 phút",
+IndentationError: unexpected indent
+2025-03-23 06:02:54.907 Port 5000 is already in use
+2025-03-23 06:02:56.830 Port 5000 is already in use
+2025-03-23 06:02:57.823 Port 5000 is already in use
+2025-03-23 06:03:01.714 Port 5000 is already in use
+2025-03-23 06:12:19.530 Port 5000 is already in use
+2025-03-23 06:12:21.432 Port 5000 is already in use
+2025-03-23 06:12:24.384 Port 5000 is already in use
+2025-03-23 06:12:28.336 Port 5000 is already in use
+2025-03-21 23:19:32,733 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2025-03-21 23:19:32,733 WARN No file matches via include "/etc/supervisor/conf.d/*.conf"
+2025-03-21 23:19:32,735 INFO RPC interface 'supervisor' initialized
+2025-03-21 23:19:32,735 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-03-21 23:19:32,735 INFO supervisord started with pid 698503
+2025-03-21 23:23:46,130 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:23:47,131 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:23:49,134 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:23:52,138 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:23:56,142 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:01,149 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:07,156 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:14,165 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:22,174 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:31,185 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:41,196 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-21 23:24:41,196 INFO gave up: ethusdt_predictor entered FATAL state, too many start retries too quickly
+2025-03-23 05:33:10,729 INFO spawned: 'ethusdt-dashboard' with pid 744347
+2025-03-23 05:33:21,578 INFO success: ethusdt-dashboard entered RUNNING state, process has stayed up for > than 10 seconds (startsecs)
+2025-03-23 05:47:39,387 INFO waiting for ethusdt-dashboard to stop
+2025-03-23 05:47:39,513 INFO stopped: ethusdt-dashboard (exit status 0)
+2025-03-23 05:47:39,515 INFO spawned: 'ethusdt-dashboard' with pid 744844
+2025-03-23 05:47:39,658 INFO waiting for ethusdt-dashboard to stop
+2025-03-23 05:47:39,661 INFO stopped: ethusdt-dashboard (terminated by SIGTERM)
+2025-03-23 05:47:39,663 INFO spawned: 'ethusdt-dashboard' with pid 744849
+2025-03-23 05:47:50,588 INFO success: ethusdt-dashboard entered RUNNING state, process has stayed up for > than 10 seconds (startsecs)
+2025-03-23 05:59:37,503 INFO waiting for ethusdt-dashboard to die
+2025-03-23 05:59:38,508 WARN received SIGTERM indicating exit request
+2025-03-23 05:59:39,757 INFO stopped: ethusdt-dashboard (terminated by SIGKILL)
+2025-03-23 06:00:30,348 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2025-03-23 06:00:30,348 INFO Included extra file "/etc/supervisor/conf.d/ethusdt-dashboard.conf" during parsing
+2025-03-23 06:00:30,348 INFO Included extra file "/etc/supervisor/conf.d/ethusdt_predictor.conf" during parsing
+2025-03-23 06:00:30,352 INFO RPC interface 'supervisor' initialized
+2025-03-23 06:00:30,352 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-03-23 06:00:30,352 INFO supervisord started with pid 745218
+2025-03-23 06:00:31,355 INFO spawned: 'ethusdt-dashboard' with pid 745219
+2025-03-23 06:00:31,355 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:00:33,200 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:00:35,755 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:00:38,758 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:00:41,761 INFO success: ethusdt-dashboard entered RUNNING state, process has stayed up for > than 10 seconds (startsecs)
+2025-03-23 06:00:42,763 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:00:47,769 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:00:53,776 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:01:00,785 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:01:09,327 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:01:19,305 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:01:29,977 INFO spawnerr: can't find command '/root/AI/AITradingOracle/venv/bin/streamlit'
+2025-03-23 06:01:29,977 INFO gave up: ethusdt_predictor entered FATAL state, too many start retries too quickly
+2025-03-23 06:02:53,111 INFO exited: ethusdt-dashboard (exit status 0; expected)
+2025-03-23 06:02:54,114 INFO spawned: 'ethusdt-dashboard' with pid 745344
+2025-03-23 06:02:55,032 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:02:56,035 INFO spawned: 'ethusdt-dashboard' with pid 745355
+2025-03-23 06:02:56,938 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:02:57,029 INFO spawned: 'ethusdt-dashboard' with pid 745369
+2025-03-23 06:02:57,925 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:03:00,931 INFO spawned: 'ethusdt-dashboard' with pid 745381
+2025-03-23 06:03:01,830 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:03:02,831 INFO gave up: ethusdt-dashboard entered FATAL state, too many start retries too quickly
+2025-03-23 06:12:18,737 INFO spawned: 'ethusdt-dashboard' with pid 745547
+2025-03-23 06:12:19,635 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:12:20,639 INFO spawned: 'ethusdt-dashboard' with pid 745557
+2025-03-23 06:12:21,546 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:12:23,550 INFO spawned: 'ethusdt-dashboard' with pid 745568
+2025-03-23 06:12:24,505 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:12:27,510 INFO spawned: 'ethusdt-dashboard' with pid 745579
+2025-03-23 06:12:28,436 INFO exited: ethusdt-dashboard (exit status 1; not expected)
+2025-03-23 06:12:29,438 INFO gave up: ethusdt-dashboard entered FATAL state, too many start retries too quickly
