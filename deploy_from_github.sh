@@ -13,9 +13,9 @@ SERVER_IP="45.76.196.13"
 SERVER_USER="root"
 SSH_PORT="22"
 REMOTE_DIR="/root/ethusdt_dashboard"
-GITHUB_REPO=""
+GITHUB_REPO="https://github.com/ngocsuo/aiserver.git"
 BRANCH="main"
-SSH_PASSWORD=""
+SSH_PASSWORD="Ngocpro!@#123"
 
 echo -e "${YELLOW}=== TRIỂN KHAI ETHUSDT DASHBOARD TỪ GITHUB ===${NC}"
 echo "Thời gian: $(date)"
@@ -56,11 +56,12 @@ if ! command -v sshpass &> /dev/null; then
 fi
 
 # Định nghĩa lệnh SSH với mật khẩu
-SSH_CMD="sshpass -p \"$SSH_PASSWORD\" ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SERVER_USER@$SERVER_IP"
+SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SERVER_USER@$SERVER_IP"
 
 # Kiểm tra kết nối SSH
 echo -e "${BLUE}Kiểm tra kết nối đến máy chủ...${NC}"
-if ! eval "$SSH_CMD \"echo 'Kết nối thành công'\"" > /dev/null 2>&1; then
+echo -e "${BLUE}Thử kết nối tới: $SERVER_USER@$SERVER_IP:$SSH_PORT${NC}"
+if ! eval "$SSH_CMD \"echo 'Kết nối thành công'\""; then
     echo -e "${RED}Không thể kết nối đến máy chủ. Vui lòng kiểm tra thông tin và quyền truy cập.${NC}"
     exit 1
 fi
@@ -117,4 +118,4 @@ echo -e "${GREEN}=== TRIỂN KHAI HOÀN TẤT ===${NC}"
 echo "Bạn có thể truy cập dashboard tại: http://$SERVER_IP:5000"
 echo "Các bước tiếp theo:"
 echo "1. Kiểm tra ứng dụng hoạt động"
-echo "2. Kiểm tra logs bằng lệnh: sshpass -p \"$SSH_PASSWORD\" ssh $SERVER_USER@$SERVER_IP -p $SSH_PORT 'journalctl -fu ethusdt-dashboard'"
+echo "2. Kiểm tra logs bằng lệnh: sshpass -p '$SSH_PASSWORD' ssh $SERVER_USER@$SERVER_IP -p $SSH_PORT 'journalctl -fu ethusdt-dashboard'"
