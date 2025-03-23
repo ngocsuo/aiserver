@@ -1,16 +1,19 @@
 """
-Module cấu hình proxy cho Binance API
+Module cấu hình proxy cho Binance API - Nâng cao với hệ thống xoay vòng proxy
 """
 import os
 import logging
 import socket
 import requests
 import socks
+import random
+import time
+from utils.enhanced_proxy_list import find_working_proxy, get_proxy_url, get_proxy_dict, test_proxy, parse_proxy_url as enhanced_parse_proxy_url
 
 # Thiết lập logging
 logger = logging.getLogger("proxy_config")
 
-# Thông tin proxy mặc định (sẽ được ghi đè nếu đọc từ biến môi trường)
+# Thông tin proxy mặc định (sẽ được thay thế bằng proxy hoạt động từ enhanced_proxy_list)
 DEFAULT_PROXY = "64.176.51.107:3128:hvnteam:matkhau123"
 
 def parse_proxy_url(proxy_url):
@@ -75,12 +78,22 @@ def get_proxy_url_format():
 
 def configure_proxy():
     """
-    Cấu hình proxy cho toàn bộ ứng dụng
+    Cấu hình proxy cho toàn bộ ứng dụng với hệ thống xoay vòng proxy
     
     Returns:
         dict: Cấu hình proxy cho requests
     """
-    # Lấy thông tin proxy từ biến môi trường hoặc cấu hình mặc định
+    # Thử dùng proxy từ enhanced_proxy_list trước
+    logger.info("Đang tìm proxy hoạt động từ danh sách proxy nâng cao...")
+    working_proxy = find_working_proxy()
+    
+    if working_proxy:
+        proxy_url = get_proxy_url(working_proxy)
+        proxies = get_proxy_dict(working_proxy)
+        logger.info(f"Tìm thấy proxy hoạt động: {working_proxy['host']}:{working_proxy['port']}")
+        return proxies
+    
+    # Nếu không tìm thấy proxy hoạt động từ danh sách nâng cao, thử dùng proxy từ biến môi trường
     proxy_str = os.environ.get("PROXY_URL", DEFAULT_PROXY)
     
     if not proxy_str:
@@ -92,7 +105,7 @@ def configure_proxy():
     if not proxy_config:
         return None
         
-    logger.info(f"Kiểm tra kết nối proxy: {proxy_config['host']}:{proxy_config['port']}")
+    logger.info(f"Kiểm tra kết nối proxy từ biến môi trường: {proxy_config['host']}:{proxy_config['port']}")
     
     # Kiểm tra xem proxy có thể kết nối được không
     try:
@@ -125,12 +138,32 @@ def configure_proxy():
 
 def configure_socket_proxy():
     """
-    Cấu hình proxy cho socket (PySocks)
+    Cấu hình proxy cho socket (PySocks) với hệ thống xoay vòng proxy
     
     Returns:
         bool: Kết quả cấu hình
     """
-    # Lấy thông tin proxy từ biến môi trường hoặc cấu hình mặc định
+    # Thử dùng proxy từ enhanced_proxy_list trước
+    logger.info("Đang tìm proxy hoạt động từ danh sách proxy nâng cao cho socket...")
+    working_proxy = find_working_proxy()
+    
+    if working_proxy:
+        try:
+            # Cấu hình proxy cho socket
+            socks.set_default_proxy(
+                socks.HTTP, 
+                working_proxy["host"], 
+                working_proxy["port"],
+                username=working_proxy["auth"][0] if working_proxy["auth"] else None,
+                password=working_proxy["auth"][1] if working_proxy["auth"] else None
+            )
+            
+            logger.info(f"Đã cấu hình socket proxy: {working_proxy['host']}:{working_proxy['port']}")
+            return True
+        except Exception as e:
+            logger.error(f"Lỗi khi cấu hình socket proxy từ danh sách nâng cao: {str(e)}")
+    
+    # Nếu không tìm thấy proxy hoạt động từ danh sách nâng cao, thử dùng proxy từ biến môi trường
     proxy_str = os.environ.get("PROXY_URL", DEFAULT_PROXY)
     
     if not proxy_str:
