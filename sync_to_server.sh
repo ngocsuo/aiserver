@@ -2,7 +2,7 @@
 # Script đồng bộ mã nguồn từ Replit lên server
 
 # Thông tin server - thay thế bằng thông tin server thực tế của bạn
-SERVER="45.76.196.13"
+SERVER="your_server_ip"  # Thay your_server_ip bằng IP server thực tế của bạn
 USER="root"
 REMOTE_DIR="/root/ethusdt_dashboard"
 
