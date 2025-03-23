@@ -517,12 +517,12 @@ class ContinuousTrainer:
                         else:
                             error_msg = f"⚠️ Đoạn {current_chunk_index+1} ({timeframe}): Không có dữ liệu cho giai đoạn {start_date} đến {end_date}"
                             self._add_log(error_msg)
-                            logger.warning(f"Chunk {i+1} ({timeframe}): No data collected for period {start_date} to {end_date}")
+                            logger.warning(f"Chunk {current_chunk_index+1} ({timeframe}): No data collected for period {start_date} to {end_date}")
                             
                     except Exception as e:
-                        error_msg = f"❌ Lỗi xử lý đoạn {i+1} ({timeframe}): {str(e)}"
+                        error_msg = f"❌ Lỗi xử lý đoạn {current_chunk_index+1} ({timeframe}): {str(e)}"
                         self._add_log(error_msg)
-                        logger.error(f"Error processing chunk {i+1} ({timeframe}): {e}")
+                        logger.error(f"Error processing chunk {current_chunk_index+1} ({timeframe}): {e}")
         
         # Sau khi xử lý toàn bộ dữ liệu cho tất cả các khung thời gian
         for timeframe, data_chunks in all_processed_data.items():
