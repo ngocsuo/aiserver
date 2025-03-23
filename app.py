@@ -3961,13 +3961,13 @@ elif st.session_state.selected_tab == "Trading":
             
             # Biến động giá tối thiểu để vào lệnh
             if "min_price_movement" not in st.session_state.trading_settings:
-                st.session_state.trading_settings["min_price_movement"] = config.TRADING_SETTINGS["default_min_price_movement"]
+                st.session_state.trading_settings["min_price_movement"] = config.DEFAULT_TRADING_CONFIG.get("default_min_price_movement", 0.01)
             
             min_price_movement = st.number_input(
                 "Biến động giá dự đoán tối thiểu (USDT)",
                 min_value=0.0,
                 max_value=50.0,
-                value=float(st.session_state.trading_settings.get("min_price_movement", config.TRADING_SETTINGS["default_min_price_movement"])),
+                value=float(st.session_state.trading_settings.get("min_price_movement", 0.01)),
                 step=0.5,
                 key="min_price_movement",
                 help="Chỉ vào lệnh khi chênh lệch giữa giá hiện tại và giá dự đoán vượt quá ngưỡng này. Đặt 0 để bỏ qua điều kiện này."
@@ -4095,7 +4095,7 @@ elif st.session_state.selected_tab == "Trading":
                     "account_percent": st.session_state.trading_settings["account_percent"],
                     "leverage": st.session_state.trading_settings["leverage"],
                     "min_confidence": st.session_state.trading_settings["min_confidence"] / 100.0,
-                    "min_price_movement": st.session_state.trading_settings.get("min_price_movement", config.TRADING_SETTINGS["default_min_price_movement"]),
+                    "min_price_movement": st.session_state.trading_settings.get("min_price_movement", 0.01),
                     "timeframe": selected_timeframe,
                 }
                 

@@ -1,1 +1,1 @@
-{"cpu": {"percent": 58.2, "count": 8}, "memory": {"percent": 94.6, "total": 67436748800, "available": 3673313280, "used": 62991601664}, "disk": {"percent": 53.7, "total": 52745244672, "free": 23403155456, "used": 27117932544}, "last_update": "2025-03-23T02:48:28.596661"}
+{"cpu": {"percent": 46.7, "count": 8}, "memory": {"percent": 87.4, "total": 67436748800, "available": 8500183040, "used": 58039042048}, "disk": {"percent": 53.8, "total": 52745244672, "free": 23347216384, "used": 27173871616}, "last_update": "2025-03-23T03:28:03.614070"}

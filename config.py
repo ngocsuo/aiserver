@@ -159,7 +159,8 @@ DEFAULT_TRADING_CONFIG = {
     "take_profit": 1.5,  # 1.5%
     "stop_loss": 0.5,  # 0.5%
     "trailing_stop": 0.3,  # 0.3%
-    "max_positions": 3
+    "max_positions": 3,
+    "default_min_price_movement": 0.01  # Phần trăm di chuyển giá tối thiểu
 }
 
 TARGET_PNL_THRESHOLD = 0.005  # 0.5% threshold for profit target
