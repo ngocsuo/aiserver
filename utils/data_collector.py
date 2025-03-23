@@ -400,6 +400,14 @@ class BinanceDataCollector:
             "last_check": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
+        # Load environment variables first
+        try:
+            from utils.load_env import load_environment_variables
+            load_environment_variables()
+            logger.info("Loaded environment variables from utils.load_env")
+        except Exception as e:
+            logger.warning(f"Could not load environment variables: {e}")
+        
         # Store the collected data
         self.data = {}
         for tf in [config.TIMEFRAMES["primary"]] + config.TIMEFRAMES["secondary"]:

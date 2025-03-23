@@ -11,6 +11,19 @@ with open("app.log", "a") as f:
     f.write("Starting application at " + str(__import__("datetime").datetime.now()) + "\n")
     f.flush()
 
+# Load environment variables first
+try:
+    from utils.load_env import load_environment_variables
+    load_environment_variables()
+    with open("app.log", "a") as f:
+        f.write("Loaded environment variables\n")
+        f.flush()
+except Exception as e:
+    with open("app.log", "a") as f:
+        f.write(f"Error loading environment variables: {str(e)}\n")
+        f.write(traceback.format_exc())
+        f.flush()
+
 # Main imports
 try:
     import streamlit as st
