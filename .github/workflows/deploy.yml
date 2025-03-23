@@ -1,0 +1,65 @@
+name: Deploy ETHUSDT Dashboard
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+        
+    - name: Deploy to Server
+      env:
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SSH_PORT: ${{ secrets.SSH_PORT }}
+        REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+      run: |
+        # Sao lưu dữ liệu quan trọng trên server
+        BACKUP_DIR="${REMOTE_DIR}/backup_$(date +%Y%m%d_%H%M%S)"
+        ssh -p ${SSH_PORT} ${SERVER_USER}@${SERVER_IP} "mkdir -p ${BACKUP_DIR} && \
+        if [ -d \"${REMOTE_DIR}\" ]; then \
+          cp -r ${REMOTE_DIR}/data ${BACKUP_DIR}/ 2>/dev/null || true && \
+          cp -r ${REMOTE_DIR}/saved_models ${BACKUP_DIR}/ 2>/dev/null || true && \
+          cp ${REMOTE_DIR}/.env ${BACKUP_DIR}/ 2>/dev/null || true && \
+          cp ${REMOTE_DIR}/binance_time.json ${BACKUP_DIR}/ 2>/dev/null || true; \
+        fi"
+        
+        # Kiểm tra thư mục có tồn tại không
+        ssh -p ${SSH_PORT} ${SERVER_USER}@${SERVER_IP} "mkdir -p ${REMOTE_DIR}"
+        
+        # Đồng bộ code mới
+        rsync -avz --delete --exclude=".git" --exclude="data" --exclude="saved_models" --exclude=".env" --exclude="logs" --exclude="venv" -e "ssh -p ${SSH_PORT}" ./ ${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/
+        
+        # Khôi phục dữ liệu đã sao lưu
+        ssh -p ${SSH_PORT} ${SERVER_USER}@${SERVER_IP} "if [ -d \"${BACKUP_DIR}\" ]; then \
+          mkdir -p ${REMOTE_DIR}/data ${REMOTE_DIR}/saved_models && \
+          cp -r ${BACKUP_DIR}/data/* ${REMOTE_DIR}/data/ 2>/dev/null || true && \
+          cp -r ${BACKUP_DIR}/saved_models/* ${REMOTE_DIR}/saved_models/ 2>/dev/null || true && \
+          cp ${BACKUP_DIR}/.env ${REMOTE_DIR}/ 2>/dev/null || true && \
+          cp ${BACKUP_DIR}/binance_time.json ${REMOTE_DIR}/ 2>/dev/null || true; \
+        fi"
+        
+        # Cấp quyền thực thi cho các file script
+        ssh -p ${SSH_PORT} ${SERVER_USER}@${SERVER_IP} "chmod +x ${REMOTE_DIR}/*.sh ${REMOTE_DIR}/automation_scripts/*.sh 2>/dev/null || true"
+        
+        # Chạy setup hoặc khởi động lại dịch vụ
+        ssh -p ${SSH_PORT} ${SERVER_USER}@${SERVER_IP} "cd ${REMOTE_DIR} && (chmod +x server_setup.sh && ./server_setup.sh || systemctl restart ethusdt-dashboard)"
+        
+        # Kiểm tra status
+        ssh -p ${SSH_PORT} ${SERVER_USER}@${SERVER_IP} "systemctl status ethusdt-dashboard | grep Active || echo 'Dịch vụ không tìm thấy'"
+        
+    - name: Deployment Status
+      run: echo "Deployment completed! You can access the dashboard at http://${{ secrets.SERVER_IP }}:5000"
