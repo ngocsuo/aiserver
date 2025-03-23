@@ -67,9 +67,9 @@ for directory in [DATA_DIR, MODELS_DIR, LOGS_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # Proxy settings
-USE_PROXY = False
+USE_PROXY = True  # Bật proxy để vượt qua giới hạn địa lý của Binance API
 PROXY_ROTATION_INTERVAL = 600  # In seconds (10 minutes)
-PROXY_URL = ""  # Cấu hình proxy đã tắt
+PROXY_URL = ""  # Để trống để hệ thống tự động tìm proxy hoạt động từ danh sách proxy nâng cao
 
 # Additional configuration
 HISTORICAL_START_DATE = "2024-01-01"
