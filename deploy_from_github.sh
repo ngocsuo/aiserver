@@ -9,13 +9,13 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Cấu hình
-SERVER_IP="45.76.196.13"
+SERVER_IP="" # Nhập IP máy chủ của bạn
 SERVER_USER="root"
 SSH_PORT="22"
 REMOTE_DIR="/root/ethusdt_dashboard"
 GITHUB_REPO="https://github.com/ngocsuo/aiserver.git"
 BRANCH="main"
-SSH_PASSWORD="Ngocpro!@#123"
+SSH_PASSWORD="" # Không lưu mật khẩu trong tập tin
 
 echo -e "${YELLOW}=== TRIỂN KHAI ETHUSDT DASHBOARD TỪ GITHUB ===${NC}"
 echo "Thời gian: $(date)"
@@ -49,6 +49,14 @@ echo "Thư mục từ xa: $REMOTE_DIR"
 echo "GitHub Repository: $GITHUB_REPO"
 echo "Nhánh: $BRANCH"
 
+# Kiểm tra tính khả dụng của địa chỉ IP máy chủ
+echo -e "${BLUE}Kiểm tra địa chỉ IP...${NC}"
+if [[ ! "$SERVER_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo -e "${RED}Địa chỉ IP không hợp lệ: $SERVER_IP${NC}"
+    echo -e "${YELLOW}Vui lòng nhập địa chỉ IP đúng định dạng (ví dụ: 192.168.1.1)${NC}"
+    exit 1
+fi
+
 # Kiểm tra xem sshpass đã được cài đặt chưa
 if ! command -v sshpass &> /dev/null; then
     echo -e "${BLUE}Cài đặt sshpass...${NC}"
@@ -56,13 +64,30 @@ if ! command -v sshpass &> /dev/null; then
 fi
 
 # Định nghĩa lệnh SSH với mật khẩu
-SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no -p $SSH_PORT $SERVER_USER@$SERVER_IP"
+SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p $SSH_PORT $SERVER_USER@$SERVER_IP"
 
 # Kiểm tra kết nối SSH
 echo -e "${BLUE}Kiểm tra kết nối đến máy chủ...${NC}"
 echo -e "${BLUE}Thử kết nối tới: $SERVER_USER@$SERVER_IP:$SSH_PORT${NC}"
-if ! eval "$SSH_CMD \"echo 'Kết nối thành công'\""; then
+
+# Thêm tùy chọn verbose cho SSH để hiển thị nhiều thông tin hơn
+VERBOSE_SSH_CMD="sshpass -p '$SSH_PASSWORD' ssh -v -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p $SSH_PORT $SERVER_USER@$SERVER_IP"
+echo -e "${BLUE}Đang thử kết nối với timeout 10 giây...${NC}"
+
+# Ping máy chủ trước để kiểm tra kết nối mạng cơ bản
+ping -c 3 $SERVER_IP > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Không thể ping đến địa chỉ IP $SERVER_IP. Có thể server không trực tuyến hoặc bị chặn ICMP.${NC}"
+fi
+
+if ! eval "$VERBOSE_SSH_CMD \"echo 'Kết nối thành công'\""; then
     echo -e "${RED}Không thể kết nối đến máy chủ. Vui lòng kiểm tra thông tin và quyền truy cập.${NC}"
+    echo -e "${YELLOW}Hãy kiểm tra các điểm sau:${NC}"
+    echo -e "1. Địa chỉ IP máy chủ ($SERVER_IP) chính xác"
+    echo -e "2. Cổng SSH ($SSH_PORT) đang mở"
+    echo -e "3. Tên người dùng ($SERVER_USER) và mật khẩu chính xác"
+    echo -e "4. Dịch vụ SSH đang chạy trên máy chủ"
+    echo -e "5. Firewall không chặn kết nối SSH"
     exit 1
 fi
 echo -e "${GREEN}Kết nối SSH thành công!${NC}"
