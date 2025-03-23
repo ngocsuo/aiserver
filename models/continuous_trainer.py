@@ -489,9 +489,9 @@ class ContinuousTrainer:
                 
                 # Nếu không có dữ liệu đệm hoặc không thể tải, tải mới từ API
                 if len(all_processed_data[timeframe]) <= i:
-                    log_msg = f"📥 Đang tải đoạn dữ liệu {i+1}/{len(self.monthly_chunks)} ({timeframe}): từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
+                    log_msg = f"📥 Đang tải đoạn dữ liệu {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): từ {start_date} đến {end_date} - {chunk_progress}% hoàn thành"
                     self._add_log(log_msg)
-                    logger.info(f"Downloading chunk {i+1}/{len(self.monthly_chunks)} ({timeframe}): {start_date} to {end_date}")
+                    logger.info(f"Downloading chunk {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): {start_date} to {end_date}")
                 
                     try:
                         # Collect data for this month with the specific timeframe
@@ -512,10 +512,10 @@ class ContinuousTrainer:
                             # Cập nhật danh sách các khoảng thời gian đã tải
                             existing_data_ranges.append((start_date, end_date, timeframe))
                             
-                            self._add_log(f"✅ Đoạn {i+1} ({timeframe}): Đã xử lý {len(processed_chunk)} điểm dữ liệu thành công")
-                            logger.info(f"Chunk {i+1} ({timeframe}): Processed {len(processed_chunk)} data points")
+                            self._add_log(f"✅ Đoạn {current_chunk_index+1} ({timeframe}): Đã xử lý {len(processed_chunk)} điểm dữ liệu thành công")
+                            logger.info(f"Chunk {current_chunk_index+1} ({timeframe}): Processed {len(processed_chunk)} data points")
                         else:
-                            error_msg = f"⚠️ Đoạn {i+1} ({timeframe}): Không có dữ liệu cho giai đoạn {start_date} đến {end_date}"
+                            error_msg = f"⚠️ Đoạn {current_chunk_index+1} ({timeframe}): Không có dữ liệu cho giai đoạn {start_date} đến {end_date}"
                             self._add_log(error_msg)
                             logger.warning(f"Chunk {i+1} ({timeframe}): No data collected for period {start_date} to {end_date}")
                             
