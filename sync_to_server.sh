@@ -46,11 +46,11 @@ fi
 
 # Kiểm tra thư mục từ xa
 echo -e "${BLUE}Kiểm tra thư mục từ xa...${NC}"
-ssh $USER@$SERVER "if [ ! -d '$REMOTE_DIR' ]; then mkdir -p '$REMOTE_DIR'; fi"
+ssh -p $SSH_PORT $USER@$SERVER "if [ ! -d '$REMOTE_DIR' ]; then mkdir -p '$REMOTE_DIR'; fi"
 
 # Đồng bộ tệp
 echo -e "${BLUE}Đồng bộ các tệp lên server...${NC}"
-rsync -avz --exclude=".*" --exclude="venv" --exclude="__pycache__" \
+rsync -avz -e "ssh -p $SSH_PORT" --exclude=".*" --exclude="venv" --exclude="__pycache__" \
     --exclude="*.pyc" --exclude="*.pyo" --exclude="*.log" \
     --exclude="node_modules" --exclude="*.zip" \
     --delete \
@@ -66,15 +66,15 @@ fi
 
 # Thiết lập quyền trên server
 echo -e "${BLUE}Thiết lập quyền thực thi cho các script...${NC}"
-ssh $USER@$SERVER "chmod +x $REMOTE_DIR/*.sh $REMOTE_DIR/automation_scripts/*.sh $REMOTE_DIR/deployment/*.sh 2>/dev/null || true"
+ssh -p $SSH_PORT $USER@$SERVER "chmod +x $REMOTE_DIR/*.sh $REMOTE_DIR/automation_scripts/*.sh $REMOTE_DIR/deployment/*.sh 2>/dev/null || true"
 
 # Khởi động lại dịch vụ trên server
 echo -e "${BLUE}Khởi động lại dịch vụ ETHUSDT Dashboard...${NC}"
-ssh $USER@$SERVER "cd $REMOTE_DIR && (chmod +x server_setup.sh && ./server_setup.sh || systemctl restart ethusdt-dashboard)"
+ssh -p $SSH_PORT $USER@$SERVER "cd $REMOTE_DIR && (chmod +x server_setup.sh && ./server_setup.sh || systemctl restart ethusdt-dashboard)"
 
 # Kiểm tra trạng thái dịch vụ
 echo -e "${BLUE}Kiểm tra trạng thái dịch vụ...${NC}"
-ssh $USER@$SERVER "systemctl status ethusdt-dashboard | grep Active || echo 'Dịch vụ không tìm thấy. Đảm bảo server_setup.sh đã được chạy.'"
+ssh -p $SSH_PORT $USER@$SERVER "systemctl status ethusdt-dashboard | grep Active || echo 'Dịch vụ không tìm thấy. Đảm bảo server_setup.sh đã được chạy.'"
 
 echo -e "${GREEN}=== ĐỒNG BỘ HOÀN TẤT ===${NC}"
 echo "Bạn có thể truy cập dashboard tại: http://$SERVER:5000"
