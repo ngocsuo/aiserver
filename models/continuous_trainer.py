@@ -397,6 +397,10 @@ class ContinuousTrainer:
         """
         Train models using monthly data chunks to manage memory usage for both timeframes.
         
+        Huấn luyện được thực hiện theo từng tháng riêng biệt, với kiến thức được tích lũy 
+        theo thời gian. Mỗi lần chỉ huấn luyện một tháng dữ liệu và tiến đến tháng tiếp theo 
+        sau khi hoàn thành.
+        
         Returns:
             dict: Dictionary của các mô hình đã huấn luyện cho mỗi khung thời gian
         """
@@ -409,20 +413,43 @@ class ContinuousTrainer:
         # Dictionary để lưu trữ kết quả mô hình cho mỗi khung thời gian
         model_results = {}
         
-        # Set total chunks for progress tracking (tổng số chunks nhân với số khung thời gian)
-        self.total_chunks = len(self.monthly_chunks) * len(self.timeframes_to_train)
+        # Đọc vị trí chunk hiện tại từ file (nếu có)
+        current_chunk_index = self._load_training_progress()
+        
+        # Chỉ huấn luyện một tháng trong mỗi lần chạy
+        if current_chunk_index >= len(self.monthly_chunks):
+            # Đã hoàn thành tất cả các tháng, reset về đầu để bắt đầu lại chu kỳ
+            current_chunk_index = 0
+            self._add_log(f"🔄 Đã hoàn thành tất cả các tháng, bắt đầu lại chu kỳ huấn luyện")
+        
+        # Set total chunks for progress tracking
+        self.total_chunks = len(self.timeframes_to_train)  # Chỉ 1 tháng, nhiều timeframe
         self.current_chunk = 0
+        
+        # Thông báo tháng đang huấn luyện
+        if current_chunk_index < len(self.monthly_chunks):
+            try:
+                current_chunk = self.monthly_chunks[current_chunk_index]
+                start_date, end_date = current_chunk
+                self._add_log(f"🔍 Đang huấn luyện tháng {current_chunk_index+1}/{len(self.monthly_chunks)}: từ {start_date} đến {end_date}")
+                logger.info(f"Training month {current_chunk_index+1}/{len(self.monthly_chunks)}: {start_date} to {end_date}")
+            except (IndexError, ValueError) as e:
+                self._add_log(f"⚠️ Lỗi khi xác định tháng hiện tại: {e}")
+                logger.error(f"Error determining current month: {e}")
+                # Đặt lại current_chunk_index nếu có lỗi
+                current_chunk_index = 0
         
         # Kiểm tra xem đã có dữ liệu đã tải trước đó chưa
         existing_data_ranges = self._get_existing_data_ranges()
         
-        # Xử lý từng khung thời gian
+        # Xử lý từng khung thời gian cho tháng hiện tại
         for timeframe in self.timeframes_to_train:
             self._add_log(f"🕒 Đang xử lý dữ liệu cho khung thời gian: {timeframe}")
             logger.info(f"Processing data for timeframe: {timeframe}")
             
-            # Process each monthly chunk for this timeframe
-            for i, chunk in enumerate(self.monthly_chunks):
+            # Chỉ xử lý một chunk (tháng) trong mỗi lần chạy
+            if current_chunk_index < len(self.monthly_chunks):
+                chunk = self.monthly_chunks[current_chunk_index]
                 # Đảm bảo chunk là tuple với 2 phần tử
                 if isinstance(chunk, tuple) and len(chunk) == 2:
                     start_date, end_date = chunk
@@ -441,7 +468,7 @@ class ContinuousTrainer:
                 # Kiểm tra xem dữ liệu cho khoảng thời gian này đã được tải trước đó chưa
                 if self._is_data_range_covered(start_date, end_date, existing_data_ranges):
                     # Dữ liệu đã tồn tại, sử dụng lại
-                    log_msg = f"⏩ Bỏ qua đoạn {i+1}/{len(self.monthly_chunks)} ({timeframe}): từ {start_date} đến {end_date} - đã có dữ liệu"
+                    log_msg = f"⏩ Bỏ qua đoạn {current_chunk_index+1}/{len(self.monthly_chunks)} ({timeframe}): từ {start_date} đến {end_date} - đã có dữ liệu"
                     self._add_log(log_msg)
                     logger.info(f"Skipping chunk {i+1}/{len(self.monthly_chunks)} ({timeframe}): {start_date} to {end_date} - data already exists")
                     
@@ -452,12 +479,12 @@ class ContinuousTrainer:
                             if timeframe not in all_processed_data:
                                 all_processed_data[timeframe] = []
                             all_processed_data[timeframe].append(cached_data)
-                            self._add_log(f"✅ Đoạn {i+1} ({timeframe}): Đã tải {len(cached_data)} điểm dữ liệu từ bộ nhớ đệm")
+                            self._add_log(f"✅ Đoạn {current_chunk_index+1} ({timeframe}): Đã tải {len(cached_data)} điểm dữ liệu từ bộ nhớ đệm")
                     except Exception as e:
                         # Nếu không thể tải dữ liệu từ cache, tải lại từ API
-                        log_msg = f"⚠️ Không thể tải dữ liệu đệm cho đoạn {i+1} ({timeframe}): {str(e)} - Đang tải lại từ Binance"
+                        log_msg = f"⚠️ Không thể tải dữ liệu đệm cho đoạn {current_chunk_index+1} ({timeframe}): {str(e)} - Đang tải lại từ Binance"
                         self._add_log(log_msg)
-                        logger.warning(f"Could not load cached data for chunk {i+1} ({timeframe}): {e} - Redownloading")
+                        logger.warning(f"Could not load cached data for chunk {current_chunk_index+1} ({timeframe}): {e} - Redownloading")
                         # Tiếp tục với quy trình tải mới dưới đây
                 
                 # Nếu không có dữ liệu đệm hoặc không thể tải, tải mới từ API
