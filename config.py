@@ -166,6 +166,10 @@ DEFAULT_TRADING_CONFIG = {
 TARGET_PNL_THRESHOLD = 0.005  # 0.5% threshold for profit target
 TRADING_SETTINGS = DEFAULT_TRADING_CONFIG  # Alias for compatibility
 
+# Available timeframes for trading
+TRADING_SETTINGS["available_timeframes"] = ["1m", "5m", "15m", "1h", "4h"]
+TRADING_SETTINGS["default_timeframe"] = "5m"
+
 # If you're using PostgreSQL database
 DB_CONFIG = {
     "host": os.environ.get("PGHOST", "localhost"),
