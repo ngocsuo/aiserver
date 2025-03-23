@@ -19,14 +19,19 @@ def create_data_collector():
     """
     logger.info("Attempting to use Binance API data collector")
     
-    # Cấu hình proxy nếu có
-    proxies = configure_proxy()
-    proxy_url = get_proxy_url_format()
-    
-    if proxies and proxy_url:
-        logger.info(f"Connecting to Binance API using proxy")
-    else:
+    # Kiểm tra config.USE_PROXY trước
+    if not config.USE_PROXY:
+        logger.info("Proxy đã bị vô hiệu hóa trong cấu hình (USE_PROXY = False). Sẽ kết nối trực tiếp.")
         logger.info(f"Connecting directly to Binance API")
+    else:
+        # Cấu hình proxy nếu có và USE_PROXY = True
+        proxies = configure_proxy()
+        proxy_url = get_proxy_url_format()
+        
+        if proxies and proxy_url:
+            logger.info(f"Connecting to Binance API using proxy")
+        else:
+            logger.info(f"Connecting directly to Binance API")
     
     try:
         # Tạo và trả về data collector

@@ -8,6 +8,7 @@ import requests
 import socks
 import random
 import time
+import config
 from utils.enhanced_proxy_list import find_working_proxy, get_proxy_url, get_proxy_dict, test_proxy, parse_proxy_url as enhanced_parse_proxy_url
 
 # Thiết lập logging
@@ -81,8 +82,13 @@ def configure_proxy():
     Cấu hình proxy cho toàn bộ ứng dụng với hệ thống xoay vòng proxy
     
     Returns:
-        dict: Cấu hình proxy cho requests
+        dict: Cấu hình proxy cho requests hoặc None nếu USE_PROXY = False
     """
+    # Kiểm tra cấu hình USE_PROXY trước
+    if not config.USE_PROXY:
+        logger.info("Proxy đã bị vô hiệu hóa trong cấu hình (USE_PROXY = False). Sẽ kết nối trực tiếp.")
+        return None
+        
     # Thử dùng proxy từ enhanced_proxy_list trước
     logger.info("Đang tìm proxy hoạt động từ danh sách proxy nâng cao...")
     working_proxy = find_working_proxy()
@@ -143,6 +149,11 @@ def configure_socket_proxy():
     Returns:
         bool: Kết quả cấu hình
     """
+    # Kiểm tra cấu hình USE_PROXY trước
+    if not config.USE_PROXY:
+        logger.info("Proxy đã bị vô hiệu hóa trong cấu hình (USE_PROXY = False). Socket sẽ kết nối trực tiếp.")
+        return False
+        
     # Thử dùng proxy từ enhanced_proxy_list trước
     logger.info("Đang tìm proxy hoạt động từ danh sách proxy nâng cao cho socket...")
     working_proxy = find_working_proxy()

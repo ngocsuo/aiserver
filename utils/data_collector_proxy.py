@@ -54,31 +54,43 @@ class BinanceDataCollector:
                 self.connection_status["message"] = "API keys not found in configuration"
                 return
             
-            # Cấu hình proxy từ utils/proxy_config.py
-            proxies = configure_proxy()
-            proxy_url = get_proxy_url_format()
-            
-            if proxies and proxy_url:
-                logger.info(f"Connecting to Binance API using proxy")
-                self.connection_status["using_proxy"] = True
+            # Kiểm tra cài đặt USE_PROXY trước
+            if not config.USE_PROXY:
+                logger.info("Proxy đã bị vô hiệu hóa trong cấu hình (USE_PROXY = False). Kết nối trực tiếp đến Binance API.")
+                self.connection_status["using_proxy"] = False
                 
-                # Cấu hình proxy cho Socket nếu cần
-                configure_socket_proxy()
-                
-                # Cấu hình client với proxy
-                self.client = Client(
-                    config.BINANCE_API_KEY, 
-                    config.BINANCE_API_SECRET,
-                    {"timeout": 30, "proxies": proxies}
-                )
-            else:
-                logger.info("Connecting directly to Binance API without proxy")
-                # Kết nối trực tiếp nếu không có proxy
+                # Kết nối trực tiếp không qua proxy
                 self.client = Client(
                     config.BINANCE_API_KEY, 
                     config.BINANCE_API_SECRET,
                     {"timeout": 30}
                 )
+            else:
+                # Cấu hình proxy từ utils/proxy_config.py nếu USE_PROXY = True
+                proxies = configure_proxy()
+                proxy_url = get_proxy_url_format()
+                
+                if proxies and proxy_url:
+                    logger.info(f"Connecting to Binance API using proxy")
+                    self.connection_status["using_proxy"] = True
+                    
+                    # Cấu hình proxy cho Socket nếu cần
+                    configure_socket_proxy()
+                    
+                    # Cấu hình client với proxy
+                    self.client = Client(
+                        config.BINANCE_API_KEY, 
+                        config.BINANCE_API_SECRET,
+                        {"timeout": 30, "proxies": proxies}
+                    )
+                else:
+                    logger.info("Connecting directly to Binance API without proxy")
+                    # Kết nối trực tiếp nếu không có proxy
+                    self.client = Client(
+                        config.BINANCE_API_KEY, 
+                        config.BINANCE_API_SECRET,
+                        {"timeout": 30}
+                    )
             
             # Test kết nối với timeout tăng cường
             original_timeout = socket.getdefaulttimeout()
@@ -121,13 +133,21 @@ class BinanceDataCollector:
                 self.connection_status["message"] = f"API Error: {str(e)}"
                 
                 if 'APIError(code=0)' in str(e) or 'restricted location' in str(e).lower():
-                    # Lỗi hạn chế địa lý - nhưng chúng ta đã kết nối thành công qua proxy
-                    logger.warning("Geographic restriction detected but we're using proxy, continuing...")
-                    logger.info(f"Original error message: {e}")
-                    # Không raise exception nữa vì proxy đã xử lý vấn đề này
-                    self.connection_status["connected"] = True
-                    self.connection_status["message"] = "Connected to Binance Futures API via proxy"
-                    return
+                    # Lỗi hạn chế địa lý
+                    if self.connection_status["using_proxy"]:
+                        # Nếu đang sử dụng proxy, có thể tiếp tục
+                        logger.warning("Geographic restriction detected but we're using proxy, continuing...")
+                        logger.info(f"Original error message: {e}")
+                        # Không raise exception nữa vì proxy đã xử lý vấn đề này
+                        self.connection_status["connected"] = True
+                        self.connection_status["message"] = "Connected to Binance Futures API via proxy"
+                        return
+                    else:
+                        # Nếu không sử dụng proxy (USE_PROXY = False), báo lỗi rõ ràng
+                        logger.error("Geographic restriction detected and proxy is disabled (USE_PROXY = False)")
+                        self.connection_status["connected"] = False
+                        self.connection_status["message"] = "Cannot connect to Binance API: Geographic restriction and proxy is disabled"
+                        raise Exception("Cannot connect to Binance API from your location with proxy disabled. Enable proxy by setting USE_PROXY = True in config.py")
                 else:
                     # Các lỗi API khác
                     raise
